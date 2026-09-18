@@ -1,0 +1,8 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Aplicacion.DTO
+{
+    public record AdjudicacionDTO(int id, DateTime Fecha, int Orden_Compra, string Estado);
+}
