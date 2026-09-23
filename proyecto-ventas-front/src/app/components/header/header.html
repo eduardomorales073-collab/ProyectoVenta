@@ -1,0 +1,19 @@
+<header class="header">
+  <div class="header-container">
+    <a routerLink="/articulos" class="logo">
+      <span class="logo-icon">📦</span>
+      <span class="logo-text">SistemaVentas</span>
+    </a>
+
+    
+
+    <div class="user-section" *ngIf="estaAutenticado() && !enLogin()">
+      <span class="user-name">
+        👤 {{ usuario()?.nombre || 'Usuario' }}
+      </span>
+      <button class="btn-logout" (click)="cerrarSesion()">
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+</header>

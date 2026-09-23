@@ -5,7 +5,9 @@ using Aplicacion.modelos;
 using Aplicacion.Repositorio;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Aplicacion.Servicios
 {
@@ -13,15 +15,22 @@ namespace Aplicacion.Servicios
     {
         private readonly ArticuRepositorio _articuloRepository;
         private readonly IMapper _mapper;
-        public ArticuloServicio(ArticuRepositorio articuloRepository, IMapper mapper ) 
-        { 
+
+        public ArticuloServicio(ArticuRepositorio articuloRepository, IMapper mapper)
+        {
             _mapper = mapper;
             _articuloRepository = articuloRepository;
+        }
 
-        } 
         public async Task AddAsync(CreateArticuloDTO articulo)
         {
-            await _articuloRepository.AddAsync(_mapper.Map<Articulo>(articulo));
+            var nuevoArticulo = _mapper.Map<Articulo>(articulo);
+
+            // Calcular el siguiente id manualmente
+            var todos = await _articuloRepository.GetAllasync();
+            nuevoArticulo.id = todos.Any() ? todos.Max(a => a.id) + 1 : 1;
+
+            await _articuloRepository.AddAsync(nuevoArticulo);
         }
 
         public async Task DeleteAsync(int id)
@@ -29,7 +38,7 @@ namespace Aplicacion.Servicios
             await _articuloRepository.DeletAsync(id);
         }
 
-        public  async Task<List<ArticuloDTO>> GetAllsync()
+        public async Task<List<ArticuloDTO>> GetAllsync()
         {
             return _mapper.Map<List<ArticuloDTO>>(await _articuloRepository.GetAllasync());
         }

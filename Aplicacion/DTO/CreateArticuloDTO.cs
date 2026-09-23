@@ -4,6 +4,5 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record CreateArticuloDTO(string nombre, string descripcion);
- }
-
+    public record CreateArticuloDTO(string Nombre, string Descripcion);
+}

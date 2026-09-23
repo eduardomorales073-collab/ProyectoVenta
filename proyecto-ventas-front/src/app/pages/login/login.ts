@@ -8,7 +8,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './login.html'
+  templateUrl: './login.html',
+  styleUrl: './login.scss'      // ← añade esto si no está
 })
 export class Login {
   form: FormGroup;
@@ -25,7 +26,7 @@ export class Login {
     if (this.form.invalid) return;
 
     this.authService.login(this.form.value).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => this.router.navigate(['/articulos']),   // ← redirige a /articulos
       error: () => this.error = 'Credenciales incorrectas'
     });
   }
