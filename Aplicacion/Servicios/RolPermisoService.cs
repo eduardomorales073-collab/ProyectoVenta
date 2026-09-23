@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class RolPermisoService : IRolPermiService
+    public class RolPermisoService : IRolPermiService
     {
         private readonly RolPerRepositorio _rolPerRepositorio;
         private readonly IMapper _mapper;
@@ -24,9 +24,9 @@ namespace Aplicacion.Servicios
             await _rolPerRepositorio.AddAsync(_mapper.Map<Rol_Permiso>(rolPermiso));
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int idRol, int idPermiso)
         {
-            await _rolPerRepositorio.DeletAsync(id);
+            await _rolPerRepositorio.DeletAsync(idRol, idPermiso);
         }
 
         public async Task<List<RolPermisoDTO>> GetAllsync()
@@ -34,9 +34,9 @@ namespace Aplicacion.Servicios
             return _mapper.Map<List<RolPermisoDTO>>(await _rolPerRepositorio.GetAllasync());
         }
 
-        public async Task<RolPermisoDTO> GetByIdAsync(int id)
+        public async Task<RolPermisoDTO> GetByIdAsync(int idRol, int idPermiso)
         {
-            return _mapper.Map<RolPermisoDTO>(await _rolPerRepositorio.GetAsync(id));
+            return _mapper.Map<RolPermisoDTO>(await _rolPerRepositorio.GetAsync(idRol, idPermiso));
         }
 
         public async Task UpdateAsync(UpdateRolPermisoDTO rolPermiso)

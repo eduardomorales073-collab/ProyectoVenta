@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class RubroService : IRubroService
+    public class RubroService : IRubroService
     {
 
         private readonly RubroRepositorio _rubroRepositorio;

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class UsuarioService : IUsuarioService
+    public class UsuarioService : IUsuarioService
     {
         private readonly UsuarioRepositorio _usuarioRepositorio;
         private readonly IMapper _mapper;

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class RolPeRepositorio : RolPerRepositorio
+    public class RolPeRepositorio : RolPerRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public RolPeRepositorio(AplicacionDBContexto context)
@@ -21,9 +21,9 @@ namespace Infraestructura.Repositorio
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeletAsync(int id)
+        public async Task DeletAsync(int idRol, int idPermiso)
         {
-            var rolPermiso = await _context.Rol_Permiso.FindAsync(id);
+            var rolPermiso = await _context.Rol_Permiso.FindAsync(idRol, idPermiso);
             if (rolPermiso != null)
             {
                 _context.Rol_Permiso.Remove(rolPermiso);
@@ -36,10 +36,10 @@ namespace Infraestructura.Repositorio
             return await _context.Rol_Permiso.ToListAsync();
         }
 
-        public async Task<Rol_Permiso> GetAsync(int id)
+        public async Task<Rol_Permiso> GetAsync(int idRol, int idPermiso)
         {
-            return await _context.Rol_Permiso.FindAsync(id);
-        
+            var rolPermiso = await _context.Rol_Permiso.FindAsync(idRol, idPermiso);
+            return rolPermiso!;
         }
 
         public async Task UpdateAsync(Rol_Permiso rolPermiso)

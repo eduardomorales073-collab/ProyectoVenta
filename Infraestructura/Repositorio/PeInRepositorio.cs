@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class PeInRepositorio : PedIntRepositorio
+    public class PeInRepositorio : PedIntRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public PeInRepositorio(AplicacionDBContexto context)

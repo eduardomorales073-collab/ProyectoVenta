@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Aplicacion.Interfaz
 {
-    public interface ISucursalRepositorio
+    public interface ISucursalService 
     {
         Task<List<SucursalDTO>> GetAllsync();
         Task<SucursalDTO> GetByIdAsync(int id);

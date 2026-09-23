@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class PermRepositorio : PermisosRepositorio
+    public class PermRepositorio : PermisosRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public PermRepositorio(AplicacionDBContexto context)

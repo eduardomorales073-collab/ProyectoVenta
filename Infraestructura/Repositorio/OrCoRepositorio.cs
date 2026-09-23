@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class OrCoRepositorio : OrdComRepositorio
+    public class OrCoRepositorio : OrdComRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public OrCoRepositorio(AplicacionDBContexto context)

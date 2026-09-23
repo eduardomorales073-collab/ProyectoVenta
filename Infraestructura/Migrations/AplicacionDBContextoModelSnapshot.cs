@@ -195,7 +195,7 @@ namespace Infraestructura.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("Oferta_Proveedor");
+                    b.ToTable("Oferta_Proveedor", (string)null);
                 });
 
             modelBuilder.Entity("Aplicacion.modelos.Orden_Compra", b =>
@@ -241,9 +241,14 @@ namespace Infraestructura.Migrations
                     b.Property<int>("id_Departamento")
                         .HasColumnType("int");
 
+                    b.Property<int?>("id_OrdenCompra")
+                        .HasColumnType("int");
+
                     b.HasKey("id");
 
-                    b.ToTable("Pedido_Interno");
+                    b.HasIndex("id_OrdenCompra");
+
+                    b.ToTable("Pedido_Interno", (string)null);
                 });
 
             modelBuilder.Entity("Aplicacion.modelos.Permisos", b =>
@@ -294,23 +299,17 @@ namespace Infraestructura.Migrations
 
             modelBuilder.Entity("Aplicacion.modelos.Provee_Rubro", b =>
                 {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("id_Proveedor")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+                    b.Property<int>("id_Rubro")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("id_Proveedor", "id_Rubro");
 
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasIndex("id_Rubro");
 
-                    b.HasKey("id");
-
-                    b.ToTable("Provee_Rubros");
+                    b.ToTable("Provee_Rubro", (string)null);
                 });
 
             modelBuilder.Entity("Aplicacion.modelos.Proveedor", b =>
@@ -455,11 +454,12 @@ namespace Infraestructura.Migrations
 
                     b.Property<string>("Tel")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Telefono");
 
                     b.HasKey("id");
 
-                    b.ToTable("Telefono");
+                    b.ToTable("Telefono", (string)null);
                 });
 
             modelBuilder.Entity("Aplicacion.modelos.Tipo_Orden", b =>
@@ -578,6 +578,13 @@ namespace Infraestructura.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Aplicacion.modelos.Pedido_Interno", b =>
+                {
+                    b.HasOne("Aplicacion.modelos.Orden_Compra", null)
+                        .WithMany()
+                        .HasForeignKey("id_OrdenCompra");
+                });
+
             modelBuilder.Entity("Aplicacion.modelos.Provee_Artic", b =>
                 {
                     b.HasOne("Aplicacion.modelos.Articulo", null)
@@ -589,6 +596,21 @@ namespace Infraestructura.Migrations
                     b.HasOne("Aplicacion.modelos.Proveedor", null)
                         .WithMany()
                         .HasForeignKey("id_Proveedor")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Aplicacion.modelos.Provee_Rubro", b =>
+                {
+                    b.HasOne("Aplicacion.modelos.Proveedor", null)
+                        .WithMany()
+                        .HasForeignKey("id_Proveedor")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Aplicacion.modelos.Rubro", null)
+                        .WithMany()
+                        .HasForeignKey("id_Rubro")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

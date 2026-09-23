@@ -4,6 +4,6 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record  UpdateTelefonoDTO(int id, string numero, DateTime fecha);
+    public record  UpdateTelefonoDTO(int id, string Tel, DateTime fecha);
 
 }

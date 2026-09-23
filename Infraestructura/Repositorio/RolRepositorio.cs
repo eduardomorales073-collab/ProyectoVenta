@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class RolRepositorio : RolesRepositorio
+    public class RolRepositorio : RolesRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public RolRepositorio(AplicacionDBContexto context)

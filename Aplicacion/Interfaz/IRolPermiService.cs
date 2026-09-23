@@ -1,16 +1,13 @@
 ﻿using Aplicacion.DTO;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Aplicacion.Interfaz
 {
     public interface IRolPermiService
     {
         Task<List<RolPermisoDTO>> GetAllsync();
-        Task<RolPermisoDTO> GetByIdAsync(int id);
-        Task AddAsync(CreateRolPermisoDTO rolPermiso);
-        Task DeleteAsync(int id);
-        Task UpdateAsync(UpdateRolPermisoDTO rolPermiso);
+        Task<RolPermisoDTO> GetByIdAsync(int idRol, int idPermiso);
+        Task AddAsync(CreateRolPermisoDTO dto);
+        Task DeleteAsync(int idRol, int idPermiso);
+        Task UpdateAsync(UpdateRolPermisoDTO dto);
     }
 }

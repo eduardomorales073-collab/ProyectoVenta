@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class TelefonoService : ITelefonoService
+    public class TelefonoService : ITelefonoService
     {
         private readonly TelefonoRepositorio _telefonoRepositorio;
         private readonly IMapper _mapper;

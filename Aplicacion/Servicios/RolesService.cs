@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class RolesService : IRolesService
+    public class RolesService : IRolesService
     {
         private readonly RolesRepositorio _rolesRepositorio;
         private readonly IMapper _mapper;

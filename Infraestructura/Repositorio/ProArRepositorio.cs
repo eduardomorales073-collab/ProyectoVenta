@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class ProArRepositorio : ProveArtRepositorio
+    public class ProArRepositorio : ProveArtRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public ProArRepositorio(AplicacionDBContexto context)
@@ -21,9 +21,9 @@ namespace Infraestructura.Repositorio
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeletAsync(int id)
+        public async Task DeletAsync(int idProveedor, int idArticulo)
         {
-            var proveeArtic = await _context.Provee_Artics.FindAsync(id);
+            var proveeArtic = await _context.Provee_Artics.FindAsync(idProveedor, idArticulo);
             if (proveeArtic != null)
             {
                 _context.Provee_Artics.Remove(proveeArtic);
@@ -36,9 +36,10 @@ namespace Infraestructura.Repositorio
             return await _context.Provee_Artics.ToListAsync();
         }
 
-        public async Task<Provee_Artic> GetAsync(int id)
+        public async Task<Provee_Artic> GetAsync(int idProveedor, int idArticulo)
         {
-            return await _context.Provee_Artics.FindAsync(id);
+            var proveeArtic = await _context.Provee_Artics.FindAsync(idProveedor, idArticulo);
+            return proveeArtic!;
         }
 
         public async Task UpdateAsync(Provee_Artic proveeArtic)

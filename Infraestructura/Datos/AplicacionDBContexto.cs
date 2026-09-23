@@ -20,7 +20,7 @@ namespace Infraestructura.Datos
         public DbSet<Pedido_Interno> Pedido_Interno { get; set; }
         public DbSet<Permisos> Permisos { get; set; }
         public DbSet<Provee_Artic> Provee_Artics { get; set; }
-        public DbSet<Provee_Rubro> Provee_Rubros { get; set; }
+        public DbSet<Provee_Rubro> Provee_Rubro { get; set; }
         public DbSet<Proveedor> Proveedor { get; set; }
         public DbSet<Relacion> Relacion { get; set; }
         public DbSet<Rol_Permiso> Rol_Permiso { get; set; }

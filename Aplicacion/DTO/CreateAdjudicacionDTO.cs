@@ -4,5 +4,5 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record CreateAdjudicacionDTO(DateTime Fecha, int Orden_Compra, string Estado);
+    public record CreateAdjudicacionDTO(DateTime Fecha_Resolucion, int Orden_Compra, string Estado);
 }

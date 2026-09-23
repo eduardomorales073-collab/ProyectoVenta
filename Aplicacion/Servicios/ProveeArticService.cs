@@ -24,9 +24,9 @@ namespace Aplicacion.Servicios
             await _proveArtRepositorio.AddAsync(_mapper.Map<Provee_Artic>(proveeArtc));
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int idProveedor, int idArticulo)
         {
-            await _proveArtRepositorio.DeletAsync(id);
+            await _proveArtRepositorio.DeletAsync(idProveedor, idArticulo);
         }
 
         public async Task<List<ProveeArtcDTO>> GetAllsync()
@@ -34,9 +34,9 @@ namespace Aplicacion.Servicios
             return _mapper.Map<List<ProveeArtcDTO>>(await _proveArtRepositorio.GetAllasync());
         }
 
-        public async Task<ProveeArtcDTO> GetByIdAsync(int id)
+        public async Task<ProveeArtcDTO> GetByIdAsync(int idProveedor, int idArticulo)
         {
-            return _mapper.Map<ProveeArtcDTO>(await _proveArtRepositorio.GetAsync(id));
+            return _mapper.Map<ProveeArtcDTO>(await _proveArtRepositorio.GetAsync(idProveedor, idArticulo));
         }
 
         public async Task UpdateAsync(UpdateProveeArtcDTO proveeArtc)

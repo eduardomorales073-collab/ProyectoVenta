@@ -1,0 +1,55 @@
+﻿// UsuarioControlador.cs
+using Aplicacion.DTO;
+using Aplicacion.Interfaz;
+using Microsoft.AspNetCore.Mvc;
+using Aplicacion.Repositorio;
+
+namespace Venta.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsuarioControlador : ControllerBase
+    {
+        private readonly IUsuarioService _usuarioService;
+        public UsuarioControlador(IUsuarioService usuarioService) => _usuarioService = usuarioService;
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll() => Ok(await _usuarioService.GetAllsync());
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id) => Ok(await _usuarioService.GetByIdAsync(id));
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateUsuariosDTO dto)
+        {
+            await _usuarioService.AddAsync(dto);
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update(UpdateUsuariosDTO dto)
+        {
+            await _usuarioService.UpdateAsync(dto);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _usuarioService.DeleteAsync(id);
+            return Ok();
+        }
+        // Solo para ejecutar una vez, después bórralo
+       // [HttpPost("rehash-temporal")]
+      //  public async Task<IActionResult> RehashTemporal([FromServices] UsuarioRepositorio usuarioRepositorio)
+        //{
+      //      var usuarios = await usuarioRepositorio.GetAllasync();
+       //     foreach (var u in usuarios)
+         //   {
+         //      u.Contrasena = BCrypt.Net.BCrypt.HashPassword(u.Contrasena);
+           //     await usuarioRepositorio.UpdateAsync(u);
+         //   }
+         //   return Ok();
+       // }
+    }
+}

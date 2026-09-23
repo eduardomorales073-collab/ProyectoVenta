@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    public class SucursalService : ISucursalRepositorio
+    public class SucursalService : ISucursalService
     {
         private readonly SucursalRepositorio _sucursalRepositorio;
         private readonly IMapper _mapper;

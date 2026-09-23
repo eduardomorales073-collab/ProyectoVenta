@@ -15,15 +15,16 @@ namespace Infraestructura.Repositorio
         {
             _context = context;
         }
+
         public async Task AddAsync(Usuarios_Roles usuariosRoles)
         {
             await _context.Usuarios_Roles.AddAsync(usuariosRoles);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeletAsync(int id)
+        public async Task DeletAsync(int idUsuario, int idRol)
         {
-            var usuariosRoles = await _context.Usuarios_Roles.FindAsync(id);
+            var usuariosRoles = await _context.Usuarios_Roles.FindAsync(idUsuario, idRol);
             if (usuariosRoles != null)
             {
                 _context.Usuarios_Roles.Remove(usuariosRoles);
@@ -36,9 +37,10 @@ namespace Infraestructura.Repositorio
             return await _context.Usuarios_Roles.ToListAsync();
         }
 
-        public async Task<Usuarios_Roles> GetAsync(int id)
+        public async Task<Usuarios_Roles> GetAsync(int idUsuario, int idRol)
         {
-            return await _context.Usuarios_Roles.FindAsync(id);
+            var usuariosRoles = await _context.Usuarios_Roles.FindAsync(idUsuario, idRol);
+            return usuariosRoles!;
         }
 
         public async Task UpdateAsync(Usuarios_Roles usuariosRoles)

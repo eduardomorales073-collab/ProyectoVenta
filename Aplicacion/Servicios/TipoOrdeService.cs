@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class TipoOrdeService : ITipoOrdenService
+    public class TipoOrdeService : ITipoOrdenService
     {
         private readonly TipoOrRepositorio _tipoOrRepositorio;
         private readonly IMapper _mapper;

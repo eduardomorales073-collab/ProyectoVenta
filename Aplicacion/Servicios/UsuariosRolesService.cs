@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Aplicacion.Servicios
 {
-    internal class UsuariosRolesService : IUsuarioRolesService
+    public class UsuariosRolesService : IUsuarioRolesService
     {
         private readonly UsRolRepositorio _usrolRepositorio;
         private readonly IMapper _mapper;
@@ -24,9 +24,9 @@ namespace Aplicacion.Servicios
             await _usrolRepositorio.AddAsync(_mapper.Map<Usuarios_Roles>(usuarioRole));
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int idUsuario, int idRol)
         {
-            await _usrolRepositorio.DeletAsync(id);
+            await _usrolRepositorio.DeletAsync(idUsuario, idRol);
         }
 
         public async Task<List<UsuariosRolesDTO>> GetAllsync()
@@ -34,9 +34,9 @@ namespace Aplicacion.Servicios
             return _mapper.Map<List<UsuariosRolesDTO>>(await _usrolRepositorio.GetAllasync());
         }
 
-        public async Task<UsuariosRolesDTO> GetByIdAsync(int id)
+        public async Task<UsuariosRolesDTO> GetByIdAsync(int idUsuario, int idRol)
         {
-            return _mapper.Map<UsuariosRolesDTO>(await _usrolRepositorio.GetAsync(id));
+            return _mapper.Map<UsuariosRolesDTO>(await _usrolRepositorio.GetAsync(idUsuario, idRol));
         }
 
         public async Task UpdateAsync(UpdateUsuariosRolesDTO usuarioRole)

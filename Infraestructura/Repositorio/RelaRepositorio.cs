@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Infraestructura.Repositorio
 {
-    internal class RelaRepositorio: RelacionRepositorio
+    public class RelaRepositorio: RelacionRepositorio
     {
         private readonly AplicacionDBContexto _context;
         public RelaRepositorio(AplicacionDBContexto context)
