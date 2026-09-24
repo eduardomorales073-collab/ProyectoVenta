@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { UsuarioService } from '../../../services/usuario.service';
 import { Usuario } from '../../../models/usuario.model';
 import { UsuarioFormComponent } from './usuario-form/usuario-form';
+import { PermisosModalComponent } from './permisos-modal/permisos-modal';
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, UsuarioFormComponent],
+  imports: [CommonModule, UsuarioFormComponent, PermisosModalComponent],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.scss'
 })
@@ -17,6 +18,10 @@ export class UsuariosComponent implements OnInit {
   error = '';
   mostrarFormulario = false;
   usuarioSeleccionado: Usuario | null = null;
+
+  // ⬇️ NUEVAS PROPIEDADES PARA PERMISOS
+  mostrarPermisos = false;
+  usuarioPermisos: Usuario | null = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -77,5 +82,18 @@ export class UsuariosComponent implements OnInit {
       case 3: return 'Proveedor';
       default: return 'Desconocido';
     }
+  }
+
+  // ⬇️ MÉTODOS NUEVOS PARA PERMISOS
+  verPermisos(usuario: Usuario): void {
+    this.usuarioPermisos = usuario;
+    this.mostrarPermisos = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarPermisos(): void {
+    this.mostrarPermisos = false;
+    this.usuarioPermisos = null;
+    this.cdr.detectChanges();
   }
 }

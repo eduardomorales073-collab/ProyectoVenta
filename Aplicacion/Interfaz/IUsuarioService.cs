@@ -12,5 +12,6 @@ namespace Aplicacion.Interfaz
         Task AddAsync(CreateUsuariosDTO usuario);
         Task DeleteAsync(int id);
         Task UpdateAsync(UpdateUsuariosDTO usuario);
+        Task<PermisoUsuarioDTO?> ObtenerPermisosAsync(int idUsuario);
     }
 }

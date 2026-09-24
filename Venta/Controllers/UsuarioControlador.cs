@@ -39,17 +39,25 @@ namespace Venta.Controllers
             await _usuarioService.DeleteAsync(id);
             return Ok();
         }
+
+        [HttpGet("{id}/permisos")]
+        public async Task<IActionResult> GetPermisos(int id)
+        {
+            var permisos = await _usuarioService.ObtenerPermisosAsync(id);
+            if (permisos == null) return NotFound();
+            return Ok(permisos);
+        }
         // Solo para ejecutar una vez, después bórralo
-       // [HttpPost("rehash-temporal")]
-      //  public async Task<IActionResult> RehashTemporal([FromServices] UsuarioRepositorio usuarioRepositorio)
+        // [HttpPost("rehash-temporal")]
+        //  public async Task<IActionResult> RehashTemporal([FromServices] UsuarioRepositorio usuarioRepositorio)
         //{
-      //      var usuarios = await usuarioRepositorio.GetAllasync();
-       //     foreach (var u in usuarios)
-         //   {
-         //      u.Contrasena = BCrypt.Net.BCrypt.HashPassword(u.Contrasena);
-           //     await usuarioRepositorio.UpdateAsync(u);
-         //   }
-         //   return Ok();
-       // }
+        //      var usuarios = await usuarioRepositorio.GetAllasync();
+        //     foreach (var u in usuarios)
+        //   {
+        //      u.Contrasena = BCrypt.Net.BCrypt.HashPassword(u.Contrasena);
+        //     await usuarioRepositorio.UpdateAsync(u);
+        //   }
+        //   return Ok();
+        // }
     }
 }

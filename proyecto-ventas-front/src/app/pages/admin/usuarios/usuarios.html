@@ -32,6 +32,7 @@
           </span>
         </td>
         <td class="acciones">
+          <button class="btn-permisos" (click)="verPermisos(u)" title="Ver permisos">🔑</button>
           <button class="btn-editar" (click)="abrirFormulario(u)" title="Editar">✏️</button>
           <button class="btn-eliminar" (click)="confirmarEliminar(u)" title="Eliminar">🗑️</button>
         </td>
@@ -45,3 +46,9 @@
                   (guardado)="onGuardado()"
                   (cancelado)="cerrarFormulario()">
 </app-usuario-form>
+
+<app-permisos-modal *ngIf="mostrarPermisos && usuarioPermisos"
+                    [idUsuario]="usuarioPermisos.id"
+                    [nombreUsuario]="usuarioPermisos.nombre"
+                    (cerrar)="cerrarPermisos()">
+</app-permisos-modal>

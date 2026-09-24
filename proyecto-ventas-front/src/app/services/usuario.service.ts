@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Usuario, CreateUsuarioDTO, UpdateUsuarioDTO } from '../models/usuario.model';
+import { PermisoUsuario } from '../models/permiso.model';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -28,5 +29,9 @@ export class UsuarioService {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
+  }
+
+  obtenerPermisos(idUsuario: number): Observable<PermisoUsuario> {
+    return this.http.get<PermisoUsuario>(`${this.url}/${idUsuario}/permisos`);
   }
 }

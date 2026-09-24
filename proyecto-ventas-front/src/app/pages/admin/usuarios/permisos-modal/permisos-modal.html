@@ -1,0 +1,53 @@
+<div class="modal-overlay" (click)="onCerrar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>🔑 Permisos de {{ nombreUsuario }}</h2>
+      <button class="close-btn" (click)="onCerrar()">✕</button>
+    </div>
+
+    <p *ngIf="cargando" class="loading">Cargando permisos...</p>
+    <p *ngIf="error" class="error">{{ error }}</p>
+
+    <div *ngIf="permisos && !cargando" class="permisos-grid">
+      <div class="permiso-card" [class.activo]="permisos.crear">
+        <div class="permiso-icon">➕</div>
+        <div class="permiso-info">
+          <span class="permiso-nombre">Crear</span>
+          <span class="permiso-estado">{{ permisos.crear ? '✅ Permitido' : '❌ Denegado' }}</span>
+        </div>
+      </div>
+
+      <div class="permiso-card" [class.activo]="permisos.leer">
+        <div class="permiso-icon">👁️</div>
+        <div class="permiso-info">
+          <span class="permiso-nombre">Leer</span>
+          <span class="permiso-estado">{{ permisos.leer ? '✅ Permitido' : '❌ Denegado' }}</span>
+        </div>
+      </div>
+
+      <div class="permiso-card" [class.activo]="permisos.actualizar">
+        <div class="permiso-icon">✏️</div>
+        <div class="permiso-info">
+          <span class="permiso-nombre">Actualizar</span>
+          <span class="permiso-estado">{{ permisos.actualizar ? '✅ Permitido' : '❌ Denegado' }}</span>
+        </div>
+      </div>
+
+      <div class="permiso-card" [class.activo]="permisos.borrar">
+        <div class="permiso-icon">🗑️</div>
+        <div class="permiso-info">
+          <span class="permiso-nombre">Borrar</span>
+          <span class="permiso-estado">{{ permisos.borrar ? '✅ Permitido' : '❌ Denegado' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-rol" *ngIf="permisos">
+      <span>📋 Rol: <strong>{{ permisos.idRol === 1 ? 'Administrador' : permisos.idRol === 2 ? 'Empleado' : 'Proveedor' }}</strong></span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cerrar" (click)="onCerrar()">Cerrar</button>
+    </div>
+  </div>
+</div>

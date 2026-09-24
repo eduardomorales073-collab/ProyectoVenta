@@ -2,16 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Aplicacion.Repositorio
 {
-    public interface UsuarioRepositorio
+    public abstract class UsuarioRepositorio
     {
-        Task<List<Usuarios>> GetAllasync();
-        Task<Usuarios> GetAsync(int id);
-        Task DeletAsync(int id);
-        Task AddAsync(Usuarios usuarios);
-        Task UpdateAsync(Usuarios usuarios);
-
+        public abstract Task<List<Usuarios>> GetAllasync();
+        public abstract Task<Usuarios> GetAsync(int id);
+        public abstract Task AddAsync(Usuarios usuarios);
+        public abstract Task UpdateAsync(Usuarios usuarios);
+        public abstract Task DeletAsync(int id);
+        public abstract Task<Permisos?> ObtenerPermisosDelUsuarioAsync(int idUsuario);
     }
 }

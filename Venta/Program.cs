@@ -91,6 +91,9 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(ArticuloPerfil).Assembly);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddScoped<RolPerRepositorio, RolPeRepositorio>();
+builder.Services.AddScoped<PermRepositorio, PermRepositorio>();
+
 // --- Autenticación JWT ---
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
