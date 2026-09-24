@@ -44,18 +44,28 @@ namespace Aplicacion.Servicios
                 token,
                 usuario.Nombre,
                 usuario.email,
-                usuario.id_Rol.ToString(),   // ← String del id del rol
-                usuario.id_Rol                // ← int del id del rol
+                usuario.id_Rol.ToString(),
+                usuario.id_Rol
             );
         }
 
         private string GenerarToken(modelos.Usuarios usuario)
         {
+            // ✅ Mapear id_Rol a nombre de rol
+            string nombreRol = usuario.id_Rol switch
+            {
+                1 => "Administrador",
+                2 => "Empleado",
+                3 => "Proveedor",
+                _ => "Empleado"
+            };
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
                 new Claim(ClaimTypes.Email, usuario.email),
                 new Claim(ClaimTypes.Name, usuario.Nombre),
+                new Claim(ClaimTypes.Role, nombreRol),         // ← NUEVO: rol con nombre
                 new Claim("IdRol", usuario.id_Rol.ToString())
             };
 

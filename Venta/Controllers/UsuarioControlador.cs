@@ -2,12 +2,14 @@
 using Aplicacion.DTO;
 using Aplicacion.Interfaz;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Aplicacion.Repositorio;
 
 namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Administrador")]
     public class UsuarioControlador : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;

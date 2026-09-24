@@ -1,11 +1,13 @@
 ﻿using Aplicacion.DTO;
 using Aplicacion.Servicios;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AuthControlador : ControllerBase
     {
         private readonly AuthService _authService;
