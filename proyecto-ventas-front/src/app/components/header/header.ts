@@ -16,7 +16,7 @@ export class HeaderComponent implements OnInit {
   private router = inject(Router);
 
   estaAutenticado = signal(false);
-  usuario = signal<{ nombre?: string; email?: string } | null>(null);
+  usuario = signal<{ nombre?: string; rol?: string; idRol?: number } | null>(null);
   enLogin = signal(false);
 
   ngOnInit(): void {
@@ -32,9 +32,29 @@ export class HeaderComponent implements OnInit {
 
   private actualizarEstado(): void {
     this.estaAutenticado.set(this.authService.isLoggedIn());
+    this.usuario.set(this.authService.getUsuario());
+  }
 
-    const raw = localStorage.getItem('usuario');
-    this.usuario.set(raw ? JSON.parse(raw) : null);
+  // Getters reactivos para el template
+  get esAdmin(): boolean {
+    return this.usuario()?.idRol === 1;
+  }
+
+  get esEmpleado(): boolean {
+    return this.usuario()?.idRol === 2;
+  }
+
+  get esProveedor(): boolean {
+    return this.usuario()?.idRol === 3;
+  }
+
+  get nombreRol(): string {
+    switch (this.usuario()?.idRol) {
+      case 1: return 'Administrador';
+      case 2: return 'Empleado';
+      case 3: return 'Proveedor';
+      default: return '';
+    }
   }
 
   cerrarSesion(): void {

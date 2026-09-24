@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { LoginRequest, AuthResponse } from '../models/auth.model';
+import { LoginRequest, AuthResponse, Rol } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,7 +14,12 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.url}/login`, data).pipe(
       tap(res => {
         localStorage.setItem('token', res.token);
-        localStorage.setItem('usuario', JSON.stringify({ nombre: res.nombre, email: res.email }));
+        localStorage.setItem('usuario', JSON.stringify({
+          nombre: res.nombre,
+          email: res.email,
+          rol: res.rol,           // ← NUEVO
+          idRol: res.idRol        // ← NUEVO
+        }));
       })
     );
   }
@@ -30,5 +35,48 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  // ====== USUARIO Y ROL ======
+
+  getUsuario(): { nombre: string; email: string; rol: string; idRol: number } | null {
+    const raw = localStorage.getItem('usuario');
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  getRol(): Rol | null {
+    const usuario = this.getUsuario();
+    if (!usuario) return null;
+
+    // Mapear idRol a nombre
+    switch (usuario.idRol) {
+      case 1: return 'Administrador';
+      case 2: return 'Empleado';
+      case 3: return 'Proveedor';
+      default: return null;
+    }
+  }
+
+  esAdmin(): boolean {
+    return this.getRol() === 'Administrador';
+  }
+
+  esEmpleado(): boolean {
+    return this.getRol() === 'Empleado';
+  }
+
+  esProveedor(): boolean {
+    return this.getRol() === 'Proveedor';
+  }
+
+  // ====== RUTA DE INICIO SEGÚN ROL ======
+
+  getRutaInicio(): string {
+    switch (this.getRol()) {
+      case 'Administrador': return '/admin/dashboard';
+      case 'Empleado': return '/empleado/pedidos';
+      case 'Proveedor': return '/proveedor/ofertas';
+      default: return '/login';
+    }
   }
 }

@@ -1,15 +1,32 @@
 <header class="header">
   <div class="header-container">
-    <a routerLink="/articulos" class="logo">
+    <a routerLink="/" class="logo">
       <span class="logo-icon">📦</span>
       <span class="logo-text">SistemaVentas</span>
     </a>
 
-    
+    <nav class="nav" *ngIf="estaAutenticado() && !enLogin()">
+      <!-- Menú de Administrador -->
+      <ng-container *ngIf="esAdmin">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+        <a routerLink="/admin/articulos" routerLinkActive="active" class="nav-link">Artículos</a>
+      </ng-container>
+
+      <!-- Menú de Empleado -->
+      <ng-container *ngIf="esEmpleado">
+        <a routerLink="/empleado/pedidos" routerLinkActive="active" class="nav-link">Pedidos</a>
+        <a routerLink="/empleado/articulos" routerLinkActive="active" class="nav-link">Artículos</a>
+      </ng-container>
+
+      <!-- Menú de Proveedor -->
+      <ng-container *ngIf="esProveedor">
+        <a routerLink="/proveedor/ofertas" routerLinkActive="active" class="nav-link">Mis Ofertas</a>
+      </ng-container>
+    </nav>
 
     <div class="user-section" *ngIf="estaAutenticado() && !enLogin()">
       <span class="user-name">
-        👤 {{ usuario()?.nombre || 'Usuario' }}
+        👤 {{ usuario()?.nombre }} <small>({{ nombreRol }})</small>
       </span>
       <button class="btn-logout" (click)="cerrarSesion()">
         Cerrar sesión
