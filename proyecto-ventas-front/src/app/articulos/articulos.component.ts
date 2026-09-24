@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Articulo, ArticuloService } from '../services/articulo.service';
 import { ArticuloFormComponent } from './articulo-form/articulo-form';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-articulos',
@@ -11,7 +12,7 @@ import { ArticuloFormComponent } from './articulo-form/articulo-form';
     <div class="container">
       <div class="header-actions">
         <h2>Lista de Artículos</h2>
-        <button class="btn-nuevo" (click)="abrirFormulario(null)">
+        <button class="btn-nuevo" (click)="abrirFormulario(null)" *ngIf="puedeCrear()">
           ➕ Nuevo Artículo
         </button>
       </div>
@@ -25,7 +26,7 @@ import { ArticuloFormComponent } from './articulo-form/articulo-form';
             <th>ID</th>
             <th>Nombre</th>
             <th>Descripción</th>
-            <th>Acciones</th>
+            <th *ngIf="puedeEditar() || puedeEliminar()">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -33,11 +34,11 @@ import { ArticuloFormComponent } from './articulo-form/articulo-form';
             <td>{{ a.id }}</td>
             <td>{{ a.nombre }}</td>
             <td>{{ a.descripcion }}</td>
-            <td class="acciones">
-              <button class="btn-editar" (click)="abrirFormulario(a)" title="Editar">
+            <td class="acciones" *ngIf="puedeEditar() || puedeEliminar()">
+              <button class="btn-editar" (click)="abrirFormulario(a)" title="Editar" *ngIf="puedeEditar()">
                 ✏️
               </button>
-              <button class="btn-eliminar" (click)="confirmarEliminar(a)" title="Eliminar">
+              <button class="btn-eliminar" (click)="confirmarEliminar(a)" title="Eliminar" *ngIf="puedeEliminar()">
                 🗑️
               </button>
             </td>
@@ -141,13 +142,28 @@ export class ArticulosComponent implements OnInit {
 
   constructor(
     private articuloService: ArticuloService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
     this.cargar();
   }
 
+  // ====== PERMISOS ======
+  puedeCrear(): boolean {
+    return this.authService.puedeCrear();
+  }
+
+  puedeEditar(): boolean {
+    return this.authService.puedeEditar();
+  }
+
+  puedeEliminar(): boolean {
+    return this.authService.puedeEliminar();
+  }
+
+  // ====== CRUD ======
   cargar(): void {
     this.cargando = true;
     this.error = '';

@@ -8,6 +8,7 @@ import { authGuard } from './guards/auth-guard';
 import { adminGuard } from './guards/admin-guard';
 import { empleadoGuard } from './guards/empleado-guard';
 import { proveedorGuard } from './guards/proveedor-guard';
+import { UsuariosComponent } from './pages/admin/usuarios/usuarios';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -19,6 +20,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'articulos', component: ArticulosComponent },
+      { path: 'usuarios', component: UsuariosComponent },   // ← ESTA
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

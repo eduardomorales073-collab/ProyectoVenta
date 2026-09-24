@@ -1,1 +1,47 @@
-<p>usuarios works!</p>
+<div class="container">
+  <div class="header-actions">
+    <h2>Lista de Usuarios</h2>
+    <button class="btn-nuevo" (click)="abrirFormulario(null)">
+      ➕ Nuevo Usuario
+    </button>
+  </div>
+
+  <p *ngIf="cargando">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <table *ngIf="!cargando && !error" class="tabla">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Activo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of usuarios">
+        <td>{{ u.id }}</td>
+        <td>{{ u.nombre }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ nombreRol(u.id_Rol) }}</td>
+        <td>
+          <span [class]="u.activo ? 'badge-activo' : 'badge-inactivo'">
+            {{ u.activo ? '✅ Activo' : '❌ Inactivo' }}
+          </span>
+        </td>
+        <td class="acciones">
+          <button class="btn-editar" (click)="abrirFormulario(u)" title="Editar">✏️</button>
+          <button class="btn-eliminar" (click)="confirmarEliminar(u)" title="Eliminar">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<app-usuario-form *ngIf="mostrarFormulario"
+                  [usuario]="usuarioSeleccionado"
+                  (guardado)="onGuardado()"
+                  (cancelado)="cerrarFormulario()">
+</app-usuario-form>

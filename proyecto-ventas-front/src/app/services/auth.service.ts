@@ -17,8 +17,8 @@ export class AuthService {
         localStorage.setItem('usuario', JSON.stringify({
           nombre: res.nombre,
           email: res.email,
-          rol: res.rol,           // ← NUEVO
-          idRol: res.idRol        // ← NUEVO
+          rol: res.rol,
+          idRol: res.idRol
         }));
       })
     );
@@ -48,7 +48,6 @@ export class AuthService {
     const usuario = this.getUsuario();
     if (!usuario) return null;
 
-    // Mapear idRol a nombre
     switch (usuario.idRol) {
       case 1: return 'Administrador';
       case 2: return 'Empleado';
@@ -78,5 +77,23 @@ export class AuthService {
       case 'Proveedor': return '/proveedor/ofertas';
       default: return '/login';
     }
+  }
+
+  // ====== PERMISOS POR ROL ======
+
+  puedeCrear(): boolean {
+    return this.esAdmin() || this.esEmpleado();
+  }
+
+  puedeEditar(): boolean {
+    return this.esAdmin() || this.esEmpleado();
+  }
+
+  puedeEliminar(): boolean {
+    return this.esAdmin();
+  }
+
+  puedeGestionarUsuarios(): boolean {
+    return this.esAdmin();
   }
 }
