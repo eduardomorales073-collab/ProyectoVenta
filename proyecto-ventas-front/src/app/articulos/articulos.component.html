@@ -1,0 +1,80 @@
+<div class="container">
+  <div class="header-actions">
+    <h2>Lista de Artículos</h2>
+    <button mat-raised-button color="primary" (click)="abrirFormulario(null)" *ngIf="puedeCrear()">
+      <mat-icon>add</mat-icon>
+      Nuevo Artículo
+    </button>
+  </div>
+
+  <!-- Filtro de búsqueda -->
+  <mat-form-field appearance="outline" class="filtro">
+    <mat-label>Buscar artículo</mat-label>
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="Nombre o descripción...">
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  <p *ngIf="cargando">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <!-- Tabla Material -->
+  <div class="tabla-container">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
+
+      <!-- Columna ID -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let a">{{ a.id }}</td>
+      </ng-container>
+
+      <!-- Columna Nombre -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+        <td mat-cell *matCellDef="let a">{{ a.nombre }}</td>
+      </ng-container>
+
+      <!-- Columna Descripción -->
+      <ng-container matColumnDef="descripcion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción</th>
+        <td mat-cell *matCellDef="let a">{{ a.descripcion }}</td>
+      </ng-container>
+
+      <!-- Columna Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let a">
+          <button mat-icon-button color="accent"
+                  (click)="abrirFormulario(a)"
+                  matTooltip="Editar"
+                  *ngIf="puedeEditar()">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn"
+                  (click)="confirmarEliminar(a)"
+                  matTooltip="Eliminar"
+                  *ngIf="puedeEliminar()">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Fila de encabezado -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <!-- Filas de datos -->
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Paginador -->
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"
+                   [pageSize]="10"
+                   showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>
+
+<!-- Modal del formulario -->
+<app-articulo-form *ngIf="mostrarFormulario"
+                   [articulo]="articuloSeleccionado"
+                   (guardado)="onGuardado()"
+                   (cancelado)="cerrarFormulario()">
+</app-articulo-form>
