@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Usuario, CreateUsuarioDTO, UpdateUsuarioDTO } from '../models/usuario.model';
-import { PermisoUsuario } from '../models/permiso.model';
+
+import { PermisoUsuario, UpdatePermisosDTO } from '../models/permiso.model';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -33,5 +34,9 @@ export class UsuarioService {
 
   obtenerPermisos(idUsuario: number): Observable<PermisoUsuario> {
     return this.http.get<PermisoUsuario>(`${this.url}/${idUsuario}/permisos`);
+  }
+
+  actualizarPermisos(idUsuario: number, dto: UpdatePermisosDTO): Observable<void> {
+    return this.http.put<void>(`${this.url}/${idUsuario}/permisos`, dto);
   }
 }

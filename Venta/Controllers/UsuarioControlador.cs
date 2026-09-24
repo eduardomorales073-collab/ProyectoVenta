@@ -47,17 +47,14 @@ namespace Venta.Controllers
             if (permisos == null) return NotFound();
             return Ok(permisos);
         }
-        // Solo para ejecutar una vez, después bórralo
-        // [HttpPost("rehash-temporal")]
-        //  public async Task<IActionResult> RehashTemporal([FromServices] UsuarioRepositorio usuarioRepositorio)
-        //{
-        //      var usuarios = await usuarioRepositorio.GetAllasync();
-        //     foreach (var u in usuarios)
-        //   {
-        //      u.Contrasena = BCrypt.Net.BCrypt.HashPassword(u.Contrasena);
-        //     await usuarioRepositorio.UpdateAsync(u);
-        //   }
-        //   return Ok();
-        // }
+
+        // ← NUEVO ENDPOINT
+        [HttpPut("{id}/permisos")]
+        public async Task<IActionResult> UpdatePermisos(int id, UpdatePermisosDTO dto)
+        {
+            var ok = await _usuarioService.ActualizarPermisosAsync(id, dto);
+            if (!ok) return NotFound();
+            return Ok();
+        }
     }
 }

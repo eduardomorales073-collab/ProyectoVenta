@@ -50,5 +50,6 @@
 <app-permisos-modal *ngIf="mostrarPermisos && usuarioPermisos"
                     [idUsuario]="usuarioPermisos.id"
                     [nombreUsuario]="usuarioPermisos.nombre"
-                    (cerrar)="cerrarPermisos()">
+                    (cerrar)="cerrarPermisos()"
+                    (actualizado)="onPermisosActualizados()">
 </app-permisos-modal>

@@ -96,4 +96,8 @@ export class UsuariosComponent implements OnInit {
     this.usuarioPermisos = null;
     this.cdr.detectChanges();
   }
+  onPermisosActualizados(): void {
+    this.cerrarPermisos();
+    this.cargar();
+  }
 }

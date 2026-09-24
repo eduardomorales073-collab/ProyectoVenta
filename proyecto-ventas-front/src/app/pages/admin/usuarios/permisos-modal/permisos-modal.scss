@@ -14,7 +14,7 @@
   border-radius: 0.75rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 500px;
+  max-width: 550px;
   padding: 1.5rem;
 }
 
@@ -56,7 +56,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .permiso-card {
@@ -68,6 +68,12 @@
   border: 2px solid #e2e8f0;
   background: #f8fafc;
   transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+
+  &:hover {
+    border-color: #cbd5e1;
+  }
 
   &.activo {
     border-color: #10b981;
@@ -81,6 +87,7 @@
   .permiso-info {
     display: flex;
     flex-direction: column;
+    flex: 1;
 
     .permiso-nombre {
       font-weight: 600;
@@ -92,39 +99,86 @@
       color: #64748b;
     }
   }
+
+  .permiso-check {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
 }
 
-.info-rol {
-  text-align: center;
+.advertencia {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #78350f;
   padding: 0.75rem;
-  background: #f1f5f9;
-  border-radius: 0.5rem;
-  color: #334155;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
   margin-bottom: 1rem;
+}
+
+.exito {
+  color: #059669;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
   font-size: 0.875rem;
+  margin: 0.5rem 0;
+  text-align: center;
+}
+
+.error {
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  text-align: center;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.75rem;
 }
 
-.btn-cerrar {
-  padding: 0.625rem 1.5rem;
-  background: #3b82f6;
-  color: #fff;
-  border: none;
+.btn-cancelar,
+.btn-guardar {
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
   transition: all 0.2s;
+}
 
-  &:hover {
-    background: #2563eb;
+.btn-cancelar {
+  background: #f1f5f9;
+  color: #334155;
+
+  &:hover:not(:disabled) {
+    background: #e2e8f0;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-.error {
-  color: #ef4444;
-  text-align: center;
+.btn-guardar {
+  background: #10b981;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #059669;
+  }
+
+  &:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+  }
 }

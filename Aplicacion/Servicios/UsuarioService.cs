@@ -70,15 +70,12 @@ namespace Aplicacion.Servicios
 
         public async Task<PermisoUsuarioDTO?> ObtenerPermisosAsync(int idUsuario)
         {
-            // 1. Obtener el usuario
             var usuario = await _usuarioRepositorio.GetAsync(idUsuario);
             if (usuario == null) return null;
 
-            // 2. Obtener los permisos del rol del usuario
             var permisos = await _usuarioRepositorio.ObtenerPermisosDelUsuarioAsync(idUsuario);
             if (permisos == null) return null;
 
-            // 3. Construir la respuesta
             return new PermisoUsuarioDTO(
                 usuario.id,
                 usuario.Nombre,
@@ -88,6 +85,18 @@ namespace Aplicacion.Servicios
                 permisos.Leer,
                 permisos.Actualizar,
                 permisos.Borrar
+            );
+        }
+
+        public async Task<bool> ActualizarPermisosAsync(int idUsuario, UpdatePermisosDTO dto)
+        {
+            return await _usuarioRepositorio.ActualizarPermisosAsync(
+                dto.id,
+                dto.Crear,
+                dto.Leer,
+                dto.Actualizar,
+                dto.Borrar,
+                dto.fecha
             );
         }
     }

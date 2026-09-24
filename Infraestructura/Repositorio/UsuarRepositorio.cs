@@ -68,5 +68,23 @@ namespace Infraestructura.Repositorio
 
             return permisos;
         }
+        public override async Task<bool> ActualizarPermisosAsync(
+    int idPermiso, bool crear, bool leer, bool actualizar, bool borrar, DateTime fecha)
+        {
+            // 1. Buscar el registro Permisos por su id
+            var permisos = await _context.Permisos.FindAsync(idPermiso);
+            if (permisos == null) return false;
+
+            // 2. Actualizar
+            permisos.Crear = crear;
+            permisos.Leer = leer;
+            permisos.Actualizar = actualizar;
+            permisos.Borrar = borrar;
+            permisos.Fecha = fecha;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

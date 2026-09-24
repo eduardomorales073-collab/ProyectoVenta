@@ -14,5 +14,7 @@ namespace Aplicacion.Repositorio
         public abstract Task UpdateAsync(Usuarios usuarios);
         public abstract Task DeletAsync(int id);
         public abstract Task<Permisos?> ObtenerPermisosDelUsuarioAsync(int idUsuario);
+        public abstract Task<bool> ActualizarPermisosAsync(
+    int idPermiso, bool crear, bool leer, bool actualizar, bool borrar, DateTime fecha);
     }
 }

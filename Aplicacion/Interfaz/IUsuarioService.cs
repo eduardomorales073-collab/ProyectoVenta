@@ -13,5 +13,6 @@ namespace Aplicacion.Interfaz
         Task DeleteAsync(int id);
         Task UpdateAsync(UpdateUsuariosDTO usuario);
         Task<PermisoUsuarioDTO?> ObtenerPermisosAsync(int idUsuario);
+        Task<bool> ActualizarPermisosAsync(int idUsuario, UpdatePermisosDTO dto);
     }
 }
