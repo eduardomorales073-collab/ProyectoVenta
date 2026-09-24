@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Articulo, ArticuloService } from '../services/articulo.service';
 import { ArticuloFormComponent } from './articulo-form/articulo-form';
 import { AuthService } from '../services/auth.service';
+import { NotificacionService } from '../services/notificacion';
 
 @Component({
   selector: 'app-articulos',
@@ -47,7 +48,8 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
   constructor(
     private articuloService: ArticuloService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificacion: NotificacionService 
   ) { }
 
   ngOnInit(): void {
@@ -123,15 +125,19 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
   onGuardado(): void {
     this.cerrarFormulario();
     this.cargar();
+    this.notificacion.exito('Artículo guardado correctamente');       // ← AÑADIR
   }
 
   confirmarEliminar(articulo: Articulo): void {
     if (!confirm(`¿Eliminar "${articulo.nombre}"?`)) return;
 
     this.articuloService.eliminar(articulo.id).subscribe({
-      next: () => this.cargar(),
+      next: () => {
+        this.notificacion.exito(`Artículo "${articulo.nombre}" eliminado correctamente`);  // ← CAMBIO
+        this.cargar();
+      },
       error: (err: any) => {
-        alert(`Error al eliminar: ${err.status} ${err.statusText}`);
+        this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);      // ← CAMBIO
       }
     });
   }

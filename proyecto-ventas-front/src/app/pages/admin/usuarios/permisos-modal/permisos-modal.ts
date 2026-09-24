@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../../../services/usuario.service';
 import { PermisoUsuario, UpdatePermisosDTO } from '../../../../models/permiso.model';
+import { NotificacionService } from '../../../../services/notificacion';
 
 @Component({
   selector: 'app-permisos-modal',
@@ -25,7 +26,8 @@ export class PermisosModalComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificacion: NotificacionService 
   ) { }
 
   ngOnInit(): void {
@@ -76,7 +78,7 @@ export class PermisosModalComponent implements OnInit {
     this.usuarioService.actualizarPermisos(this.idUsuario, dto).subscribe({
       next: () => {
         this.guardando = false;
-        this.exito = '✅ Permisos actualizados';
+        this.notificacion.exito('Permisos actualizados correctamente');                 // ← AÑADIR
         this.cdr.detectChanges();
         setTimeout(() => {
           this.actualizado.emit();

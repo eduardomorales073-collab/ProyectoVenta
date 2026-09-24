@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Articulo, ArticuloService, CreateArticuloDTO } from '../../services/articulo.service';
+import { NotificacionService } from '../../services/notificacion'; 
 
 @Component({
   selector: 'app-articulo-form',
@@ -21,7 +22,8 @@ export class ArticuloFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private articuloService: ArticuloService
+    private articuloService: ArticuloService,
+    private notificacion: NotificacionService  
   ) {
     this.form = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
@@ -59,6 +61,7 @@ export class ArticuloFormComponent implements OnInit {
       this.articuloService.actualizar(dto).subscribe({
         next: () => {
           this.guardando = false;
+          this.notificacion.exito(this.esEdicion ? 'Artículo actualizado' : 'Artículo creado');   // ← AÑADIR
           this.guardado.emit();
         },
         error: (err) => {

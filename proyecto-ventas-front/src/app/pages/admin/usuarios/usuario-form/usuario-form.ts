@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UsuarioService } from '../../../../services/usuario.service';
 import { Usuario, CreateUsuarioDTO } from '../../../../models/usuario.model';
+import { NotificacionService } from '../../../../services/notificacion';
 
 @Component({
   selector: 'app-usuario-form',
@@ -22,7 +23,8 @@ export class UsuarioFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private notificacion: NotificacionService 
   ) {
     this.form = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
@@ -74,6 +76,7 @@ export class UsuarioFormComponent implements OnInit {
       this.usuarioService.actualizar(dto).subscribe({
         next: () => {
           this.guardando = false;
+          this.notificacion.exito(this.esEdicion ? 'Usuario actualizado' : 'Usuario creado');   // ← AÑADIR
           this.guardado.emit();
         },
         error: (err: any) => {

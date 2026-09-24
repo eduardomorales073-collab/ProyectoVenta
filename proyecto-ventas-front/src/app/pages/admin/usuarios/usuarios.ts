@@ -14,6 +14,7 @@ import { UsuarioService } from '../../../services/usuario.service';
 import { Usuario } from '../../../models/usuario.model';
 import { UsuarioFormComponent } from './usuario-form/usuario-form';
 import { PermisosModalComponent } from './permisos-modal/permisos-modal';
+import { NotificacionService } from '../../../services/notificacion'; 
 
 @Component({
   selector: 'app-usuarios',
@@ -50,9 +51,11 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+
   constructor(
     private usuarioService: UsuarioService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificacion: NotificacionService
   ) { }
 
   ngOnInit(): void {
@@ -116,14 +119,21 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   onGuardado(): void {
     this.cerrarFormulario();
     this.cargar();
+    this.notificacion.exito('Usuario guardado correctamente');        // ← AÑADIR
   }
+  
 
   confirmarEliminar(usuario: Usuario): void {
     if (!confirm(`¿Eliminar a "${usuario.nombre}"?`)) return;
 
     this.usuarioService.eliminar(usuario.id).subscribe({
-      next: () => this.cargar(),
-      error: (err: any) => alert(`Error: ${err.status} ${err.statusText}`)
+      next: () => {
+        this.notificacion.exito(`Usuario "${usuario.nombre}" eliminado correctamente`);   // ← CAMBIO
+        this.cargar();
+      },
+      error: (err: any) => {
+        this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);     // ← CAMBIO
+      }
     });
   }
 
