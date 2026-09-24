@@ -1,1 +1,60 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <div class="welcome-card">
+    <h1>👋 ¡Bienvenido, {{ usuario?.nombre }}!</h1>
+    <p>Panel de control del Administrador</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-info">
+        <h3>{{ totalArticulos }}</h3>
+        <p>Artículos</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <h3>10</h3>
+        <p>Usuarios</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🔑</div>
+      <div class="stat-info">
+        <h3>3</h3>
+        <p>Roles</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🏢</div>
+      <div class="stat-info">
+        <h3>0</h3>
+        <p>Sucursales</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-grid">
+    <a routerLink="/admin/articulos" class="action-card">
+      <div class="action-icon">📋</div>
+      <h3>Gestionar Artículos</h3>
+      <p>Crear, editar y eliminar artículos</p>
+    </a>
+
+    <a routerLink="/admin/usuarios" class="action-card">
+      <div class="action-icon">👤</div>
+      <h3>Gestionar Usuarios</h3>
+      <p>Administrar usuarios y roles</p>
+    </a>
+
+    <a routerLink="/admin/articulos" class="action-card">
+      <div class="action-icon">📊</div>
+      <h3>Reportes</h3>
+      <p>Ver estadísticas del sistema</p>
+    </a>
+  </div>
+</div>

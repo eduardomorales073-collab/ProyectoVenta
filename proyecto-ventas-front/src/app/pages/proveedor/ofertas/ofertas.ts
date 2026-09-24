@@ -1,9 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
-  imports: [],
-  selector: 'app-ofertas',
-  styleUrl: './ofertas.scss',
+  selector: 'app-proveedor-ofertas',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './ofertas.html',
+  styleUrl: './ofertas.scss'
 })
-export class Ofertas {}
+export class ProveedorOfertasComponent implements OnInit {
+  usuario: any = null;
+
+  constructor(private authService: AuthService) { }
+
+  ngOnInit(): void {
+    this.usuario = this.authService.getUsuario();
+  }
+}

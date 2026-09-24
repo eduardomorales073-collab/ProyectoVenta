@@ -1,9 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
-  imports: [],
-  selector: 'app-pedidos',
-  styleUrl: './pedidos.scss',
+  selector: 'app-empleado-pedidos',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './pedidos.html',
+  styleUrl: './pedidos.scss'
 })
-export class Pedidos {}
+export class EmpleadoPedidosComponent implements OnInit {
+  usuario: any = null;
+
+  constructor(private authService: AuthService) { }
+
+  ngOnInit(): void {
+    this.usuario = this.authService.getUsuario();
+  }
+}
