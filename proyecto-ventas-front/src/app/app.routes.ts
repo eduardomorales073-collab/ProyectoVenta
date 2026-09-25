@@ -11,7 +11,8 @@ import { proveedorGuard } from './guards/proveedor-guard';
 import { UsuariosComponent } from './pages/admin/usuarios/usuarios';
 import { SucursalesComponent } from './pages/admin/sucursales/sucursales';
 import { DepartamentosComponent } from './pages/admin/departamentos/departamentos';
-import { RubrosComponent } from './pages/admin/rubros/rubros'; 
+import { RubrosComponent } from './pages/admin/rubros/rubros';
+import { ProveedoresComponent } from './pages/admin/proveedores/proveedores';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -27,6 +28,7 @@ export const routes: Routes = [
       { path: 'sucursales', component: SucursalesComponent },
       { path: 'departamentos', component: DepartamentosComponent },
       { path: 'rubros', component: RubrosComponent },
+      { path: 'proveedores', component: ProveedoresComponent }, 
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

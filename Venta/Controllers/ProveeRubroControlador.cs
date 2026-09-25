@@ -10,13 +10,16 @@ namespace Venta.Controllers
     public class ProveeRubroControlador : ControllerBase
     {
         private readonly IProvRubService _provRubService;
+
         public ProveeRubroControlador(IProvRubService provRubService) => _provRubService = provRubService;
 
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _provRubService.GetAllsync());
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id) => Ok(await _provRubService.GetByIdAsync(id));
+        // ✅ CAMBIO: 2 parámetros en lugar de 1
+        [HttpGet("{idProveedor}/{idRubro}")]
+        public async Task<IActionResult> GetById(int idProveedor, int idRubro)
+            => Ok(await _provRubService.GetByIdAsync(idProveedor, idRubro));
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProveeRubroDTO dto)
@@ -32,10 +35,19 @@ namespace Venta.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        // ✅ CAMBIO: 2 parámetros en lugar de 1
+        [HttpDelete("{idProveedor}/{idRubro}")]
+        public async Task<IActionResult> Delete(int idProveedor, int idRubro)
         {
-            await _provRubService.DeleteAsync(id);
+            await _provRubService.DeleteAsync(idProveedor, idRubro);
+            return Ok();
+        }
+
+        // ✅ NUEVO: Eliminar todas las asociaciones de un proveedor
+        [HttpDelete("por-proveedor/{idProveedor}")]
+        public async Task<IActionResult> DeleteByProveedor(int idProveedor)
+        {
+            await _provRubService.EliminarPorProveedorAsync(idProveedor);
             return Ok();
         }
     }

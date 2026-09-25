@@ -1,0 +1,81 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <!-- Nombre -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" placeholder="Ej: Tecnología GT" required>
+        <mat-icon matPrefix>business</mat-icon>
+        <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+          El nombre es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Descripción -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput formControlName="descripcion" rows="2"
+                  placeholder="Ej: Proveedor de equipo tecnológico" required></textarea>
+        <mat-icon matPrefix>description</mat-icon>
+        <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
+          La descripción es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Teléfono -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="telefono" placeholder="Ej: 5555-1001" required>
+        <mat-icon matPrefix>phone</mat-icon>
+        <mat-error *ngIf="form.get('telefono')?.hasError('required')">
+          El teléfono es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Dirección -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Dirección</mat-label>
+        <input matInput formControlName="direccion" placeholder="Ej: Zona 1, Guatemala" required>
+        <mat-icon matPrefix>location_on</mat-icon>
+        <mat-error *ngIf="form.get('direccion')?.hasError('required')">
+          La dirección es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Multi-select de Rubros -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Rubros</mat-label>
+        <mat-select formControlName="id_Rubros" multiple required>
+          <mat-option *ngFor="let r of rubros" [value]="r.id">
+            {{ r.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>category</mat-icon>
+        <mat-hint>Selecciona uno o más rubros</mat-hint>
+        <mat-error *ngIf="form.get('id_Rubros')?.hasError('required')">
+          Selecciona al menos un rubro
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Botones -->
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
