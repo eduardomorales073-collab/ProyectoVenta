@@ -6,6 +6,7 @@ using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Aplicacion.Servicios
 {
@@ -21,7 +22,15 @@ namespace Aplicacion.Servicios
         }
         public async Task AddAsync(CreateRolesDTO roles)
         {
-            await _rolesRepositorio.AddAsync(_mapper.Map<Roles>(roles));
+            // 1. Mapear el DTO a la entidad
+            var nuevoRol = _mapper.Map<Roles>(roles);
+
+            // 2. Calcular el siguiente id
+            var todos = await _rolesRepositorio.GetAllasync();
+            nuevoRol.id = todos.Any() ? todos.Max(r => r.id) + 1 : 1;
+
+            // 3. Guardar
+            await _rolesRepositorio.AddAsync(nuevoRol);
         }
 
         public async Task DeleteAsync(int id)

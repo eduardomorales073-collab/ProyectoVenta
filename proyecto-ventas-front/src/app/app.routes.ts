@@ -13,6 +13,8 @@ import { SucursalesComponent } from './pages/admin/sucursales/sucursales';
 import { DepartamentosComponent } from './pages/admin/departamentos/departamentos';
 import { RubrosComponent } from './pages/admin/rubros/rubros';
 import { ProveedoresComponent } from './pages/admin/proveedores/proveedores';
+import { RolesComponent } from './pages/admin/roles/roles';
+import { TiposOrdenComponent } from './pages/admin/tipos-orden/tipos-orden'
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -28,7 +30,9 @@ export const routes: Routes = [
       { path: 'sucursales', component: SucursalesComponent },
       { path: 'departamentos', component: DepartamentosComponent },
       { path: 'rubros', component: RubrosComponent },
-      { path: 'proveedores', component: ProveedoresComponent }, 
+      { path: 'proveedores', component: ProveedoresComponent },
+      { path: 'roles', component: RolesComponent },
+      { path: 'tipos-orden', component: TiposOrdenComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

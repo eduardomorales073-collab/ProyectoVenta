@@ -1,0 +1,72 @@
+<div class="container">
+  <div class="header-actions">
+    <h2>Lista de Tipos de Orden</h2>
+    <button mat-raised-button color="primary" (click)="abrirFormulario(null)">
+      <mat-icon>add</mat-icon>
+      Nuevo Tipo de Orden
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="filtro">
+    <mat-label>Buscar tipo de orden</mat-label>
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="Grande, urgente...">
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  <p *ngIf="cargando">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div class="tabla-container">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
+
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let t">{{ t.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="grande">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tamaño</th>
+        <td mat-cell *matCellDef="let t">
+          <mat-chip [class.chip-grande]="t.grande" [class.chip-normal]="!t.grande">
+            <mat-icon>{{ t.grande ? 'photo_size_select_large' : 'photo_size_select_small' }}</mat-icon>
+            {{ t.grande ? 'Grande' : 'Normal' }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="urgente">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Urgencia</th>
+        <td mat-cell *matCellDef="let t">
+          <mat-chip [class.chip-urgente]="t.urgente" [class.chip-no-urgente]="!t.urgente">
+            <mat-icon>{{ t.urgente ? 'priority_high' : 'schedule' }}</mat-icon>
+            {{ t.urgente ? 'Urgente' : 'No urgente' }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let t">
+          <button mat-icon-button color="accent" (click)="abrirFormulario(t)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmarEliminar(t)" matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>
+
+<app-tipo-orden-form *ngIf="mostrarFormulario"
+                     [tipoOrden]="tipoSeleccionado"
+                     (guardado)="onGuardado()"
+                     (cancelado)="cerrarFormulario()">
+</app-tipo-orden-form>

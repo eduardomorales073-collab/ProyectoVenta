@@ -6,6 +6,7 @@ using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Aplicacion.Servicios
 {
@@ -21,8 +22,15 @@ namespace Aplicacion.Servicios
         }
         public async Task AddAsync(CreateTipoOrdenDTO tipoOrden)
         {
-            await _tipoOrRepositorio.AddAsync(_mapper.Map<Tipo_Orden>(tipoOrden));
-            
+            // 1. Mapear el DTO a la entidad
+            var nuevoTipo = _mapper.Map<Tipo_Orden>(tipoOrden);
+
+            // 2. Calcular el siguiente id
+            var todos = await _tipoOrRepositorio.GetAllasync();
+            nuevoTipo.id = todos.Any() ? todos.Max(t => t.id) + 1 : 1;
+
+            // 3. Guardar
+            await _tipoOrRepositorio.AddAsync(nuevoTipo);
         }
 
         public async Task DeleteAsync(int id)

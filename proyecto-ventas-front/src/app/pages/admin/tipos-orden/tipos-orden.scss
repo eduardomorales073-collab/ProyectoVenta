@@ -1,0 +1,65 @@
+.container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    color: #1e293b;
+  }
+}
+
+.filtro {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.tabla-container {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tabla-mat {
+  width: 100%;
+}
+
+.chip-grande {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.chip-normal {
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+.chip-urgente {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.chip-no-urgente {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+mat-chip mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.error {
+  color: #ef4444;
+  padding: 1rem;
+}

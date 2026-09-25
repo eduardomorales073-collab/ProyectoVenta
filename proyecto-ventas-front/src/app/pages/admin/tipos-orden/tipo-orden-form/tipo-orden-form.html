@@ -1,0 +1,66 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Tipo de Orden' : 'Nuevo Tipo de Orden' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <p class="form-description">
+        Configura las características de este tipo de orden.
+      </p>
+
+      <div class="checkbox-card" [class.activo]="form.get('grande')?.value">
+        <mat-checkbox formControlName="grande" color="primary">
+          <div class="checkbox-content">
+            <mat-icon class="checkbox-icon">photo_size_select_large</mat-icon>
+            <div>
+              <strong>Orden Grande</strong>
+              <p>Marcar si este tipo de orden es de gran tamaño</p>
+            </div>
+          </div>
+        </mat-checkbox>
+      </div>
+
+      <div class="checkbox-card" [class.activo]="form.get('urgente')?.value">
+        <mat-checkbox formControlName="urgente" color="primary">
+          <div class="checkbox-content">
+            <mat-icon class="checkbox-icon">priority_high</mat-icon>
+            <div>
+              <strong>Orden Urgente</strong>
+              <p>Marcar si este tipo de orden requiere atención prioritaria</p>
+            </div>
+          </div>
+        </mat-checkbox>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="preview">
+        <strong>Vista previa:</strong>
+        <mat-chip-set>
+          <mat-chip [highlighted]="form.get('grande')?.value">
+            {{ form.get('grande')?.value ? 'Grande' : 'Normal' }}
+          </mat-chip>
+          <mat-chip [highlighted]="form.get('urgente')?.value">
+            {{ form.get('urgente')?.value ? 'Urgente' : 'No urgente' }}
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

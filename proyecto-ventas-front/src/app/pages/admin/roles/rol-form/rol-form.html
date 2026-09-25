@@ -1,0 +1,56 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Rol' : 'Nuevo Rol' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" placeholder="Ej: Administrador" required>
+        <mat-icon matPrefix>badge</mat-icon>
+        <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+          El nombre es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput formControlName="descripcion" rows="3"
+                  placeholder="Ej: Control total del sistema" required></textarea>
+        <mat-icon matPrefix>description</mat-icon>
+        <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
+          La descripción es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <div class="toggle-container">
+        <mat-slide-toggle formControlName="externo" color="primary">
+          {{ form.get('externo')?.value ? 'Rol Externo' : 'Rol Interno' }}
+        </mat-slide-toggle>
+        <p class="toggle-hint">
+          {{
+ form.get('externo')?.value
+              ? 'Roles externos: Proveedores, clientes, etc.'
+              : 'Roles internos: Administradores, empleados, etc.'
+          }}
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
