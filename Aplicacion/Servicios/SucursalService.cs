@@ -5,7 +5,9 @@ using Aplicacion.Repositorio;
 using AutoMapper;
 using System;
 using System.Collections.Generic;
+using System.Linq;                  // ← AÑADIR
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Aplicacion.Servicios
 {
@@ -13,15 +15,24 @@ namespace Aplicacion.Servicios
     {
         private readonly SucursalRepositorio _sucursalRepositorio;
         private readonly IMapper _mapper;
+
         public SucursalService(SucursalRepositorio sucursalRepository, IMapper mapper)
         {
             _mapper = mapper;
             _sucursalRepositorio = sucursalRepository;
-
         }
+
         public async Task AddAsync(CreateSucursalDTO sucursal)
         {
-            await _sucursalRepositorio.AddAsync(_mapper.Map<Sucursal>(sucursal));
+            // 1. Mapear el DTO a la entidad
+            var nuevaSucursal = _mapper.Map<Sucursal>(sucursal);
+
+            // 2. Calcular el siguiente id
+            var todos = await _sucursalRepositorio.GetAllasync();
+            nuevaSucursal.id = todos.Any() ? todos.Max(s => s.id) + 1 : 1;
+
+            // 3. Guardar
+            await _sucursalRepositorio.AddAsync(nuevaSucursal);
         }
 
         public async Task DeleteAsync(int id)
@@ -41,7 +52,7 @@ namespace Aplicacion.Servicios
 
         public async Task UpdateAsync(UpdateSucursalDTO sucursal)
         {
-            await _sucursalRepositorio.UpdateAsync(_mapper.Map<Sucursal>(sucursal)  );
+            await _sucursalRepositorio.UpdateAsync(_mapper.Map<Sucursal>(sucursal));
         }
     }
 }

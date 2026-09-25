@@ -9,6 +9,7 @@ import { adminGuard } from './guards/admin-guard';
 import { empleadoGuard } from './guards/empleado-guard';
 import { proveedorGuard } from './guards/proveedor-guard';
 import { UsuariosComponent } from './pages/admin/usuarios/usuarios';
+import { SucursalesComponent } from './pages/admin/sucursales/sucursales'; 
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -20,7 +21,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'articulos', component: ArticulosComponent },
-      { path: 'usuarios', component: UsuariosComponent },   // ← ESTA
+      { path: 'usuarios', component: UsuariosComponent },
+      { path: 'sucursales', component: SucursalesComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

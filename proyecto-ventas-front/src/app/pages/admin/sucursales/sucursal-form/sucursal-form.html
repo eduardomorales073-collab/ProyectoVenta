@@ -1,0 +1,35 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Sucursal' : 'Nueva Sucursal' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" placeholder="Ej: Sucursal Central" required>
+        <mat-icon matPrefix>business</mat-icon>
+        <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+          El nombre es obligatorio
+        </mat-error>
+        <mat-error *ngIf="form.get('nombre')?.hasError('maxlength')">
+          Máximo 100 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
