@@ -8,6 +8,8 @@
 
   <!-- Menú de navegación (autenticado y no en login) -->
   <nav class="nav" *ngIf="estaAutenticado() && !enLogin()">
+
+    <!-- ADMINISTRADOR -->
     <ng-container *ngIf="esAdmin">
       <a mat-button routerLink="/admin/dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon>
@@ -21,13 +23,17 @@
         <mat-icon>people</mat-icon>
         Usuarios
       </a>
+      <a mat-button routerLink="/admin/departamentos" routerLinkActive="active-link">
+        <mat-icon>business_center</mat-icon>
+        Departamentos
+      </a>
       <a mat-button routerLink="/admin/sucursales" routerLinkActive="active-link">
-        <!-- ← AÑADIR -->
         <mat-icon>business</mat-icon>
         Sucursales
       </a>
     </ng-container>
 
+    <!-- EMPLEADO -->
     <ng-container *ngIf="esEmpleado">
       <a mat-button routerLink="/empleado/pedidos" routerLinkActive="active-link">
         <mat-icon>assignment</mat-icon>
@@ -39,6 +45,7 @@
       </a>
     </ng-container>
 
+    <!-- PROVEEDOR -->
     <ng-container *ngIf="esProveedor">
       <a mat-button routerLink="/proveedor/ofertas" routerLinkActive="active-link">
         <mat-icon>local_offer</mat-icon>

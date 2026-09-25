@@ -9,7 +9,8 @@ import { adminGuard } from './guards/admin-guard';
 import { empleadoGuard } from './guards/empleado-guard';
 import { proveedorGuard } from './guards/proveedor-guard';
 import { UsuariosComponent } from './pages/admin/usuarios/usuarios';
-import { SucursalesComponent } from './pages/admin/sucursales/sucursales'; 
+import { SucursalesComponent } from './pages/admin/sucursales/sucursales';
+import { DepartamentosComponent } from './pages/admin/departamentos/departamentos'; 
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -23,6 +24,7 @@ export const routes: Routes = [
       { path: 'articulos', component: ArticulosComponent },
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'sucursales', component: SucursalesComponent },
+      { path: 'departamentos', component: DepartamentosComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
