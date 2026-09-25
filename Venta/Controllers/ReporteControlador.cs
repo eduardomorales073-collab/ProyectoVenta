@@ -1,15 +1,19 @@
 ﻿using Aplicacion.DTO;
 using Infraestructura.Repositorio;
+using Microsoft.AspNetCore.Authorization;  // ← AQUÍ ESTÁ LA CLAVE
 using Microsoft.AspNetCore.Mvc;
 
 namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Administrador")]  // ← Ahora sí funciona
     public class ReporteControlador : ControllerBase
     {
         private readonly ReporteRepositorio _reporteRepositorio;
-        public ReporteControlador(ReporteRepositorio reporteRepositorio) => _reporteRepositorio = reporteRepositorio;
+
+        public ReporteControlador(ReporteRepositorio reporteRepositorio)
+            => _reporteRepositorio = reporteRepositorio;
 
         [HttpGet("historial-articulo/{idArticulo}")]
         public async Task<IActionResult> HistorialPorArticulo(int idArticulo) =>

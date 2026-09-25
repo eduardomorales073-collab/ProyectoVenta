@@ -1,0 +1,32 @@
+<div class="reporte-container">
+  <div class="header-section">
+    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>
+        <mat-icon>speed</mat-icon>
+        Eficiencia del Proceso
+      </h1>
+      <p>Tiempo promedio (días) desde la orden hasta la adjudicación</p>
+    </div>
+  </div>
+
+  <div *ngIf="cargando" class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <div *ngIf="!cargando && eficiencia" class="eficiencia-card">
+    <mat-card class="big-card">
+      <mat-card-content>
+        <mat-icon class="main-icon" [style.color]="colorPromedio">speed</mat-icon>
+        <h1 class="numero" [style.color]="colorPromedio">
+          {{ eficiencia.promedioDias | number:'1.0-2' }}
+        </h1>
+        <p class="unidad">días en promedio</p>
+        <p class="descripcion">{{ descripcionPromedio }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

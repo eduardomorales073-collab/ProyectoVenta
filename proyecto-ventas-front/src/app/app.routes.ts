@@ -16,6 +16,11 @@ import { ProveedoresComponent } from './pages/admin/proveedores/proveedores';
 import { RolesComponent } from './pages/admin/roles/roles';
 import { TiposOrdenComponent } from './pages/admin/tipos-orden/tipos-orden';
 import { PerfilComponent } from './pages/perfil/perfil';
+import { ReportesComponent } from './pages/admin/reportes/reportes';
+import { OrdenesActivas } from './pages/admin/reportes/ordenes-activas/ordenes-activas';
+import { PedidosPendientes } from './pages/admin/reportes/pedidos-pendientes/pedidos-pendientes';
+import { EficienciaProceso } from './pages/admin/reportes/eficiencia-proceso/eficiencia-proceso';
+import { RankingProveedores } from './pages/admin/reportes/ranking-proveedores/ranking-proveedores';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -34,6 +39,14 @@ export const routes: Routes = [
       { path: 'proveedores', component: ProveedoresComponent },
       { path: 'roles', component: RolesComponent },
       { path: 'tipos-orden', component: TiposOrdenComponent },
+
+      // ===== REPORTES =====
+      { path: 'reportes', component: ReportesComponent },
+      { path: 'reportes/ordenes-activas', component: OrdenesActivas },
+      { path: 'reportes/pedidos-pendientes', component: PedidosPendientes },
+      { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
+      { path: 'reportes/ranking-proveedores', component: RankingProveedores },
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -60,7 +73,7 @@ export const routes: Routes = [
     ]
   },
 
-  // ===== COMÚN (cualquier usuario autenticado) =====
+  // ===== COMÚN =====
   {
     path: 'articulos',
     component: ArticulosComponent,

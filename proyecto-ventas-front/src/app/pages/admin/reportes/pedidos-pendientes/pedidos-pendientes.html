@@ -1,0 +1,49 @@
+<div class="reporte-container">
+  <div class="header-section">
+    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>
+        <mat-icon>pending_actions</mat-icon>
+        Pedidos Pendientes
+      </h1>
+      <p>Pedidos internos sin asignar a una orden de compra</p>
+    </div>
+  </div>
+
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div *ngIf="cargando" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando pedidos...</p>
+      </div>
+
+      <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
+        <mat-icon>check_circle</mat-icon>
+        <h3>No hay pedidos pendientes</h3>
+        <p>Todos los pedidos internos están asignados a una orden de compra.</p>
+      </div>
+
+      <table mat-table [dataSource]="pedidos" *ngIf="!cargando && pedidos.length > 0">
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let p">{{ p.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="idDepartamento">
+          <th mat-header-cell *matHeaderCellDef>Departamento</th>
+          <td mat-cell *matCellDef="let p">Departamento #{{ p.idDepartamento }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="fechaSolicitada">
+          <th mat-header-cell *matHeaderCellDef>Fecha Solicitada</th>
+          <td mat-cell *matCellDef="let p">{{ p.fechaSolicitada | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
