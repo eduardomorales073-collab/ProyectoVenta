@@ -13,6 +13,7 @@ import { Articulo, ArticuloService } from '../services/articulo.service';
 import { ArticuloFormComponent } from './articulo-form/articulo-form';
 import { AuthService } from '../services/auth.service';
 import { NotificacionService } from '../services/notificacion';
+import { ConfirmService } from '../services/confirm';
 
 @Component({
   selector: 'app-articulos',
@@ -49,7 +50,8 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
     private articuloService: ArticuloService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private notificacion: NotificacionService 
+    private notificacion: NotificacionService,
+    private confirm: ConfirmService 
   ) { }
 
   ngOnInit(): void {
@@ -129,16 +131,18 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
   }
 
   confirmarEliminar(articulo: Articulo): void {
-    if (!confirm(`¿Eliminar "${articulo.nombre}"?`)) return;
+    this.confirm.eliminar(articulo.nombre).subscribe(confirmado => {
+      if (!confirmado) return;
 
-    this.articuloService.eliminar(articulo.id).subscribe({
-      next: () => {
-        this.notificacion.exito(`Artículo "${articulo.nombre}" eliminado correctamente`);  // ← CAMBIO
-        this.cargar();
-      },
-      error: (err: any) => {
-        this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);      // ← CAMBIO
-      }
+      this.articuloService.eliminar(articulo.id).subscribe({
+        next: () => {
+          this.notificacion.exito(`Artículo "${articulo.nombre}" eliminado correctamente`);
+          this.cargar();
+        },
+        error: (err: any) => {
+          this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);
+        }
+      });
     });
   }
 }

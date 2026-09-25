@@ -14,7 +14,10 @@ import { UsuarioService } from '../../../services/usuario.service';
 import { Usuario } from '../../../models/usuario.model';
 import { UsuarioFormComponent } from './usuario-form/usuario-form';
 import { PermisosModalComponent } from './permisos-modal/permisos-modal';
-import { NotificacionService } from '../../../services/notificacion'; 
+import { NotificacionService } from '../../../services/notificacion';
+import { ConfirmService } from '../../../services/confirm';   
+
+
 
 @Component({
   selector: 'app-usuarios',
@@ -55,7 +58,8 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   constructor(
     private usuarioService: UsuarioService,
     private cdr: ChangeDetectorRef,
-    private notificacion: NotificacionService
+    private notificacion: NotificacionService,
+    private confirm: ConfirmService  
   ) { }
 
   ngOnInit(): void {
@@ -124,16 +128,18 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
   
 
   confirmarEliminar(usuario: Usuario): void {
-    if (!confirm(`¿Eliminar a "${usuario.nombre}"?`)) return;
+    this.confirm.eliminar(usuario.nombre).subscribe(confirmado => {
+      if (!confirmado) return;
 
-    this.usuarioService.eliminar(usuario.id).subscribe({
-      next: () => {
-        this.notificacion.exito(`Usuario "${usuario.nombre}" eliminado correctamente`);   // ← CAMBIO
-        this.cargar();
-      },
-      error: (err: any) => {
-        this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);     // ← CAMBIO
-      }
+      this.usuarioService.eliminar(usuario.id).subscribe({
+        next: () => {
+          this.notificacion.exito(`Usuario "${usuario.nombre}" eliminado correctamente`);
+          this.cargar();
+        },
+        error: (err: any) => {
+          this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);
+        }
+      });
     });
   }
 
