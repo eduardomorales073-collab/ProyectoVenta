@@ -1,0 +1,138 @@
+<div class="reporte-container">
+  <div class="header-section">
+    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>
+        <mat-icon>trending_up</mat-icon>
+        Variación de Precios
+      </h1>
+      <p>Evolución de precios de oferta por artículo y proveedor</p>
+    </div>
+  </div>
+
+  <mat-card class="filtro-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="buscar()" class="filtro-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Artículo</mat-label>
+          <mat-select formControlName="idArticulo">
+            <mat-option *ngFor="let a of articulos" [value]="a.id">
+              {{ a.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>inventory_2</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Proveedor</mat-label>
+          <mat-select formControlName="idProveedor">
+            <mat-option *ngFor="let p of proveedores" [value]="p.id">
+              {{ p.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>local_shipping</mat-icon>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+          <mat-icon>search</mat-icon>
+          Buscar
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card" *ngIf="buscado">
+    <mat-card-header *ngIf="variaciones.length > 0">
+      <mat-card-title>
+        <mat-icon>show_chart</mat-icon>
+        {{ articuloSeleccionado }} - {{ proveedorSeleccionado }}
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="cargando" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando variaciones...</p>
+      </div>
+
+      <div *ngIf="!cargando && variaciones.length === 0" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <h3>No hay variaciones registradas</h3>
+        <p>Este artículo no tiene historial de precios con este proveedor.</p>
+      </div>
+
+      <div *ngIf="!cargando && variaciones.length > 0" class="stats-grid">
+        <div class="stat-min">
+          <mat-icon>arrow_downward</mat-icon>
+          <span class="stat-label">Mínimo</span>
+          <span class="stat-value">Q {{ precioMinimo | number:'1.2-2' }}</span>
+        </div>
+        <div class="stat-prom">
+          <mat-icon>trending_flat</mat-icon>
+          <span class="stat-label">Promedio</span>
+          <span class="stat-value">Q {{ precioPromedio | number:'1.2-2' }}</span>
+        </div>
+        <div class="stat-max">
+          <mat-icon>arrow_upward</mat-icon>
+          <span class="stat-label">Máximo</span>
+          <span class="stat-value">Q {{ precioMaximo | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <table mat-table [dataSource]="variaciones" *ngIf="!cargando && variaciones.length > 0">
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let v; let i = index">
+            <mat-icon class="icon-mini">event</mat-icon>
+            {{ v.fecha | date:'dd/MM/yyyy' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="precio">
+          <th mat-header-cell *matHeaderCellDef>Precio</th>
+          <td mat-cell *matCellDef="let v">
+            <span class="precio">Q {{ v.precio | number:'1.2-2' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="variacion">
+          <th mat-header-cell *matHeaderCellDef>Variación</th>
+          <td mat-cell *matCellDef="let v; let i = index">
+            <div *ngIf="i === 0" class="variacion-base">
+              <mat-icon>fiber_new</mat-icon>
+              <span>Precio inicial</span>
+            </div>
+            <div *ngIf="i > 0" class="variacion"
+                 [class.sube]="getTendencia(i) === 'sube'"
+                 [class.baja]="getTendencia(i) === 'baja'"
+                 [class.igual]="getTendencia(i) === 'igual'">
+              <mat-icon *ngIf="getTendencia(i) === 'sube'">trending_up</mat-icon>
+              <mat-icon *ngIf="getTendencia(i) === 'baja'">trending_down</mat-icon>
+              <mat-icon *ngIf="getTendencia(i) === 'igual'">trending_flat</mat-icon>
+              <span class="monto-variacion">
+                {{ getVariacion(i) > 0 ? '+' : '' }}{{ getVariacion(i) | number:'1.2-2' }}
+              </span>
+              <span class="porcentaje-variacion">
+                ({{ getVariacionPorcentaje(i) > 0 ? '+' : '' }}{{ getVariacionPorcentaje(i) | number:'1.1-1' }}%)
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card" *ngIf="!buscado">
+    <mat-card-content>
+      <div class="empty-state">
+        <mat-icon>search</mat-icon>
+        <h3>Selecciona un artículo y proveedor</h3>
+        <p>Elige un artículo y un proveedor, luego haz clic en "Buscar".</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
