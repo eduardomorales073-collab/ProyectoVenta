@@ -76,6 +76,49 @@
   <!-- Gráficos -->
   <div class="charts-grid">
 
+    <!-- Artículos recientes -->
+    <div class="charts-grid">
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>bar_chart</mat-icon>
+            Artículos Recientes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas #graficoArticulos></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>inventory_2</mat-icon>
+            Últimos Artículos
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="recientes-list">
+            <div class="reciente-item" *ngFor="let a of articulosRecientes">
+              <div class="reciente-icon">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+              <div class="reciente-info">
+                <div class="reciente-nombre">{{ a.nombre }}</div>
+                <div class="reciente-desc">{{ a.descripcion }}</div>
+              </div>
+              <div class="reciente-id">#{{ a.id }}</div>
+            </div>
+            <p *ngIf="articulosRecientes.length === 0" class="empty">
+              No hay artículos
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
     <!-- Gráfico de usuarios por rol -->
     <mat-card class="chart-card">
       <mat-card-header>
@@ -87,6 +130,21 @@
       <mat-card-content>
         <div class="chart-container">
           <canvas #graficoRoles></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Gráfico de usuarios activos -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>check_circle</mat-icon>
+          Estado de Usuarios
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <canvas #graficoActivos></canvas>
         </div>
       </mat-card-content>
     </mat-card>
