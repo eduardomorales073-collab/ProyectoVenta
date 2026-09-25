@@ -21,6 +21,8 @@ import { OrdenesActivas } from './pages/admin/reportes/ordenes-activas/ordenes-a
 import { PedidosPendientes } from './pages/admin/reportes/pedidos-pendientes/pedidos-pendientes';
 import { EficienciaProceso } from './pages/admin/reportes/eficiencia-proceso/eficiencia-proceso';
 import { RankingProveedores } from './pages/admin/reportes/ranking-proveedores/ranking-proveedores';
+import { HistorialArticulo } from './pages/admin/reportes/historial-articulo/historial-articulo';
+import { OfertasOrden } from './pages/admin/reportes/ofertas-orden/ofertas-orden';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -46,7 +48,8 @@ export const routes: Routes = [
       { path: 'reportes/pedidos-pendientes', component: PedidosPendientes },
       { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
       { path: 'reportes/ranking-proveedores', component: RankingProveedores },
-
+      { path: 'reportes/historial-articulo', component: HistorialArticulo },
+      { path: 'reportes/ofertas-orden', component: OfertasOrden },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
