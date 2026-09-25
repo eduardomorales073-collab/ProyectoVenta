@@ -1,13 +1,29 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../services/auth.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule,
+    MatBadgeModule
+  ],
   templateUrl: './header.html',
   styleUrl: './header.scss'
 })
@@ -16,7 +32,7 @@ export class HeaderComponent implements OnInit {
   private router = inject(Router);
 
   estaAutenticado = signal(false);
-  usuario = signal<{ nombre?: string; rol?: string; idRol?: number } | null>(null);
+  usuario = signal<{ nombre?: string; email?: string; rol?: string; idRol?: number } | null>(null);   // ← CAMBIO
   enLogin = signal(false);
 
   ngOnInit(): void {
@@ -35,7 +51,6 @@ export class HeaderComponent implements OnInit {
     this.usuario.set(this.authService.getUsuario());
   }
 
-  // Getters reactivos para el template
   get esAdmin(): boolean {
     return this.usuario()?.idRol === 1;
   }
@@ -55,6 +70,16 @@ export class HeaderComponent implements OnInit {
       case 3: return 'Proveedor';
       default: return '';
     }
+  }
+
+  get iniciales(): string {
+    const nombre = this.usuario()?.nombre || '';
+    return nombre
+      .split(' ')
+      .map(p => p[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
   }
 
   cerrarSesion(): void {

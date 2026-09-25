@@ -1,28 +1,49 @@
 .dashboard-container {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
+/* ===== BIENVENIDA ===== */
 .welcome-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 2rem;
-  border-radius: 1rem;
+  border-radius: 1rem !important;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
 
-  h1 {
-    margin: 0 0 0.5rem;
-    font-size: 1.75rem;
+  mat-card-content {
+    padding: 2rem !important;
   }
 
-  p {
-    margin: 0;
-    opacity: 0.9;
+  .welcome-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+
+    .welcome-icon {
+      font-size: 5rem;
+      width: 5rem;
+      height: 5rem;
+      opacity: 0.3;
+    }
   }
 }
 
+/* ===== ESTADÍSTICAS ===== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -31,37 +52,175 @@
 }
 
 .stat-card {
-  background: #fff;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  border-radius: 1rem !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
   }
 
-  .stat-icon {
-    font-size: 2.5rem;
+  mat-card-content {
+    padding: 1.5rem !important;
+  }
+
+  .stat-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stat-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 2rem;
+      width: 2rem;
+      height: 2rem;
+      color: white;
+    }
   }
 
   .stat-info {
     h3 {
       margin: 0;
       font-size: 2rem;
+      font-weight: 700;
       color: #1e293b;
+      line-height: 1;
     }
 
     p {
-      margin: 0;
+      margin: 0.25rem 0 0;
       color: #64748b;
       font-size: 0.875rem;
+      font-weight: 500;
     }
   }
+
+  &.articulos .stat-icon-wrapper {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+
+  &.usuarios .stat-icon-wrapper {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  &.roles .stat-icon-wrapper {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  &.sucursales .stat-icon-wrapper {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  }
+}
+
+/* ===== GRÁFICOS ===== */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  border-radius: 1rem !important;
+
+  mat-card-header {
+    padding: 1.5rem 1.5rem 0 !important;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem !important;
+      color: #1e293b;
+
+      mat-icon {
+        color: #667eea;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 1rem 1.5rem 1.5rem !important;
+  }
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+/* ===== RESUMEN ===== */
+.resumen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.resumen-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+    transform: translateX(4px);
+  }
+
+  mat-icon {
+    font-size: 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .resumen-label {
+    flex: 1;
+    font-weight: 500;
+    color: #334155;
+  }
+
+  .resumen-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  &.admin mat-icon {
+    color: #667eea;
+  }
+
+  &.empleado mat-icon {
+    color: #10b981;
+  }
+
+  &.proveedor mat-icon {
+    color: #f59e0b;
+  }
+}
+
+/* ===== ACCIONES ===== */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 2rem 0 1rem;
 }
 
 .actions-grid {
@@ -71,33 +230,83 @@
 }
 
 .action-card {
-  background: #fff;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  text-decoration: none;
-  color: inherit;
-  border: 2px solid #e2e8f0;
+  border-radius: 1rem !important;
+  cursor: pointer;
   transition: all 0.2s;
+  border: 2px solid #e2e8f0;
 
   &:hover {
-    border-color: #3b82f6;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    border-color: #667eea;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15) !important;
+
+    .action-icon-wrapper {
+      transform: scale(1.1);
+    }
   }
 
-  .action-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+  mat-card-content {
+    padding: 1.5rem !important;
   }
 
-  h3 {
-    margin: 0 0 0.25rem;
-    color: #1e293b;
-  }
+  .action-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
 
-  p {
-    margin: 0;
-    color: #64748b;
-    font-size: 0.875rem;
+    .action-icon-wrapper {
+      width: 70px;
+      height: 70px;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+
+      mat-icon {
+        font-size: 2.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        color: white;
+      }
+
+      &.articulos {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+      }
+
+      &.usuarios {
+        background: linear-gradient(135deg, #10b981, #059669);
+      }
+
+      &.reportes {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+      }
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+
+    button {
+      margin-top: 0.5rem;
+
+      mat-icon {
+        margin-right: 0.25rem;
+        font-size: 1.1rem;
+        width: 1.1rem;
+        height: 1.1rem;
+      }
+    }
   }
 }

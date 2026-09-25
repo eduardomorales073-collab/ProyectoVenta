@@ -1,60 +1,176 @@
 <div class="dashboard-container">
-  <div class="welcome-card">
-    <h1>👋 ¡Bienvenido, {{ usuario?.nombre }}!</h1>
-    <p>Panel de control del Administrador</p>
-  </div>
 
+  <!-- Bienvenida -->
+  <mat-card class="welcome-card">
+    <mat-card-content>
+      <div class="welcome-content">
+        <div>
+          <h1>👋 ¡Bienvenido, {{ usuario?.nombre }}!</h1>
+          <p>Panel de control del Administrador</p>
+        </div>
+        <mat-icon class="welcome-icon">admin_panel_settings</mat-icon>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tarjetas de estadísticas -->
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">📦</div>
-      <div class="stat-info">
-        <h3>{{ totalArticulos }}</h3>
-        <p>Artículos</p>
-      </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-info">
-        <h3>10</h3>
-        <p>Usuarios</p>
-      </div>
-    </div>
+    <mat-card class="stat-card articulos">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalArticulos }}</h3>
+            <p>Artículos</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
-    <div class="stat-card">
-      <div class="stat-icon">🔑</div>
-      <div class="stat-info">
-        <h3>3</h3>
-        <p>Roles</p>
-      </div>
-    </div>
+    <mat-card class="stat-card usuarios">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalUsuarios }}</h3>
+            <p>Usuarios</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
-    <div class="stat-card">
-      <div class="stat-icon">🏢</div>
-      <div class="stat-info">
-        <h3>0</h3>
-        <p>Sucursales</p>
-      </div>
-    </div>
+    <mat-card class="stat-card roles">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>vpn_key</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalRoles }}</h3>
+            <p>Roles</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card sucursales">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>business</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalSucursales }}</h3>
+            <p>Sucursales</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
 
+  <!-- Gráficos -->
+  <div class="charts-grid">
+
+    <!-- Gráfico de usuarios por rol -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>pie_chart</mat-icon>
+          Usuarios por Rol
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <canvas #graficoRoles></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Resumen -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>bar_chart</mat-icon>
+          Resumen de Usuarios
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="resumen-list">
+          <div class="resumen-item admin">
+            <mat-icon>admin_panel_settings</mat-icon>
+            <span class="resumen-label">Administradores</span>
+            <span class="resumen-value">{{ usuariosAdmin }}</span>
+          </div>
+          <div class="resumen-item empleado">
+            <mat-icon>badge</mat-icon>
+            <span class="resumen-label">Empleados</span>
+            <span class="resumen-value">{{ usuariosEmpleado }}</span>
+          </div>
+          <div class="resumen-item proveedor">
+            <mat-icon>business</mat-icon>
+            <span class="resumen-label">Proveedores</span>
+            <span class="resumen-value">{{ usuariosProveedor }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Acciones rápidas -->
+  <h2 class="section-title">Acciones Rápidas</h2>
   <div class="actions-grid">
-    <a routerLink="/admin/articulos" class="action-card">
-      <div class="action-icon">📋</div>
-      <h3>Gestionar Artículos</h3>
-      <p>Crear, editar y eliminar artículos</p>
-    </a>
 
-    <a routerLink="/admin/usuarios" class="action-card">
-      <div class="action-icon">👤</div>
-      <h3>Gestionar Usuarios</h3>
-      <p>Administrar usuarios y roles</p>
-    </a>
+    <mat-card class="action-card" routerLink="/admin/articulos">
+      <mat-card-content>
+        <div class="action-content">
+          <div class="action-icon-wrapper articulos">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <h3>Gestionar Artículos</h3>
+          <p>Crear, editar y eliminar artículos</p>
+          <button mat-raised-button color="primary">
+            <mat-icon>arrow_forward</mat-icon>
+            Ir
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
-    <a routerLink="/admin/articulos" class="action-card">
-      <div class="action-icon">📊</div>
-      <h3>Reportes</h3>
-      <p>Ver estadísticas del sistema</p>
-    </a>
+    <mat-card class="action-card" routerLink="/admin/usuarios">
+      <mat-card-content>
+        <div class="action-content">
+          <div class="action-icon-wrapper usuarios">
+            <mat-icon>people</mat-icon>
+          </div>
+          <h3>Gestionar Usuarios</h3>
+          <p>Administrar usuarios y roles</p>
+          <button mat-raised-button color="primary">
+            <mat-icon>arrow_forward</mat-icon>
+            Ir
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="action-card">
+      <mat-card-content>
+        <div class="action-content">
+          <div class="action-icon-wrapper reportes">
+            <mat-icon>bar_chart</mat-icon>
+          </div>
+          <h3>Reportes</h3>
+          <p>Ver estadísticas del sistema</p>
+          <button mat-raised-button color="primary">
+            <mat-icon>arrow_forward</mat-icon>
+            Ir
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>

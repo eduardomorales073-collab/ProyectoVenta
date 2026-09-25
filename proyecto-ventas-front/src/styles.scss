@@ -62,3 +62,12 @@ body {
   --mdc-snackbar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #ffffff;
 }
+header-toolbar {
+  --mdc-filled-text-field-container-color: transparent;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: white !important;
+
+  a, button, span, mat-icon, .logo-text, .user-name, .user-role {
+    color: white !important;
+  }
+}

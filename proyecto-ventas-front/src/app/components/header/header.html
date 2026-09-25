@@ -1,39 +1,80 @@
-<header class="header">
-  <div class="header-container">
-    <a routerLink="/" class="logo">
-      <span class="logo-icon">📦</span>
-      <span class="logo-text">SistemaVentas</span>
-    </a>
+<mat-toolbar color="primary" class="header-toolbar">
 
-    <nav class="nav" *ngIf="estaAutenticado() && !enLogin()">
-      <!-- Menú de Administrador -->
-      <ng-container *ngIf="esAdmin">
-        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
-        <a routerLink="/admin/articulos" routerLinkActive="active" class="nav-link">Artículos</a>
-        <a routerLink="/admin/usuarios" routerLinkActive="active" class="nav-link">Usuarios</a>
-      </ng-container>
+  <!-- Logo -->
+  <a routerLink="/" class="logo">
+    <mat-icon class="logo-icon">inventory_2</mat-icon>
+    <span class="logo-text">SistemaVentas</span>
+  </a>
 
-      <!-- Menú de Empleado -->
-      <ng-container *ngIf="esEmpleado">
-        <a routerLink="/empleado/pedidos" routerLinkActive="active" class="nav-link">Pedidos</a>
-        <a routerLink="/empleado/articulos" routerLinkActive="active" class="nav-link">Artículos</a>
-      </ng-container>
+  <!-- Menú de navegación (autenticado y no en login) -->
+  <nav class="nav" *ngIf="estaAutenticado() && !enLogin()">
+    <ng-container *ngIf="esAdmin">
+      <a mat-button routerLink="/admin/dashboard" routerLinkActive="active-link">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a mat-button routerLink="/admin/articulos" routerLinkActive="active-link">
+        <mat-icon>inventory_2</mat-icon>
+        Artículos
+      </a>
+      <a mat-button routerLink="/admin/usuarios" routerLinkActive="active-link">
+        <mat-icon>people</mat-icon>
+        Usuarios
+      </a>
+    </ng-container>
 
-      <!-- Menú de Proveedor -->
-      <!-- Menú de Proveedor -->
-      <ng-container *ngIf="esProveedor">
-        <a routerLink="/proveedor/ofertas" routerLinkActive="active" class="nav-link">Mis Ofertas</a>
-        <a routerLink="/proveedor/articulos" routerLinkActive="active" class="nav-link">Artículos</a>
-      </ng-container>
-    </nav>
+    <ng-container *ngIf="esEmpleado">
+      <a mat-button routerLink="/empleado/pedidos" routerLinkActive="active-link">
+        <mat-icon>assignment</mat-icon>
+        Pedidos
+      </a>
+      <a mat-button routerLink="/empleado/articulos" routerLinkActive="active-link">
+        <mat-icon>inventory_2</mat-icon>
+        Artículos
+      </a>
+    </ng-container>
 
-    <div class="user-section" *ngIf="estaAutenticado() && !enLogin()">
-      <span class="user-name">
-        👤 {{ usuario()?.nombre }} <small>({{ nombreRol }})</small>
-      </span>
-      <button class="btn-logout" (click)="cerrarSesion()">
-        Cerrar sesión
+    <ng-container *ngIf="esProveedor">
+      <a mat-button routerLink="/proveedor/ofertas" routerLinkActive="active-link">
+        <mat-icon>local_offer</mat-icon>
+        Mis Ofertas
+      </a>
+      <a mat-button routerLink="/proveedor/articulos" routerLinkActive="active-link">
+        <mat-icon>inventory_2</mat-icon>
+        Artículos
+      </a>
+    </ng-container>
+  </nav>
+
+  <!-- Espaciador -->
+  <span class="spacer"></span>
+
+  <!-- Usuario (autenticado y no en login) -->
+  <div class="user-section" *ngIf="estaAutenticado() && !enLogin()">
+    <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+      <div class="avatar">{{ iniciales }}</div>
+      <div class="user-info">
+        <span class="user-name">{{ usuario()?.nombre }}</span>
+        <span class="user-role">{{ nombreRol }}</span>
+      </div>
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <div class="menu-header">
+        <div class="avatar-large">{{ iniciales }}</div>
+        <div class="menu-user-info">
+          <strong>{{ usuario()?.nombre }}</strong>
+          <span>{{ usuario()?.email }}</span>
+          <span class="menu-role">{{ nombreRol }}</span>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="cerrarSesion()">
+        <mat-icon color="warn">logout</mat-icon>
+        <span>Cerrar sesión</span>
       </button>
-    </div>
+    </mat-menu>
   </div>
-</header>
+
+</mat-toolbar>
