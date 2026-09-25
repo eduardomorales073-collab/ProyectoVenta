@@ -98,6 +98,14 @@
         </div>
       </div>
       <mat-divider></mat-divider>
+
+      <!-- ✅ NUEVO: Enlace a Mi Perfil -->
+      <button mat-menu-item routerLink="/perfil">
+        <mat-icon>person</mat-icon>
+        <span>Mi Perfil</span>
+      </button>
+
+      <mat-divider></mat-divider>
       <button mat-menu-item (click)="cerrarSesion()">
         <mat-icon color="warn">logout</mat-icon>
         <span>Cerrar sesión</span>

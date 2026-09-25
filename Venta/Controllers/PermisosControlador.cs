@@ -1,12 +1,14 @@
 ﻿// PermisosControlador.cs
 using Aplicacion.DTO;
 using Aplicacion.Interfaz;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Administrador")]  // ← NUEVO
     public class PermisosControlador : ControllerBase
     {
         private readonly IPermisosService _permisosService;

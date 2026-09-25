@@ -14,7 +14,8 @@ import { DepartamentosComponent } from './pages/admin/departamentos/departamento
 import { RubrosComponent } from './pages/admin/rubros/rubros';
 import { ProveedoresComponent } from './pages/admin/proveedores/proveedores';
 import { RolesComponent } from './pages/admin/roles/roles';
-import { TiposOrdenComponent } from './pages/admin/tipos-orden/tipos-orden'
+import { TiposOrdenComponent } from './pages/admin/tipos-orden/tipos-orden';
+import { PerfilComponent } from './pages/perfil/perfil';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -59,10 +60,15 @@ export const routes: Routes = [
     ]
   },
 
-  // ===== COMÚN =====
+  // ===== COMÚN (cualquier usuario autenticado) =====
   {
     path: 'articulos',
     component: ArticulosComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'perfil',
+    component: PerfilComponent,
     canActivate: [authGuard]
   },
 

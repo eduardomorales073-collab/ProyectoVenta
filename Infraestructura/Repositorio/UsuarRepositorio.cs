@@ -86,5 +86,13 @@ namespace Infraestructura.Repositorio
             return true;
         }
 
+        public override async Task<bool> ExisteEmailAsync(string email, int? excludeId = null)
+        {
+            var query = _context.Usuarios.Where(u => u.email == email);
+            if (excludeId.HasValue)
+                query = query.Where(u => u.id != excludeId.Value);
+            return await query.AnyAsync();
+        }
+
     }
 }

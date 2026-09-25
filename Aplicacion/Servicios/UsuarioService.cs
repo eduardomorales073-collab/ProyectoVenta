@@ -99,5 +99,70 @@ namespace Aplicacion.Servicios
                 dto.fecha
             );
         }
+
+        public async Task<PerfilDTO?> ObtenerPerfilAsync(int id)
+        {
+            var usuario = await _usuarioRepositorio.GetAsync(id);
+            if (usuario == null) return null;
+
+            return new PerfilDTO(
+                usuario.id,
+                usuario.Nombre,
+                usuario.email,
+                usuario.Activo,
+                usuario.id_Rol
+            );
+        }
+
+        public async Task<(bool ok, string mensaje)> ActualizarPerfilAsync(int id, UpdatePerfilDTO dto)
+        {
+            var usuario = await _usuarioRepositorio.GetAsync(id);
+            if (usuario == null) return (false, "Usuario no encontrado.");
+
+            if (string.IsNullOrWhiteSpace(dto.Nombre))
+                return (false, "El nombre es obligatorio.");
+
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                return (false, "El correo es obligatorio.");
+
+            // Validar email único
+            if (await _usuarioRepositorio.ExisteEmailAsync(dto.Email, id))
+                return (false, "El correo ya está en uso por otro usuario.");
+
+            usuario.Nombre = dto.Nombre.Trim();
+            usuario.email = dto.Email.Trim();
+
+            await _usuarioRepositorio.UpdateAsync(usuario);
+            return (true, "Perfil actualizado correctamente.");
+        }
+
+        public async Task<(bool ok, string mensaje)> CambiarContrasenaAsync(int id, ChangePasswordDTO dto)
+        {
+            var usuario = await _usuarioRepositorio.GetAsync(id);
+            if (usuario == null) return (false, "Usuario no encontrado.");
+
+            if (string.IsNullOrWhiteSpace(dto.ContrasenaActual) ||
+                string.IsNullOrWhiteSpace(dto.ContrasenaNueva) ||
+                string.IsNullOrWhiteSpace(dto.ConfirmarContrasena))
+                return (false, "Todos los campos son obligatorios.");
+
+            if (dto.ContrasenaNueva != dto.ConfirmarContrasena)
+                return (false, "Las contraseñas nuevas no coinciden.");
+
+            if (dto.ContrasenaNueva.Length < 6)
+                return (false, "La contraseña debe tener al menos 6 caracteres.");
+
+            // Verificar contraseña actual con BCrypt
+            if (!BCrypt.Net.BCrypt.Verify(dto.ContrasenaActual, usuario.Contrasena))
+                return (false, "La contraseña actual es incorrecta.");
+
+            if (dto.ContrasenaActual == dto.ContrasenaNueva)
+                return (false, "La nueva contraseña debe ser diferente a la actual.");
+
+            usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(dto.ContrasenaNueva);
+            await _usuarioRepositorio.UpdateAsync(usuario);
+
+            return (true, "Contraseña actualizada correctamente.");
+        }
     }
 }

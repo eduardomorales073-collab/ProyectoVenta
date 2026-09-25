@@ -14,5 +14,10 @@ namespace Aplicacion.Interfaz
         Task UpdateAsync(UpdateUsuariosDTO usuario);
         Task<PermisoUsuarioDTO?> ObtenerPermisosAsync(int idUsuario);
         Task<bool> ActualizarPermisosAsync(int idUsuario, UpdatePermisosDTO dto);
+
+        // ← NUEVOS
+        Task<PerfilDTO?> ObtenerPerfilAsync(int id);
+        Task<(bool ok, string mensaje)> ActualizarPerfilAsync(int id, UpdatePerfilDTO dto);
+        Task<(bool ok, string mensaje)> CambiarContrasenaAsync(int id, ChangePasswordDTO dto);
     }
 }

@@ -16,5 +16,6 @@ namespace Aplicacion.Repositorio
         public abstract Task<Permisos?> ObtenerPermisosDelUsuarioAsync(int idUsuario);
         public abstract Task<bool> ActualizarPermisosAsync(
     int idPermiso, bool crear, bool leer, bool actualizar, bool borrar, DateTime fecha);
+        public abstract Task<bool> ExisteEmailAsync(string email, int? excludeId = null);
     }
 }

@@ -1,0 +1,167 @@
+<div class="perfil-container">
+  <h1 class="page-title">
+    <mat-icon>person</mat-icon>
+    Mi Perfil
+  </h1>
+
+  <p *ngIf="cargando">Cargando perfil...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div *ngIf="perfil && !cargando" class="perfil-grid">
+    <!-- Tarjeta de información -->
+    <mat-card class="info-card">
+      <mat-card-content>
+        <div class="avatar-section">
+          <div class="avatar-large">{{ iniciales }}</div>
+          <h2>{{ perfil.nombre }}</h2>
+          <p class="email">{{ perfil.email }}</p>
+          <mat-chip [highlighted]="true" class="chip-rol">
+            <mat-icon>badge</mat-icon>
+            {{ nombreRol }}
+          </mat-chip>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-list">
+          <div class="info-item">
+            <mat-icon>person</mat-icon>
+            <div>
+              <span class="info-label">Nombre</span>
+              <span class="info-value">{{ perfil.nombre }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>email</mat-icon>
+            <div>
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ perfil.email }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>verified_user</mat-icon>
+            <div>
+              <span class="info-label">Estado</span>
+              <mat-chip [highlighted]="perfil.activo" [color]="perfil.activo ? 'primary' : 'warn'">
+                {{ perfil.activo ? 'Activo' : 'Inactivo' }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Formularios -->
+    <div class="forms-section">
+      <!-- Formulario de editar perfil -->
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>edit</mat-icon>
+            Editar Información
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="formPerfil" (ngSubmit)="guardarPerfil()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="nombre" placeholder="Tu nombre">
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error *ngIf="formPerfil.get('nombre')?.hasError('required')">
+                El nombre es obligatorio
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" placeholder="tu@email.com">
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error *ngIf="formPerfil.get('email')?.hasError('required')">
+                El email es obligatorio
+              </mat-error>
+              <mat-error *ngIf="formPerfil.get('email')?.hasError('email')">
+                Formato de email inválido
+              </mat-error>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-raised-button color="primary" type="submit"
+                      [disabled]="formPerfil.invalid || guardandoPerfil">
+                <mat-icon>save</mat-icon>
+                {{ guardandoPerfil ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Formulario de cambiar contraseña -->
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>lock</mat-icon>
+            Cambiar Contraseña
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="formPassword" (ngSubmit)="cambiarPassword()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Contraseña actual</mat-label>
+              <input matInput formControlName="contrasenaActual"
+                     [type]="ocultarActual ? 'password' : 'text'">
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="ocultarActual = !ocultarActual">
+                <mat-icon>{{ ocultarActual ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="formPassword.get('contrasenaActual')?.hasError('required')">
+                La contraseña actual es obligatoria
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nueva contraseña</mat-label>
+              <input matInput formControlName="contrasenaNueva"
+                     [type]="ocultarNueva ? 'password' : 'text'">
+              <mat-icon matPrefix>lock</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="ocultarNueva = !ocultarNueva">
+                <mat-icon>{{ ocultarNueva ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="formPassword.get('contrasenaNueva')?.hasError('required')">
+                La nueva contraseña es obligatoria
+              </mat-error>
+              <mat-error *ngIf="formPassword.get('contrasenaNueva')?.hasError('minlength')">
+                Mínimo 6 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirmar nueva contraseña</mat-label>
+              <input matInput formControlName="confirmarContrasena"
+                     [type]="ocultarConfirmar ? 'password' : 'text'">
+              <mat-icon matPrefix>lock</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="ocultarConfirmar = !ocultarConfirmar">
+                <mat-icon>{{ ocultarConfirmar ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="formPassword.get('confirmarContrasena')?.hasError('required')">
+                Confirma la nueva contraseña
+              </mat-error>
+              <mat-error *ngIf="formPassword.hasError('noCoinciden')">
+                Las contraseñas no coinciden
+              </mat-error>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-raised-button color="accent" type="submit"
+                      [disabled]="formPassword.invalid || guardandoPassword">
+                <mat-icon>lock_reset</mat-icon>
+                {{ guardandoPassword ? 'Cambiando...' : 'Cambiar contraseña' }}
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

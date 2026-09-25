@@ -7,6 +7,7 @@ using Infraestructura.Repositorio;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;  // ← CAMBIO: sin .Models
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,7 +90,34 @@ builder.Services.AddScoped<ReporteRepositorio>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(ArticuloPerfil).Assembly);
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+// ===== SWAGGER CON JWT (OpenApi 2.x) =====
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Mi API v1",
+        Version = "v1"
+    });
+
+    // 1. Definición de seguridad
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Ingresa el token JWT (sin la palabra 'Bearer')"
+    });
+
+    // 2. Requerimiento de seguridad (NUEVA SINTAXIS .NET 10)
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+});
 
 builder.Services.AddScoped<RolPerRepositorio, RolPeRepositorio>();
 builder.Services.AddScoped<PermRepositorio, PermRepositorio>();
@@ -121,7 +149,6 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-// ⚠️ ESTA LÍNEA ES VITAL Y FALTABA
 var app = builder.Build();
 
 app.UseCors("AngularApp");
@@ -130,15 +157,14 @@ app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "Mi API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Mi API v1");
     });
 }
 
-// HTTPS redirection deshabilitado en desarrollo porque solo usamos HTTP en 5000.
-// Habilitar en producción:
+// HTTPS redirection deshabilitado en desarrollo
 // app.UseHttpsRedirection();
 
 app.MapControllers();
