@@ -23,6 +23,7 @@ import { EficienciaProceso } from './pages/admin/reportes/eficiencia-proceso/efi
 import { RankingProveedores } from './pages/admin/reportes/ranking-proveedores/ranking-proveedores';
 import { HistorialArticulo } from './pages/admin/reportes/historial-articulo/historial-articulo';
 import { OfertasOrden } from './pages/admin/reportes/ofertas-orden/ofertas-orden';
+import { GastoDepartamentalComponent } from './pages/admin/reportes/gasto-departamental/gasto-departamental';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -50,6 +51,7 @@ export const routes: Routes = [
       { path: 'reportes/ranking-proveedores', component: RankingProveedores },
       { path: 'reportes/historial-articulo', component: HistorialArticulo },
       { path: 'reportes/ofertas-orden', component: OfertasOrden },
+      { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

@@ -1,0 +1,115 @@
+<div class="reporte-container">
+  <div class="header-section">
+    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>
+        <mat-icon>account_balance</mat-icon>
+        Gasto Departamental
+      </h1>
+      <p>Monto total gastado por departamento en una sucursal y año</p>
+    </div>
+  </div>
+
+  <mat-card class="filtro-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="buscar()" class="filtro-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Sucursal</mat-label>
+          <mat-select formControlName="idSucursal">
+            <mat-option *ngFor="let s of sucursales" [value]="s.id">
+              {{ s.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>business</mat-icon>
+          <mat-error *ngIf="form.get('idSucursal')?.hasError('required')">
+            Selecciona una sucursal
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Año</mat-label>
+          <mat-select formControlName="anio">
+            <mat-option *ngFor="let a of anios" [value]="a">
+              {{ a }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>calendar_today</mat-icon>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+          <mat-icon>search</mat-icon>
+          Buscar
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card" *ngIf="buscado">
+    <mat-card-header *ngIf="gastos.length > 0">
+      <mat-card-title>
+        <mat-icon>receipt_long</mat-icon>
+        {{ sucursalSeleccionada }} - {{ anioSeleccionado }}
+      </mat-card-title>
+      <div class="total-badge">
+        Total: <strong>Q {{ totalGeneral | number:'1.2-2' }}</strong>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="cargando" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando gastos...</p>
+      </div>
+
+      <div *ngIf="!cargando && gastos.length === 0" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <h3>No hay gastos registrados</h3>
+        <p>Esta sucursal no tiene gastos en ese año.</p>
+      </div>
+
+      <table mat-table [dataSource]="gastos" *ngIf="!cargando && gastos.length > 0">
+        <ng-container matColumnDef="idDepartamento">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let g">{{ g.idDepartamento }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="nombreDepartamento">
+          <th mat-header-cell *matHeaderCellDef>Departamento</th>
+          <td mat-cell *matCellDef="let g">
+            <mat-chip class="chip-departamento">
+              {{ g.nombreDepartamento }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalGastado">
+          <th mat-header-cell *matHeaderCellDef>Total Gastado</th>
+          <td mat-cell *matCellDef="let g">
+            <div class="gasto-cell">
+              <span class="monto">Q {{ g.totalGastado | number:'1.2-2' }}</span>
+              <mat-progress-bar mode="determinate"
+                                [value]="getPorcentaje(g.totalGastado)"
+                                [class.max-gasto]="g.totalGastado === maxGasto">
+              </mat-progress-bar>
+              <span class="porcentaje">{{ getPorcentaje(g.totalGastado) | number:'1.0-1' }}%</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.fila-max]="row.totalGastado === maxGasto"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card" *ngIf="!buscado">
+    <mat-card-content>
+      <div class="empty-state">
+        <mat-icon>search</mat-icon>
+        <h3>Selecciona una sucursal y año</h3>
+        <p>Elige una sucursal y un año, luego haz clic en "Buscar".</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
