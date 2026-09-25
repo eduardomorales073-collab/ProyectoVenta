@@ -1,39 +1,77 @@
 <div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <span class="login-icon">📦</span>
-      <h1>SistemaVentas</h1>
-      <p>Inicia sesión para continuar</p>
-    </div>
+  <mat-card class="login-card">
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input id="email"
-               type="email"
-               formControlName="email"
-               placeholder="tu@email.com"
-               autocomplete="email" />
+    <mat-card-header class="login-header">
+      <div class="logo-container">
+        <mat-icon class="logo-icon">inventory_2</mat-icon>
       </div>
+      <mat-card-title>SistemaVentas</mat-card-title>
+      <mat-card-subtitle>Inicia sesión para continuar</mat-card-subtitle>
+    </mat-card-header>
 
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input id="password"
-               type="password"
-               formControlName="password"
-               placeholder="••••••••"
-               autocomplete="current-password" />
-      </div>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
 
-      <p *ngIf="error" class="error-message">
-        ❌ {{ error }}
-      </p>
+        <!-- Email -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput
+                 formControlName="email"
+                 type="email"
+                 placeholder="tu@email.com"
+                 autocomplete="email"
+                 required>
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="form.get('email')?.hasError('required')">
+            El email es obligatorio
+          </mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('email')">
+            Formato de email inválido
+          </mat-error>
+        </mat-form-field>
 
-      <button type="submit"
-              class="btn-submit"
-              [disabled]="form.invalid">
-        Iniciar sesión
-      </button>
-    </form>
-  </div>
+        <!-- Contraseña -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput
+                 formControlName="password"
+                 [type]="ocultarPassword ? 'password' : 'text'"
+                 placeholder="••••••••"
+                 autocomplete="current-password"
+                 required>
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button
+                  matSuffix
+                  type="button"
+                  (click)="togglePassword()"
+                  [attr.aria-label]="'Ocultar contraseña'"
+                  [attr.aria-pressed]="ocultarPassword">
+            <mat-icon>{{ ocultarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="form.get('password')?.hasError('required')">
+            La contraseña es obligatoria
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Error general -->
+        <div *ngIf="error" class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error }}</span>
+        </div>
+
+        <!-- Botón -->
+        <button mat-raised-button
+                color="primary"
+                type="submit"
+                class="btn-login"
+                [disabled]="form.invalid || cargando">
+
+          <mat-spinner *ngIf="cargando" diameter="20" class="spinner"></mat-spinner>
+          <mat-icon *ngIf="!cargando">login</mat-icon>
+          <span *ngIf="!cargando">Iniciar sesión</span>
+          <span *ngIf="cargando">Iniciando...</span>
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
 </div>

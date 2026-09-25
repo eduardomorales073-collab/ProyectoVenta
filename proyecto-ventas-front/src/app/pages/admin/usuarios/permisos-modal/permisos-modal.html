@@ -1,73 +1,125 @@
 <div class="modal-overlay" (click)="onCerrar()">
   <div class="modal" (click)="$event.stopPropagation()">
+
     <div class="modal-header">
-      <h2>🔑 Permisos de {{ nombreUsuario }}</h2>
-      <button class="close-btn" (click)="onCerrar()">✕</button>
+      <div class="header-title">
+        <mat-icon color="primary">vpn_key</mat-icon>
+        <h2>Permisos de {{ nombreUsuario }}</h2>
+      </div>
+      <button mat-icon-button (click)="onCerrar()">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
 
     <p *ngIf="cargando" class="loading">Cargando permisos...</p>
-    <p *ngIf="error" class="error">{{ error }}</p>
-    <p *ngIf="exito" class="exito">{{ exito }}</p>
+    <p *ngIf="error" class="error-message">{{ error }}</p>
 
     <div *ngIf="permisos && !cargando" class="permisos-grid">
-      <div class="permiso-card" [class.activo]="permisos.crear" (click)="togglePermiso('crear')">
-        <div class="permiso-icon">➕</div>
-        <div class="permiso-info">
-          <span class="permiso-nombre">Crear</span>
-          <span class="permiso-estado">{{ permisos.crear ? '✅ Permitido' : '❌ Denegado' }}</span>
-        </div>
-        <input type="checkbox" class="permiso-check"
-               [checked]="permisos.crear"
-               (click)="$event.stopPropagation()"
-               (change)="togglePermiso('crear', $event)" />
-      </div>
 
-      <div class="permiso-card" [class.activo]="permisos.leer" (click)="togglePermiso('leer')">
-        <div class="permiso-icon">👁️</div>
-        <div class="permiso-info">
-          <span class="permiso-nombre">Leer</span>
-          <span class="permiso-estado">{{ permisos.leer ? '✅ Permitido' : '❌ Denegado' }}</span>
-        </div>
-        <input type="checkbox" class="permiso-check"
-               [checked]="permisos.leer"
-               (click)="$event.stopPropagation()"
-               (change)="togglePermiso('leer', $event)" />
-      </div>
+      <!-- Crear -->
+      <mat-card class="permiso-card" [class.activo]="permisos.crear"
+                (click)="togglePermiso('crear')">
+        <mat-card-content class="permiso-content">
+          <div class="permiso-left">
+            <mat-icon class="permiso-icon">add_circle</mat-icon>
+            <div class="permiso-info">
+              <span class="permiso-nombre">Crear</span>
+              <span class="permiso-estado">
+                {{ permisos.crear ? '✅ Permitido' : '❌ Denegado' }}
+              </span>
+            </div>
+          </div>
+          <mat-checkbox [checked]="permisos.crear"
+                        (change)="togglePermiso('crear')"
+                        (click)="$event.stopPropagation()"
+                        color="primary">
+          </mat-checkbox>
+        </mat-card-content>
+      </mat-card>
 
-      <div class="permiso-card" [class.activo]="permisos.actualizar" (click)="togglePermiso('actualizar')">
-        <div class="permiso-icon">✏️</div>
-        <div class="permiso-info">
-          <span class="permiso-nombre">Actualizar</span>
-          <span class="permiso-estado">{{ permisos.actualizar ? '✅ Permitido' : '❌ Denegado' }}</span>
-        </div>
-        <input type="checkbox" class="permiso-check"
-               [checked]="permisos.actualizar"
-               (click)="$event.stopPropagation()"
-               (change)="togglePermiso('actualizar', $event)" />
-      </div>
+      <!-- Leer -->
+      <mat-card class="permiso-card" [class.activo]="permisos.leer"
+                (click)="togglePermiso('leer')">
+        <mat-card-content class="permiso-content">
+          <div class="permiso-left">
+            <mat-icon class="permiso-icon">visibility</mat-icon>
+            <div class="permiso-info">
+              <span class="permiso-nombre">Leer</span>
+              <span class="permiso-estado">
+                {{ permisos.leer ? '✅ Permitido' : '❌ Denegado' }}
+              </span>
+            </div>
+          </div>
+          <mat-checkbox [checked]="permisos.leer"
+                        (change)="togglePermiso('leer')"
+                        (click)="$event.stopPropagation()"
+                        color="primary">
+          </mat-checkbox>
+        </mat-card-content>
+      </mat-card>
 
-      <div class="permiso-card" [class.activo]="permisos.borrar" (click)="togglePermiso('borrar')">
-        <div class="permiso-icon">🗑️</div>
-        <div class="permiso-info">
-          <span class="permiso-nombre">Borrar</span>
-          <span class="permiso-estado">{{ permisos.borrar ? '✅ Permitido' : '❌ Denegado' }}</span>
-        </div>
-        <input type="checkbox" class="permiso-check"
-               [checked]="permisos.borrar"
-               (click)="$event.stopPropagation()"
-               (change)="togglePermiso('borrar', $event)" />
-      </div>
+      <!-- Actualizar -->
+      <mat-card class="permiso-card" [class.activo]="permisos.actualizar"
+                (click)="togglePermiso('actualizar')">
+        <mat-card-content class="permiso-content">
+          <div class="permiso-left">
+            <mat-icon class="permiso-icon">edit</mat-icon>
+            <div class="permiso-info">
+              <span class="permiso-nombre">Actualizar</span>
+              <span class="permiso-estado">
+                {{ permisos.actualizar ? '✅ Permitido' : '❌ Denegado' }}
+              </span>
+            </div>
+          </div>
+          <mat-checkbox [checked]="permisos.actualizar"
+                        (change)="togglePermiso('actualizar')"
+                        (click)="$event.stopPropagation()"
+                        color="primary">
+          </mat-checkbox>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Borrar -->
+      <mat-card class="permiso-card" [class.activo]="permisos.borrar"
+                (click)="togglePermiso('borrar')">
+        <mat-card-content class="permiso-content">
+          <div class="permiso-left">
+            <mat-icon class="permiso-icon">delete</mat-icon>
+            <div class="permiso-info">
+              <span class="permiso-nombre">Borrar</span>
+              <span class="permiso-estado">
+                {{ permisos.borrar ? '✅ Permitido' : '❌ Denegado' }}
+              </span>
+            </div>
+          </div>
+          <mat-checkbox [checked]="permisos.borrar"
+                        (change)="togglePermiso('borrar')"
+                        (click)="$event.stopPropagation()"
+                        color="primary">
+          </mat-checkbox>
+        </mat-card-content>
+      </mat-card>
     </div>
 
+    <!-- Advertencia -->
     <div class="advertencia" *ngIf="permisos">
-      ⚠️ Los cambios afectarán a <strong>todos los usuarios</strong> con rol
-      <strong>{{ permisos.idRol === 1 ? 'Administrador' : permisos.idRol === 2 ? 'Empleado' : 'Proveedor' }}</strong>
+      <mat-icon color="warn">warning</mat-icon>
+      <span>
+        Los cambios afectarán a <strong>todos los usuarios</strong> con rol
+        <strong>
+          {{ permisos.idRol === 1 ? 'Administrador' : permisos.idRol === 2 ? 'Empleado' : 'Proveedor' }}
+        </strong>
+      </span>
     </div>
 
+    <!-- Botones -->
     <div class="modal-actions">
-      <button class="btn-cancelar" (click)="onCerrar()" [disabled]="guardando">Cancelar</button>
-      <button class="btn-guardar" (click)="guardar()" [disabled]="guardando">
-        {{ guardando ? 'Guardando...' : '💾 Guardar' }}
+      <button mat-button (click)="onCerrar()" [disabled]="guardando">
+        Cancelar
+      </button>
+      <button mat-raised-button color="primary" (click)="guardar()" [disabled]="guardando">
+        <mat-icon>save</mat-icon>
+        {{ guardando ? 'Guardando...' : 'Guardar' }}
       </button>
     </div>
   </div>
