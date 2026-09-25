@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record UpdatePedidoInternoDTO(int id, int id_Departamento, DateTime Fecha_Solicitada, DateTime Fecha_Ingreso);
-
+    public record UpdatePedidoInternoDTO(
+        int id,
+        int id_Departamento,
+        int? id_OrdenCompra,
+        DateTime Fecha_Solicitada,
+        DateTime Fecha_Ingreso
+    );
 }

@@ -7,7 +7,7 @@ using Infraestructura.Repositorio;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;  // ← CAMBIO: sin .Models
+using Microsoft.OpenApi;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -91,7 +91,7 @@ builder.Services.AddScoped<ReporteRepositorio>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(ArticuloPerfil).Assembly);
 builder.Services.AddControllers();
 
-// ===== SWAGGER CON JWT (OpenApi 2.x) =====
+// ===== SWAGGER CON JWT =====
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -101,7 +101,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 
-    // 1. Definición de seguridad
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -112,7 +111,6 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Ingresa el token JWT (sin la palabra 'Bearer')"
     });
 
-    // 2. Requerimiento de seguridad (NUEVA SINTAXIS .NET 10)
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
@@ -149,8 +147,29 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-var app = builder.Build();
+// ===== BUILD =====
+var app = builder.Build();  // ✅ SOLO UNA VEZ
 
+// ===== MIDDLEWARE GLOBAL DE EXCEPCIONES =====
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        context.Response.StatusCode = exception is InvalidOperationException ? 400 : 500;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            mensaje = exception?.Message ?? "Error interno del servidor",
+            tipo = exception?.GetType().Name ?? "Error"
+        });
+    });
+});
+
+// ===== MIDDLEWARES =====
 app.UseCors("AngularApp");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -164,7 +183,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// HTTPS redirection deshabilitado en desarrollo
 // app.UseHttpsRedirection();
 
 app.MapControllers();
