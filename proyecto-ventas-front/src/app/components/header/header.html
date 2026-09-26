@@ -11,6 +11,8 @@
 
     <!-- ADMINISTRADOR -->
     <ng-container *ngIf="esAdmin">
+
+      <!-- Enlaces principales (siempre visibles) -->
       <a mat-button routerLink="/admin/dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon>
         Dashboard
@@ -23,34 +25,70 @@
         <mat-icon>people</mat-icon>
         Usuarios
       </a>
-      <a mat-button routerLink="/admin/departamentos" routerLinkActive="active-link">
-        <mat-icon>business_center</mat-icon>
-        Departamentos
-      </a>
-      <a mat-button routerLink="/admin/sucursales" routerLinkActive="active-link">
-        <mat-icon>business</mat-icon>
-        Sucursales
-      </a>
-      <a mat-button routerLink="/admin/rubros" routerLinkActive="active-link">
+
+      <!-- Menú: Catálogos -->
+      <button mat-button [matMenuTriggerFor]="menuCatalogos" class="menu-btn">
         <mat-icon>category</mat-icon>
-        Rubros
-      </a>
-      <a mat-button routerLink="/admin/proveedores" routerLinkActive="active-link">
-        <mat-icon>local_shipping</mat-icon>
-        Proveedores
-      </a>
-      <a mat-button routerLink="/admin/roles" routerLinkActive="active-link">
-        <mat-icon>badge</mat-icon>
-        Roles
-      </a>
-      <a mat-button routerLink="/admin/tipos-orden" routerLinkActive="active-link">
-        <mat-icon>assignment_turned_in</mat-icon>
-        Tipos Orden
-      </a>
-      <a mat-button routerLink="/admin/reportes" routerLinkActive="active-link">
-        <mat-icon>analytics</mat-icon>
-        Reportes
-      </a>
+        Catálogos
+        <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #menuCatalogos="matMenu">
+        <button mat-menu-item routerLink="/admin/departamentos">
+          <mat-icon>business_center</mat-icon>
+          <span>Departamentos</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/sucursales">
+          <mat-icon>business</mat-icon>
+          <span>Sucursales</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/rubros">
+          <mat-icon>category</mat-icon>
+          <span>Rubros</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/proveedores">
+          <mat-icon>local_shipping</mat-icon>
+          <span>Proveedores</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/tipos-orden">
+          <mat-icon>assignment_turned_in</mat-icon>
+          <span>Tipos de Orden</span>
+        </button>
+      </mat-menu>
+
+      <!-- Menú: Compras -->
+      <button mat-button [matMenuTriggerFor]="menuCompras" class="menu-btn">
+        <mat-icon>shopping_cart</mat-icon>
+        Compras
+        <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #menuCompras="matMenu">
+        <button mat-menu-item routerLink="/admin/adjudicaciones">
+          <mat-icon>gavel</mat-icon>
+          <span>Adjudicaciones</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/pedidos-internos">
+          <mat-icon>assignment</mat-icon>
+          <span>Pedidos Internos</span>
+        </button>
+      </mat-menu>
+
+      <!-- Menú: Admin -->
+      <button mat-button [matMenuTriggerFor]="menuAdmin" class="menu-btn">
+        <mat-icon>admin_panel_settings</mat-icon>
+        Admin
+        <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #menuAdmin="matMenu">
+        <button mat-menu-item routerLink="/admin/roles">
+          <mat-icon>badge</mat-icon>
+          <span>Roles</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/reportes">
+          <mat-icon>analytics</mat-icon>
+          <span>Reportes</span>
+        </button>
+      </mat-menu>
+
     </ng-container>
 
     <!-- EMPLEADO -->
@@ -103,7 +141,6 @@
       </div>
       <mat-divider></mat-divider>
 
-      <!-- ✅ NUEVO: Enlace a Mi Perfil -->
       <button mat-menu-item routerLink="/perfil">
         <mat-icon>person</mat-icon>
         <span>Mi Perfil</span>

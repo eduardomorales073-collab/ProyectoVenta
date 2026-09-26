@@ -1,0 +1,58 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Adjudicación' : 'Nueva Adjudicación' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <!-- Fecha Resolución -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha de Resolución</mat-label>
+        <input matInput type="date" formControlName="fecha_Resolucion" required>
+        <mat-icon matPrefix>event</mat-icon>
+        <mat-error *ngIf="form.get('fecha_Resolucion')?.hasError('required')">
+          La fecha es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Orden de Compra -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Orden de Compra</mat-label>
+        <mat-select formControlName="orden_Compra" required>
+          <mat-option *ngFor="let o of ordenes" [value]="o.id">
+            #{{ o.id }} - {{ o.descripcion }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>shopping_cart</mat-icon>
+        <mat-error *ngIf="form.get('orden_Compra')?.hasError('required')">
+          La orden es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Estado -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Estado</mat-label>
+        <mat-select formControlName="estado" required>
+          <mat-option *ngFor="let e of estados" [value]="e">
+            {{ e }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>flag</mat-icon>
+      </mat-form-field>
+
+      <!-- Botones -->
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

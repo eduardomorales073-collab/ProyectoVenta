@@ -25,6 +25,8 @@ import { HistorialArticulo } from './pages/admin/reportes/historial-articulo/his
 import { OfertasOrden } from './pages/admin/reportes/ofertas-orden/ofertas-orden';
 import { GastoDepartamentalComponent } from './pages/admin/reportes/gasto-departamental/gasto-departamental';
 import { VariacionPreciosComponent } from './pages/admin/reportes/variacion-precios/variacion-precios';
+import { AdjudicacionesComponent } from './pages/admin/adjudicaciones/adjudicaciones';
+import { PedidosInternosComponent } from './pages/admin/pedidos-internos/pedidos-internos';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -54,6 +56,8 @@ export const routes: Routes = [
       { path: 'reportes/ofertas-orden', component: OfertasOrden },
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      { path: 'adjudicaciones', component: AdjudicacionesComponent },
+      { path: 'pedidos-internos', component: PedidosInternosComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

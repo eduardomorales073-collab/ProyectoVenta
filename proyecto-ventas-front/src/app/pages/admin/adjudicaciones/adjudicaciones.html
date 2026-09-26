@@ -1,0 +1,77 @@
+<div class="container">
+  <div class="header-actions">
+    <h2>Lista de Adjudicaciones</h2>
+    <button mat-raised-button color="primary" (click)="abrirFormulario(null)">
+      <mat-icon>add</mat-icon>
+      Nueva Adjudicación
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="filtro">
+    <mat-label>Buscar adjudicación</mat-label>
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, orden o estado...">
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  <p *ngIf="cargando">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div class="tabla-container">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let a">{{ a.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="fecha_Resolucion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Resolución</th>
+        <td mat-cell *matCellDef="let a">
+          <mat-icon class="icon-mini">event</mat-icon>
+          {{ a.fecha_Resolucion | date:'dd/MM/yyyy' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="orden_Compra">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Orden de Compra</th>
+        <td mat-cell *matCellDef="let a">
+          <mat-chip class="chip-orden">
+            Orden #{{ a.orden_Compra }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+        <td mat-cell *matCellDef="let a">
+          <mat-chip [class]="colorEstado(a.estado)">
+            {{ a.estado }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let a">
+          <button mat-icon-button color="accent" (click)="abrirFormulario(a)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmarEliminar(a)" matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>
+
+<app-adjudicacion-form *ngIf="mostrarFormulario"
+                       [adjudicacion]="adjudicacionSeleccionada"
+                       (guardado)="onGuardado()"
+                       (cancelado)="cerrarFormulario()">
+</app-adjudicacion-form>

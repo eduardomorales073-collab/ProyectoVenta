@@ -1,0 +1,72 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Pedido' : 'Nuevo Pedido Interno' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <!-- Departamento -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Departamento</mat-label>
+        <mat-select formControlName="id_Departamento" required>
+          <mat-option *ngFor="let d of departamentos" [value]="d.id">
+            {{ d.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>business_center</mat-icon>
+        <mat-error *ngIf="form.get('id_Departamento')?.hasError('required')">
+          El departamento es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Orden de Compra (opcional) -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Orden de Compra (opcional)</mat-label>
+        <mat-select formControlName="id_OrdenCompra">
+          <mat-option [value]="null">
+            <em>Sin asignar</em>
+          </mat-option>
+          <mat-option *ngFor="let o of ordenes" [value]="o.id">
+            #{{ o.id }} - {{ o.descripcion }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>shopping_cart</mat-icon>
+        <mat-hint>Al asignar una orden, la fecha de solicitud no puede ser posterior a la creación de la orden</mat-hint>
+      </mat-form-field>
+
+      <!-- Fecha Solicitada -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha Solicitada</mat-label>
+        <input matInput type="date" formControlName="fecha_Solicitada" required>
+        <mat-icon matPrefix>event</mat-icon>
+        <mat-error *ngIf="form.get('fecha_Solicitada')?.hasError('required')">
+          La fecha es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Fecha Ingreso -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha Ingreso</mat-label>
+        <input matInput type="date" formControlName="fecha_Ingreso" required>
+        <mat-icon matPrefix>login</mat-icon>
+        <mat-error *ngIf="form.get('fecha_Ingreso')?.hasError('required')">
+          La fecha es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Botones -->
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

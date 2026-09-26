@@ -148,7 +148,7 @@ builder.Services.AddCors(options =>
 });
 
 // ===== BUILD =====
-var app = builder.Build();  // ✅ SOLO UNA VEZ
+var app = builder.Build();  
 
 // ===== MIDDLEWARE GLOBAL DE EXCEPCIONES =====
 app.UseExceptionHandler(errorApp =>
