@@ -32,6 +32,8 @@ namespace Infraestructura.Datos
         public DbSet<Usuarios> Usuarios { get; set; }
         public DbSet<Usuarios_Roles> Usuarios_Roles { get; set; }
 
+        public DbSet<Categoria_Proveedor> Categoria_Proveedor { get; set; }
+
         public AplicacionDBContexto(DbContextOptions<AplicacionDBContexto> option) : base(option)
         {
         }

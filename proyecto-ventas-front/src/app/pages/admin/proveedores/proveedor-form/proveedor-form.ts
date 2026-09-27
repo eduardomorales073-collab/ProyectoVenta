@@ -11,6 +11,8 @@ import { Proveedor, CreateProveedorDTO } from '../../../../models/proveedor.mode
 import { RubroService } from '../../../../services/rubro.service';
 import { Rubro } from '../../../../models/rubro.model';
 import { NotificacionService } from '../../../../services/notificacion';
+import { CategoriaProveedorService } from '../../../../services/categoria-proveedor.service';
+import { CategoriaProveedor } from '../../../../models/categoria-proveedor.model';
 
 @Component({
   selector: 'app-proveedor-form',
@@ -36,24 +38,13 @@ export class ProveedorFormComponent implements OnInit {
   guardando = false;
 
   rubros: Rubro[] = [];
-
-  // Categorías de proveedor
-  categorias: string[] = [
-    'Tecnología',
-    'Papelería',
-    'Mobiliario',
-    'Limpieza',
-    'Alimentos',
-    'Servicios',
-    'Construcción',
-    'Textiles',
-    'Otros'
-  ];
+  categorias: CategoriaProveedor[] = [];
 
   constructor(
     private fb: FormBuilder,
     private proveedorService: ProveedorService,
     private rubroService: RubroService,
+    private categoriaProveedorService: CategoriaProveedorService,
     private notificacion: NotificacionService
   ) {
     this.form = this.fb.group({
@@ -69,6 +60,7 @@ export class ProveedorFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarRubros();
+    this.cargarCategorias();
 
     if (this.proveedor) {
       this.form.patchValue({
@@ -90,6 +82,17 @@ export class ProveedorFormComponent implements OnInit {
       },
       error: (err: any) => {
         this.notificacion.error(`Error al cargar rubros: ${err.status}`);
+      }
+    });
+  }
+
+  cargarCategorias(): void {
+    this.categoriaProveedorService.listar().subscribe({
+      next: (data) => {
+        this.categorias = data;
+      },
+      error: (err: any) => {
+        this.notificacion.error(`Error al cargar categorías: ${err.status}`);
       }
     });
   }

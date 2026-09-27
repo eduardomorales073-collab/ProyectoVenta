@@ -29,6 +29,7 @@ import { VariacionPreciosComponent } from './pages/admin/reportes/variacion-prec
 import { AdjudicacionesComponent } from './pages/admin/adjudicaciones/adjudicaciones';
 import { PedidosInternosComponent } from './pages/admin/pedidos-internos/pedidos-internos';
 import { AuditorReportesComponent } from './pages/auditor/reportes/reportes';
+import { CategoriasProveedorComponent } from './pages/admin/categorias-proveedor/categorias-proveedor';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -47,6 +48,7 @@ export const routes: Routes = [
       { path: 'proveedores', component: ProveedoresComponent },
       { path: 'roles', component: RolesComponent },
       { path: 'tipos-orden', component: TiposOrdenComponent },
+      { path: 'categorias-proveedor', component: CategoriasProveedorComponent },
 
       // ===== REPORTES =====
       { path: 'reportes', component: ReportesComponent },

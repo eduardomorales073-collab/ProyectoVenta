@@ -9,10 +9,10 @@
   <!-- Menú de navegación (autenticado y no en login) -->
   <nav class="nav" *ngIf="estaAutenticado() && !enLogin()">
 
-    <!-- ADMINISTRADOR -->
+    <!-- ===== ADMINISTRADOR ===== -->
     <ng-container *ngIf="esAdmin">
 
-      <!-- Enlaces principales (siempre visibles) -->
+      <!-- Enlaces principales -->
       <a mat-button routerLink="/admin/dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon>
         Dashboard
@@ -26,7 +26,7 @@
         Usuarios
       </a>
 
-      <!-- Menú: Catálogos -->
+      <!-- ===== Menú: Catálogos ===== -->
       <button mat-button [matMenuTriggerFor]="menuCatalogos" class="menu-btn">
         <mat-icon>category</mat-icon>
         Catálogos
@@ -53,9 +53,13 @@
           <mat-icon>assignment_turned_in</mat-icon>
           <span>Tipos de Orden</span>
         </button>
+        <button mat-menu-item routerLink="/admin/categorias-proveedor">
+          <mat-icon>label</mat-icon>
+          <span>Categorías de Proveedores</span>
+        </button>
       </mat-menu>
 
-      <!-- Menú: Compras -->
+      <!-- ===== Menú: Compras ===== -->
       <button mat-button [matMenuTriggerFor]="menuCompras" class="menu-btn">
         <mat-icon>shopping_cart</mat-icon>
         Compras
@@ -72,7 +76,7 @@
         </button>
       </mat-menu>
 
-      <!-- Menú: Admin -->
+      <!-- ===== Menú: Admin ===== -->
       <button mat-button [matMenuTriggerFor]="menuAdmin" class="menu-btn">
         <mat-icon>admin_panel_settings</mat-icon>
         Admin
@@ -91,7 +95,7 @@
 
     </ng-container>
 
-    <!-- EMPLEADO -->
+    <!-- ===== EMPLEADO (Gestor de Compras) ===== -->
     <ng-container *ngIf="esEmpleado">
       <a mat-button routerLink="/empleado/pedidos" routerLinkActive="active-link">
         <mat-icon>assignment</mat-icon>
@@ -103,7 +107,7 @@
       </a>
     </ng-container>
 
-    <!-- PROVEEDOR -->
+    <!-- ===== PROVEEDOR (Admin de Proveedor) ===== -->
     <ng-container *ngIf="esProveedor">
       <a mat-button routerLink="/proveedor/ofertas" routerLinkActive="active-link">
         <mat-icon>local_offer</mat-icon>
@@ -114,12 +118,21 @@
         Artículos
       </a>
     </ng-container>
+
+    <!-- ===== AUDITOR ===== -->
+    <ng-container *ngIf="esAuditor">
+      <a mat-button routerLink="/auditor/reportes" routerLinkActive="active-link">
+        <mat-icon>analytics</mat-icon>
+        Reportes
+      </a>
+    </ng-container>
+
   </nav>
 
   <!-- Espaciador -->
   <span class="spacer"></span>
 
-  <!-- Usuario (autenticado y no en login) -->
+  <!-- Usuario -->
   <div class="user-section" *ngIf="estaAutenticado() && !enLogin()">
     <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
       <div class="avatar">{{ iniciales }}</div>
@@ -140,12 +153,10 @@
         </div>
       </div>
       <mat-divider></mat-divider>
-
       <button mat-menu-item routerLink="/perfil">
         <mat-icon>person</mat-icon>
         <span>Mi Perfil</span>
       </button>
-
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="cerrarSesion()">
         <mat-icon color="warn">logout</mat-icon>
@@ -153,13 +164,5 @@
       </button>
     </mat-menu>
   </div>
-  
-  <!-- AUDITOR -->
-  <ng-container *ngIf="esAuditor">
-    <a mat-button routerLink="/auditor/reportes" routerLinkActive="active-link">
-      <mat-icon>analytics</mat-icon>
-      Reportes
-    </a>
-  </ng-container>
 
 </mat-toolbar>

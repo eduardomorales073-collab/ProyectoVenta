@@ -91,6 +91,9 @@ builder.Services.AddScoped<ReporteRepositorio>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(ArticuloPerfil).Assembly);
 builder.Services.AddControllers();
 
+builder.Services.AddScoped<ICategoriaProveedorService, CategoriaProveedorService>();
+builder.Services.AddScoped<CatProvRepositorio, CatProvRepositorioImpl>();
+
 // ===== SWAGGER CON JWT =====
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

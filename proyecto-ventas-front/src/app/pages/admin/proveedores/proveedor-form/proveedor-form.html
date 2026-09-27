@@ -36,17 +36,17 @@
 
       <!-- Categoría -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Categoría</mat-label>
-        <mat-select formControlName="categoria" required>
-          <mat-option *ngFor="let c of categorias" [value]="c">
-            {{ c }}
-          </mat-option>
-        </mat-select>
-        <mat-icon matPrefix>category</mat-icon>
-        <mat-error *ngIf="form.get('categoria')?.hasError('required')">
-          La categoría es obligatoria
-        </mat-error>
-      </mat-form-field>
+  <mat-label>Categoría</mat-label>
+  <mat-select formControlName="categoria" required>
+    <mat-option *ngFor="let c of categorias" [value]="c.nombre">
+      {{ c.nombre }}
+    </mat-option>
+  </mat-select>
+  <mat-icon matPrefix>category</mat-icon>
+  <mat-error *ngIf="form.get('categoria')?.hasError('required')">
+    La categoría es obligatoria
+  </mat-error>
+</mat-form-field>
 
       <!-- Descripción -->
       <mat-form-field appearance="outline" class="full-width">

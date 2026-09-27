@@ -307,5 +307,14 @@ namespace Aplicacion.Mappings
 
         }
     }
+    public class CategoriaProveedorPerfil : Profile
+    {
+        public CategoriaProveedorPerfil()
+        {
+            CreateMap<Categoria_Proveedor, CategoriaProveedorDTO>();
+            CreateMap<CreateCategoriaProveedorDTO, Categoria_Proveedor>();
+            CreateMap<UpdateCategoriaProveedorDTO, Categoria_Proveedor>();
+        }
+    }
 
 }
