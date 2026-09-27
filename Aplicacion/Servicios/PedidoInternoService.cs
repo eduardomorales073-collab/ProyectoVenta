@@ -89,7 +89,25 @@ namespace Aplicacion.Servicios
 
         public async Task UpdateAsync(UpdatePedidoInternoDTO pedido)
         {
-            // ===== REGLA DE NEGOCIO 1 (también al actualizar) =====
+            // ===== VALIDACIÓN: Pedido no puede estar en 2 órdenes =====
+            var pedidoExistente = await _pedidoInternoRepositorio.GetAsync(pedido.id);
+            if (pedidoExistente == null)
+            {
+                throw new InvalidOperationException($"El pedido #{pedido.id} no existe.");
+            }
+
+            // Si el pedido ya tenía una orden asignada y se intenta cambiar a otra
+            if (pedidoExistente.id_OrdenCompra.HasValue
+                && pedido.id_OrdenCompra.HasValue
+                && pedidoExistente.id_OrdenCompra.Value != pedido.id_OrdenCompra.Value)
+            {
+                throw new InvalidOperationException(
+                    $"El pedido #{pedido.id} ya está asignado a la orden #{pedidoExistente.id_OrdenCompra.Value}. " +
+                    $"No se puede reasignar a la orden #{pedido.id_OrdenCompra.Value} sin desasignarlo primero."
+                );
+            }
+
+            // ===== REGLA DE NEGOCIO 1 (fecha) =====
             if (pedido.id_OrdenCompra.HasValue)
             {
                 var orden = await _ordenCompraRepositorio.GetAsync(pedido.id_OrdenCompra.Value);
@@ -111,7 +129,7 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== VALORES POR DEFECTO AL ACTUALIZAR =====
+            // ===== VALORES POR DEFECTO =====
             var pedidoActualizar = _mapper.Map<Pedido_Interno>(pedido);
             if (!pedidoActualizar.cantidad.HasValue)
             {
