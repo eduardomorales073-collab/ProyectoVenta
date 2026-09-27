@@ -7,6 +7,8 @@ namespace Aplicacion.modelos
     public class Pedido_Interno
     {
         public int id { get; set; }
+        public string? codigo { get; set; }        // 
+        public int? cantidad { get; set; }         
         public int id_Departamento { get; set; }
         public int? id_OrdenCompra { get; set; }
         public DateTime Fecha_Solicitada { get; set; }

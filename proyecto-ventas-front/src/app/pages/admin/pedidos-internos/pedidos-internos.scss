@@ -54,3 +54,24 @@
   color: #ef4444;
   padding: 1rem;
 }
+
+.chip-codigo {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.cantidad-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sin-dato {
+  color: #cbd5e1;
+}

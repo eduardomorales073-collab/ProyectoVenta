@@ -1,5 +1,7 @@
 export interface PedidoInterno {
   id: number;
+  codigo: string | null;
+  cantidad: number | null;
   id_Departamento: number;
   id_OrdenCompra: number | null;
   fecha_Solicitada: string;
@@ -7,6 +9,8 @@ export interface PedidoInterno {
 }
 
 export interface CreatePedidoInternoDTO {
+  codigo: string | null;
+  cantidad: number | null;
   id_Departamento: number;
   id_OrdenCompra: number | null;
   fecha_Solicitada: string;
@@ -15,6 +19,8 @@ export interface CreatePedidoInternoDTO {
 
 export interface UpdatePedidoInternoDTO {
   id: number;
+  codigo: string | null;
+  cantidad: number | null;
   id_Departamento: number;
   id_OrdenCompra: number | null;
   fecha_Solicitada: string;

@@ -43,22 +43,29 @@ export class PedidoFormComponent implements OnInit {
     private notificacion: NotificacionService
   ) {
     this.form = this.fb.group({
-      id_Departamento: ['', [Validators.required]],
-      id_OrdenCompra: [null],
-      fecha_Solicitada: ['', [Validators.required]],
-      fecha_Ingreso: ['', [Validators.required]]
-    });
+  codigo: [{ value: '', disabled: true }],          // ← NUEVO (auto-generado)
+  cantidad: [1, [Validators.required, Validators.min(1)]],  // ← NUEVO
+  id_Departamento: ['', [Validators.required]],
+  id_OrdenCompra: [null],
+  fecha_Solicitada: ['', [Validators.required]],
+  fecha_Ingreso: ['', [Validators.required]]
+});
   }
 
   ngOnInit(): void {
     if (this.pedido) {
-      this.form.patchValue({
-        id_Departamento: this.pedido.id_Departamento,
-        id_OrdenCompra: this.pedido.id_OrdenCompra,
-        fecha_Solicitada: this.pedido.fecha_Solicitada?.substring(0, 10),
-        fecha_Ingreso: this.pedido.fecha_Ingreso?.substring(0, 10)
-      });
-    }
+  this.form.patchValue({
+    codigo: this.pedido.codigo || '',
+    cantidad: this.pedido.cantidad || 1,
+    id_Departamento: this.pedido.id_Departamento,
+    id_OrdenCompra: this.pedido.id_OrdenCompra,
+    fecha_Solicitada: this.pedido.fecha_Solicitada?.substring(0, 10),
+    fecha_Ingreso: this.pedido.fecha_Ingreso?.substring(0, 10)
+  });
+} else {
+  // Creación: auto-generar el código
+  this.generarCodigo();
+}
   }
 
   get esEdicion(): boolean {
@@ -68,16 +75,19 @@ export class PedidoFormComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) return;
     this.guardando = true;
-    const datos = this.form.value;
+    const datos = this.form.getRawValue();  // ← para incluir el campo disabled
 
     if (this.esEdicion) {
-      const dto = {
-        id: this.pedido!.id,
-        id_Departamento: datos.id_Departamento,
-        id_OrdenCompra: datos.id_OrdenCompra || null,
-        fecha_Solicitada: datos.fecha_Solicitada,
-        fecha_Ingreso: datos.fecha_Ingreso
-      };
+      // EDICIÓN
+const dto = {
+  id: this.pedido!.id,
+  codigo: datos.codigo,
+  cantidad: datos.cantidad,
+  id_Departamento: datos.id_Departamento,
+  id_OrdenCompra: datos.id_OrdenCompra || null,
+  fecha_Solicitada: datos.fecha_Solicitada,
+  fecha_Ingreso: datos.fecha_Ingreso
+};
       this.pedidoService.actualizar(dto).subscribe({
         next: () => {
           this.guardando = false;
@@ -90,12 +100,15 @@ export class PedidoFormComponent implements OnInit {
         }
       });
     } else {
-      const dto: CreatePedidoInternoDTO = {
-        id_Departamento: datos.id_Departamento,
-        id_OrdenCompra: datos.id_OrdenCompra || null,
-        fecha_Solicitada: datos.fecha_Solicitada,
-        fecha_Ingreso: datos.fecha_Ingreso
-      };
+      // CREACIÓN
+const dto: CreatePedidoInternoDTO = {
+  codigo: datos.codigo,
+  cantidad: datos.cantidad,
+  id_Departamento: datos.id_Departamento,
+  id_OrdenCompra: datos.id_OrdenCompra || null,
+  fecha_Solicitada: datos.fecha_Solicitada,
+  fecha_Ingreso: datos.fecha_Ingreso
+};
       this.pedidoService.crear(dto).subscribe({
         next: () => {
           this.guardando = false;
@@ -113,4 +126,19 @@ export class PedidoFormComponent implements OnInit {
   onCancelar(): void {
     this.cancelado.emit();
   }
+  generarCodigo(): void {
+  this.pedidoService.listar().subscribe({
+    next: (pedidos) => {
+      const maxId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) : 0;
+      const nuevoId = maxId + 1;
+      const anio = new Date().getFullYear();
+      const codigo = `PED-${anio}-${String(nuevoId).padStart(3, '0')}`;
+      this.form.patchValue({ codigo });
+    },
+    error: () => {
+      const codigo = 'PED-' + Date.now().toString().slice(-4);
+      this.form.patchValue({ codigo });
+    }
+  });
+}
 }

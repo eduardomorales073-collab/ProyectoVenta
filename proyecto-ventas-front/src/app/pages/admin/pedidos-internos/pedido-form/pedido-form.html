@@ -8,6 +8,28 @@
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <!-- Código (auto-generado, solo lectura) -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Código</mat-label>
+        <input matInput formControlName="codigo" readonly>
+        <mat-icon matPrefix>qr_code</mat-icon>
+        <mat-hint>Generado automáticamente</mat-hint>
+      </mat-form-field>
+
+      <!-- Cantidad -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Cantidad</mat-label>
+        <input matInput type="number" formControlName="cantidad" min="1" required>
+        <mat-icon matPrefix>numbers</mat-icon>
+        <mat-error *ngIf="form.get('cantidad')?.hasError('required')">
+          La cantidad es obligatoria
+        </mat-error>
+        <mat-error *ngIf="form.get('cantidad')?.hasError('min')">
+          La cantidad debe ser mayor a 0
+        </mat-error>
+      </mat-form-field>
+
       <!-- Departamento -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Departamento</mat-label>
@@ -34,7 +56,7 @@
           </mat-option>
         </mat-select>
         <mat-icon matPrefix>shopping_cart</mat-icon>
-        <mat-hint>Al asignar una orden, la fecha de solicitud no puede ser posterior a la creación de la orden</mat-hint>
+        <mat-hint>Fecha solicitud ≤ Fecha creación</mat-hint>
       </mat-form-field>
 
       <!-- Fecha Solicitada -->

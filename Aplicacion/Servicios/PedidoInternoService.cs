@@ -56,6 +56,19 @@ namespace Aplicacion.Servicios
             var nuevoPedido = _mapper.Map<Pedido_Interno>(pedido);
             nuevoPedido.id = todos.Any() ? todos.Max(p => p.id) + 1 : 1;
 
+            // ===== AUTO-GENERAR CÓDIGO =====
+            if (string.IsNullOrEmpty(nuevoPedido.codigo))
+            {
+                var anio = DateTime.Now.Year;
+                nuevoPedido.codigo = $"PED-{anio}-{nuevoPedido.id.ToString("D3")}";
+            }
+
+            // ===== VALORES POR DEFECTO =====
+            if (!nuevoPedido.cantidad.HasValue)
+            {
+                nuevoPedido.cantidad = 1;
+            }
+
             await _pedidoInternoRepositorio.AddAsync(nuevoPedido);
         }
 
@@ -98,7 +111,14 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            await _pedidoInternoRepositorio.UpdateAsync(_mapper.Map<Pedido_Interno>(pedido));
+            // ===== VALORES POR DEFECTO AL ACTUALIZAR =====
+            var pedidoActualizar = _mapper.Map<Pedido_Interno>(pedido);
+            if (!pedidoActualizar.cantidad.HasValue)
+            {
+                pedidoActualizar.cantidad = 1;
+            }
+
+            await _pedidoInternoRepositorio.UpdateAsync(pedidoActualizar);
         }
     }
 }

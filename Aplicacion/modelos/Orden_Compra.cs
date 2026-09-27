@@ -10,7 +10,7 @@ namespace Aplicacion.modelos
         public string Descripcion { get; set; }
         public DateTime Fecha_Creacion { get; set; }
         public DateTime Fecha_Limite { get; set; }
+        public DateTime? fecha_limite_ofertas { get; set; }   
         public int Tipo_Orden { get; set; }
-
     }
 }

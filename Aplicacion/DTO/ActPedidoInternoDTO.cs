@@ -6,6 +6,8 @@ namespace Aplicacion.DTO
 {
     public record UpdatePedidoInternoDTO(
         int id,
+        string? codigo,
+        int? cantidad,
         int id_Departamento,
         int? id_OrdenCompra,
         DateTime Fecha_Solicitada,

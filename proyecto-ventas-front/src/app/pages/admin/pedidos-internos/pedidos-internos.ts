@@ -41,8 +41,7 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './pedidos-internos.scss'
 })
 export class PedidosInternosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'departamento', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];
-  dataSource = new MatTableDataSource<PedidoInterno>([]);
+displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];  dataSource = new MatTableDataSource<PedidoInterno>([]);
   departamentos: Departamento[] = [];
   ordenes: OrdenCompra[] = [];
   cargando = false;
@@ -104,7 +103,18 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
   aplicarFiltro(event: Event): void {
     const valor = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = valor.trim().toLowerCase();
+    this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
+  const dep = this.nombreDepartamento(pedido.id_Departamento).toLowerCase();
+  const orden = this.nombreOrden(pedido.id_OrdenCompra).toLowerCase();
+  const dataStr = (
+    pedido.id + ' ' +
+    (pedido.codigo || '') + ' ' +
+    (pedido.cantidad || '') + ' ' +
+    dep + ' ' +
+    orden
+  ).toLowerCase();
+  return dataStr.includes(filtro);
+};
   }
 
   nombreDepartamento(id: number): string {
