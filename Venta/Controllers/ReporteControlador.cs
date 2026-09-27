@@ -1,13 +1,13 @@
 ﻿using Aplicacion.DTO;
 using Infraestructura.Repositorio;
-using Microsoft.AspNetCore.Authorization;  // ← AQUÍ ESTÁ LA CLAVE
+using Microsoft.AspNetCore.Authorization;  
 using Microsoft.AspNetCore.Mvc;
 
 namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador")]  // ← Ahora sí funciona
+    [Authorize(Roles = "Administrador, Auditor")]  
     public class ReporteControlador : ControllerBase
     {
         private readonly ReporteRepositorio _reporteRepositorio;
