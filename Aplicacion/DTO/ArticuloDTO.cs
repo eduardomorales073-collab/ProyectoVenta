@@ -4,10 +4,11 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-   
-    
-        public record ArticuloDTO(int id, string nombre, string descripcion);
-
-    
+    public record ArticuloDTO(
+        int id,
+        string nombre,
+        string descripcion,
+        string? codigo,
+        string? unidad_medida
+    );
 }
-

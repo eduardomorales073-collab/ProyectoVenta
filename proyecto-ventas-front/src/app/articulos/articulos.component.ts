@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { Articulo, ArticuloService } from '../services/articulo.service';
 import { ArticuloFormComponent } from './articulo-form/articulo-form';
 import { AuthService } from '../services/auth.service';
@@ -29,13 +30,14 @@ import { ConfirmService } from '../services/confirm';
     MatInputModule,
     MatIconModule,
     MatButtonModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatChipsModule
   ],
   templateUrl: './articulos.component.html',
   styleUrl: './articulos.component.scss'
 })
 export class ArticulosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'acciones'];
+  displayedColumns: string[] = ['id', 'codigo', 'nombre', 'descripcion', 'unidad_medida', 'acciones'];
   dataSource = new MatTableDataSource<Articulo>([]);
 
   cargando = false;
@@ -51,7 +53,7 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private notificacion: NotificacionService,
-    private confirm: ConfirmService 
+    private confirm: ConfirmService
   ) { }
 
   ngOnInit(): void {
@@ -62,12 +64,14 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
-    // ✅ Filtro personalizado
+    // ✅ Filtro personalizado (incluye codigo y unidad_medida)
     this.dataSource.filterPredicate = (articulo: Articulo, filtro: string) => {
       const dataStr = (
         articulo.id + ' ' +
+        (articulo.codigo || '') + ' ' +
         articulo.nombre + ' ' +
-        articulo.descripcion
+        articulo.descripcion + ' ' +
+        (articulo.unidad_medida || '')
       ).toLowerCase();
 
       return dataStr.includes(filtro);
@@ -127,7 +131,7 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
   onGuardado(): void {
     this.cerrarFormulario();
     this.cargar();
-    this.notificacion.exito('Artículo guardado correctamente');       // ← AÑADIR
+    this.notificacion.exito('Artículo guardado correctamente');
   }
 
   confirmarEliminar(articulo: Articulo): void {

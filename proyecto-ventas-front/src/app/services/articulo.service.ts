@@ -7,17 +7,23 @@ export interface Articulo {
   id: number;
   nombre: string;
   descripcion: string;
+  codigo: string | null;
+  unidad_medida: string | null;
 }
 
 export interface CreateArticuloDTO {
   nombre: string;
   descripcion: string;
+  codigo: string | null;
+  unidad_medida: string | null;
 }
 
 export interface UpdateArticuloDTO {
   id: number;
   nombre: string;
   descripcion: string;
+  codigo: string | null;
+  unidad_medida: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

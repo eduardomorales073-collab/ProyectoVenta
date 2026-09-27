@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Articulo, ArticuloService, CreateArticuloDTO } from '../../services/articulo.service';
@@ -16,6 +17,7 @@ import { NotificacionService } from '../../services/notificacion';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatIconModule
   ],
@@ -31,28 +33,73 @@ export class ArticuloFormComponent implements OnInit {
   guardando = false;
   error = '';
 
+  // Unidades de medida disponibles
+  unidadesMedida: string[] = [
+    'Unidad',
+    'Caja',
+    'Paquete',
+    'Kg',
+    'Litro',
+    'Metro',
+    'Par',
+    'Docena',
+    'Resma',
+    'Galón',
+    'Rollo'
+  ];
+
   constructor(
     private fb: FormBuilder,
     private articuloService: ArticuloService,
     private notificacion: NotificacionService
   ) {
     this.form = this.fb.group({
+      codigo: [{ value: '', disabled: true }], // ← auto-generado
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
-      descripcion: ['', [Validators.required, Validators.maxLength(200)]]
+      descripcion: ['', [Validators.required, Validators.maxLength(200)]],
+      unidad_medida: ['Unidad', [Validators.required]]
     });
   }
 
   ngOnInit(): void {
     if (this.articulo) {
+      // Edición: mostrar el código actual
       this.form.patchValue({
+        codigo: this.articulo.codigo || '',
         nombre: this.articulo.nombre,
-        descripcion: this.articulo.descripcion
+        descripcion: this.articulo.descripcion,
+        unidad_medida: this.articulo.unidad_medida || 'Unidad'
       });
+    } else {
+      // Creación: auto-generar el código
+      this.generarCodigo();
     }
   }
 
   get esEdicion(): boolean {
     return !!this.articulo;
+  }
+
+  /**
+   * Genera un código único basado en el último ID + 1
+   * Formato: ART-XXX (ej: ART-008)
+   */
+  generarCodigo(): void {
+    this.articuloService.listar().subscribe({
+      next: (articulos) => {
+        const maxId = articulos.length > 0
+          ? Math.max(...articulos.map(a => a.id))
+          : 0;
+        const nuevoId = maxId + 1;
+        const codigo = 'ART-' + String(nuevoId).padStart(3, '0');
+        this.form.patchValue({ codigo });
+      },
+      error: () => {
+        // Si falla, generar con timestamp
+        const codigo = 'ART-' + Date.now().toString().slice(-4);
+        this.form.patchValue({ codigo });
+      }
+    });
   }
 
   onSubmit(): void {
@@ -61,13 +108,15 @@ export class ArticuloFormComponent implements OnInit {
     this.guardando = true;
     this.error = '';
 
-    const datos = this.form.value;
+    const datos = this.form.getRawValue(); // ← getRawValue para incluir el campo disabled
 
     if (this.esEdicion) {
       const dto = {
         id: this.articulo!.id,
         nombre: datos.nombre,
-        descripcion: datos.descripcion
+        descripcion: datos.descripcion,
+        codigo: datos.codigo,
+        unidad_medida: datos.unidad_medida
       };
       this.articuloService.actualizar(dto).subscribe({
         next: () => {
@@ -83,7 +132,9 @@ export class ArticuloFormComponent implements OnInit {
     } else {
       const dto: CreateArticuloDTO = {
         nombre: datos.nombre,
-        descripcion: datos.descripcion
+        descripcion: datos.descripcion,
+        codigo: datos.codigo,
+        unidad_medida: datos.unidad_medida
       };
       this.articuloService.crear(dto).subscribe({
         next: () => {

@@ -1,38 +1,24 @@
-.container {
-  padding: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+/* Chips de código */
+.chip-codigo {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
 }
 
-.header-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-
-  h2 {
-    margin: 0;
-    color: #1e293b;
-  }
+/* Badge de unidad de medida */
+.unidad-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-.filtro {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-.tabla-container {
-  background: #fff;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.tabla-mat {
-  width: 100%;
-}
-
-.error {
-  color: #ef4444;
-  padding: 1rem;
+/* Guion cuando no hay dato */
+.sin-dato {
+  color: #cbd5e1;
+  font-size: 0.875rem;
 }

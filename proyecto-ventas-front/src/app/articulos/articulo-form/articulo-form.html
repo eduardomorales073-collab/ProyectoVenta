@@ -10,6 +10,14 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
+      <!-- Código (auto-generado, solo lectura) -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Código</mat-label>
+        <input matInput formControlName="codigo" readonly>
+        <mat-icon matPrefix>qr_code</mat-icon>
+        <mat-hint>Generado automáticamente</mat-hint>
+      </mat-form-field>
+
       <!-- Nombre -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nombre</mat-label>
@@ -34,6 +42,20 @@
         </mat-error>
         <mat-error *ngIf="form.get('descripcion')?.hasError('maxlength')">
           Máximo 200 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Unidad de medida -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Unidad de medida</mat-label>
+        <mat-select formControlName="unidad_medida" required>
+          <mat-option *ngFor="let u of unidadesMedida" [value]="u">
+            {{ u }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>straighten</mat-icon>
+        <mat-error *ngIf="form.get('unidad_medida')?.hasError('required')">
+          La unidad de medida es obligatoria
         </mat-error>
       </mat-form-field>
 

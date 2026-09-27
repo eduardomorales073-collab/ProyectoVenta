@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record UpdateActArtDTO (int id, string nombre, string descripcion);
-
+    public record UpdateActArtDTO(
+        int id,
+        string nombre,
+        string descripcion,
+        string? codigo,
+        string? unidad_medida
+    );
 }
