@@ -103,6 +103,15 @@ export class PermisosModalComponent implements OnInit {
       }
     });
   }
+      nombreRol(idRol: number): string {
+         switch (idRol) {
+         case 1: return 'Administrador del Sistema';
+        case 2: return 'Gestor de Compras';
+        case 3: return 'Administrador de Proveedor';
+       case 4: return 'Auditor / Reportes';
+        default: return 'Desconocido';
+     }
+  }
 
   onCerrar(): void {
     this.cerrar.emit();

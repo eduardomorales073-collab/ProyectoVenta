@@ -1,6 +1,6 @@
 <div class="reporte-container">
   <div class="header-section">
-    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+    <button mat-icon-button [routerLink]="rutaVolver" class="back-btn">
       <mat-icon>arrow_back</mat-icon>
     </button>
     <div>
@@ -23,9 +23,6 @@
             </mat-option>
           </mat-select>
           <mat-icon matPrefix>shopping_cart</mat-icon>
-          <mat-error *ngIf="form.get('idOrden')?.hasError('required')">
-            Selecciona una orden
-          </mat-error>
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
@@ -79,9 +76,7 @@
 
         <ng-container matColumnDef="fechaOferta">
           <th mat-header-cell *matHeaderCellDef>Fecha Oferta</th>
-          <td mat-cell *matCellDef="let o">
-            {{ o.fechaOferta | date:'dd/MM/yyyy' }}
-          </td>
+          <td mat-cell *matCellDef="let o">{{ o.fechaOferta | date:'dd/MM/yyyy' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="estado">
@@ -91,9 +86,7 @@
               <mat-icon>emoji_events</mat-icon>
               GANADOR
             </span>
-            <span *ngIf="!o.esGanador" class="badge-perdedor">
-              No seleccionado
-            </span>
+            <span *ngIf="!o.esGanador" class="badge-perdedor">No seleccionado</span>
           </td>
         </ng-container>
 

@@ -145,9 +145,10 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
 
   nombreRol(idRol: number): string {
     switch (idRol) {
-      case 1: return 'Administrador';
-      case 2: return 'Empleado';
-      case 3: return 'Proveedor';
+      case 1: return 'Administrador del Sistema';
+      case 2: return 'Gestor de Compras';
+      case 3: return 'Administrador de Proveedor';
+      case 4: return 'Auditor / Reportes';
       default: return 'Desconocido';
     }
   }

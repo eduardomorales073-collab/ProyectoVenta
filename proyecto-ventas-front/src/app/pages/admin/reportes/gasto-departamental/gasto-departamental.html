@@ -1,6 +1,6 @@
 <div class="reporte-container">
   <div class="header-section">
-    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+    <button mat-icon-button [routerLink]="rutaVolver" class="back-btn">
       <mat-icon>arrow_back</mat-icon>
     </button>
     <div>
@@ -56,6 +56,7 @@
         Total: <strong>Q {{ totalGeneral | number:'1.2-2' }}</strong>
       </div>
     </mat-card-header>
+
     <mat-card-content>
       <div *ngIf="cargando" class="loading">
         <mat-spinner diameter="40"></mat-spinner>
@@ -88,9 +89,10 @@
           <td mat-cell *matCellDef="let g">
             <div class="gasto-cell">
               <span class="monto">Q {{ g.totalGastado | number:'1.2-2' }}</span>
-              <mat-progress-bar mode="determinate"
-                                [value]="getPorcentaje(g.totalGastado)"
-                                [class.max-gasto]="g.totalGastado === maxGasto">
+              <mat-progress-bar
+                mode="determinate"
+                [value]="getPorcentaje(g.totalGastado)"
+                [class.max-gasto]="g.totalGastado === maxGasto">
               </mat-progress-bar>
               <span class="porcentaje">{{ getPorcentaje(g.totalGastado) | number:'1.0-1' }}%</span>
             </div>

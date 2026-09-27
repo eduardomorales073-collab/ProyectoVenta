@@ -50,9 +50,21 @@ export class AuthService {
 
     switch (usuario.idRol) {
       case 1: return 'Administrador';
-      case 2: return 'Empleado';
-      case 3: return 'Proveedor';
+      case 2: return 'GestorCompras';
+      case 3: return 'AdministradorProveedor';
+      case 4: return 'Auditor';
       default: return null;
+    }
+  }
+
+  /** Nombre "bonito" del rol para mostrar en la UI */
+  getNombreRolBonito(): string {
+    switch (this.getRol()) {
+      case 'Administrador': return 'Administrador del Sistema';
+      case 'GestorCompras': return 'Gestor de Compras';
+      case 'AdministradorProveedor': return 'Administrador de Proveedor';
+      case 'Auditor': return 'Auditor / Reportes';
+      default: return '';
     }
   }
 
@@ -60,12 +72,26 @@ export class AuthService {
     return this.getRol() === 'Administrador';
   }
 
-  esEmpleado(): boolean {
-    return this.getRol() === 'Empleado';
+  esGestorCompras(): boolean {
+    return this.getRol() === 'GestorCompras';
   }
 
+  esAdminProveedor(): boolean {
+    return this.getRol() === 'AdministradorProveedor';
+  }
+
+  esAuditor(): boolean {
+    return this.getRol() === 'Auditor';
+  }
+
+  /** Alias para no romper código legacy */
+  esEmpleado(): boolean {
+    return this.esGestorCompras();
+  }
+
+  /** Alias para no romper código legacy */
   esProveedor(): boolean {
-    return this.getRol() === 'Proveedor';
+    return this.esAdminProveedor();
   }
 
   // ====== RUTA DE INICIO SEGÚN ROL ======
@@ -73,20 +99,30 @@ export class AuthService {
   getRutaInicio(): string {
     switch (this.getRol()) {
       case 'Administrador': return '/admin/dashboard';
-      case 'Empleado': return '/empleado/pedidos';
-      case 'Proveedor': return '/proveedor/ofertas';
+      case 'GestorCompras': return '/empleado/pedidos';
+      case 'AdministradorProveedor': return '/proveedor/ofertas';
+      case 'Auditor': return '/auditor/reportes';
       default: return '/login';
+    }
+  }
+
+  /** Ruta del HUB de reportes según el rol (Admin y Auditor) */
+  getRutaHubReportes(): string {
+    switch (this.getRol()) {
+      case 'Auditor': return '/auditor/reportes';
+      case 'Administrador':
+      default: return '/admin/reportes';
     }
   }
 
   // ====== PERMISOS POR ROL ======
 
   puedeCrear(): boolean {
-    return this.esAdmin() || this.esEmpleado();
+    return this.esAdmin() || this.esGestorCompras();
   }
 
   puedeEditar(): boolean {
-    return this.esAdmin() || this.esEmpleado();
+    return this.esAdmin() || this.esGestorCompras();
   }
 
   puedeEliminar(): boolean {
@@ -97,5 +133,18 @@ export class AuthService {
     return this.esAdmin();
   }
 
+  /** Solo Admin y Auditor pueden ver reportes */
+  puedeVerReportes(): boolean {
+    return this.esAdmin() || this.esAuditor();
+  }
 
+  /** Solo Admin puede gestionar catálogos */
+  puedeGestionarCatalogos(): boolean {
+    return this.esAdmin();
+  }
+
+  /** Solo Admin y Gestor de Compras pueden gestionar pedidos/adjudicaciones */
+  puedeGestionarCompras(): boolean {
+    return this.esAdmin() || this.esGestorCompras();
+  }
 }

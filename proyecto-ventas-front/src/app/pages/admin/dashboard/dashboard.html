@@ -164,15 +164,35 @@
             <span class="resumen-label">Administradores</span>
             <span class="resumen-value">{{ usuariosAdmin }}</span>
           </div>
-          <div class="resumen-item empleado">
-            <mat-icon>badge</mat-icon>
-            <span class="resumen-label">Empleados</span>
-            <span class="resumen-value">{{ usuariosEmpleado }}</span>
+          <div class="stat-item">
+            <span class="stat-label">Gestor de Compras</span>
+            <span class="stat-value">{{ usuariosGestorCompras }}</span>
           </div>
           <div class="resumen-item proveedor">
             <mat-icon>business</mat-icon>
             <span class="resumen-label">Proveedores</span>
-            <span class="resumen-value">{{ usuariosProveedor }}</span>
+            <div class="resumen-list">
+              <div class="resumen-item admin">
+                <mat-icon>admin_panel_settings</mat-icon>
+                <span class="resumen-label">Administrador del Sistema</span>
+                <span class="resumen-value">{{ usuariosAdmin }}</span>
+              </div>
+              <div class="resumen-item empleado">
+                <mat-icon>shopping_cart</mat-icon>
+                <span class="resumen-label">Gestor de Compras</span>
+                <span class="resumen-value">{{ usuariosGestorCompras }}</span>
+              </div>
+              <div class="resumen-item proveedor">
+                <mat-icon>business</mat-icon>
+                <span class="resumen-label">Administrador de Proveedor</span>
+                <span class="resumen-value">{{ usuariosAdminProveedor }}</span>
+              </div>
+              <div class="resumen-item auditor">
+                <mat-icon>analytics</mat-icon>
+                <span class="resumen-label">Auditor / Reportes</span>
+                <span class="resumen-value">{{ usuariosAuditor }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </mat-card-content>

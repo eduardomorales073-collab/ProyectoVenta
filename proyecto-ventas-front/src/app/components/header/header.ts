@@ -65,9 +65,10 @@ export class HeaderComponent implements OnInit {
 
   get nombreRol(): string {
     switch (this.usuario()?.idRol) {
-      case 1: return 'Administrador';
-      case 2: return 'Empleado';
-      case 3: return 'Proveedor';
+      case 1: return 'Administrador del Sistema';
+      case 2: return 'Gestor de Compras';
+      case 3: return 'Administrador de Proveedor';
+      case 4: return 'Auditor / Reportes';
       default: return '';
     }
   }
@@ -87,5 +88,8 @@ export class HeaderComponent implements OnInit {
     this.estaAutenticado.set(false);
     this.usuario.set(null);
     this.router.navigate(['/login']);
+  }
+  get esAuditor(): boolean {
+    return this.usuario()?.idRol === 4;
   }
 }

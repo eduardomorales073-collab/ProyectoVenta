@@ -6,7 +6,7 @@ export const proveedorGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.esProveedor()) return true;
+  if (authService.esAdminProveedor() || authService.esAdmin()) return true;
 
   router.navigate(['/login']);
   return false;

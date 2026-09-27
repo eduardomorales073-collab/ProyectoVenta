@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { ArticuloService, Articulo } from '../../../../services/articulo.service';
 import { ProveedorService } from '../../../../services/proveedor.service';
 import { Proveedor } from '../../../../models/proveedor.model';
@@ -46,6 +47,7 @@ export class VariacionPreciosComponent implements OnInit {
   buscado = false;
   articuloSeleccionado = '';
   proveedorSeleccionado = '';
+  rutaVolver: string = '/admin/reportes'; // ← NUEVO
 
   constructor(
     private fb: FormBuilder,
@@ -53,6 +55,7 @@ export class VariacionPreciosComponent implements OnInit {
     private articuloService: ArticuloService,
     private proveedorService: ProveedorService,
     private notificacion: NotificacionService,
+    private authService: AuthService, // ← NUEVO
     private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
@@ -62,6 +65,7 @@ export class VariacionPreciosComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes(); // ← NUEVO
     this.cargarArticulos();
     this.cargarProveedores();
   }
@@ -92,6 +96,7 @@ export class VariacionPreciosComponent implements OnInit {
 
   buscar(): void {
     if (this.form.invalid) return;
+
     this.cargando = true;
     this.buscado = true;
 

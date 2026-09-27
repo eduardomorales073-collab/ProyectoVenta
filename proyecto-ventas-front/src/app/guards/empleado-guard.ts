@@ -6,7 +6,7 @@ export const empleadoGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.esEmpleado()) return true;
+  if (authService.esGestorCompras() || authService.esAdmin()) return true;
 
   router.navigate(['/login']);
   return false;

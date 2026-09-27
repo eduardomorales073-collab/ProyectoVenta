@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { ArticuloService, Articulo } from '../../../../services/articulo.service';
 import { HistorialCompra } from '../../../../models/reporte.model';
 
@@ -39,6 +40,7 @@ export class HistorialArticulo implements OnInit {
   historial: HistorialCompra[] = [];
   displayedColumns: string[] = ['fechaResolucion', 'proveedor', 'precio'];
   cargando = false;
+  rutaVolver: string = '/admin/reportes';
   form: FormGroup;
   buscado = false;
   articuloSeleccionado: string = '';
@@ -48,6 +50,7 @@ export class HistorialArticulo implements OnInit {
     private reporteService: ReporteService,
     private articuloService: ArticuloService,
     private notificacion: NotificacionService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
@@ -56,6 +59,7 @@ export class HistorialArticulo implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes();
     this.cargarArticulos();
   }
 

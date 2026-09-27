@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { RankingProveedor } from '../../../../models/reporte.model';
 
 @Component({
@@ -37,12 +38,14 @@ export class RankingProveedores implements OnInit {
   ranking: RankingProveedor[] = [];
   displayedColumns: string[] = ['posicion', 'nombre', 'totalAdjudicado'];
   cargando = false;
+  rutaVolver: string = '/admin/reportes';
   formFiltro: FormGroup;
 
   constructor(
     private fb: FormBuilder,
     private reporteService: ReporteService,
     private notificacion: NotificacionService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {
     const hoy = new Date();
@@ -55,6 +58,7 @@ export class RankingProveedores implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes();
     this.cargar();
   }
 

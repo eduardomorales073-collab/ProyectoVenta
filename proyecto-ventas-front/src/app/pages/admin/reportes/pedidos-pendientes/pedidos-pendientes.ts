@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { PedidoPendiente } from '../../../../models/reporte.model';
 
 @Component({
@@ -29,14 +30,17 @@ export class PedidosPendientes implements OnInit {
   pedidos: PedidoPendiente[] = [];
   displayedColumns: string[] = ['id', 'idDepartamento', 'fechaSolicitada'];
   cargando = false;
+  rutaVolver: string = '/admin/reportes';
 
   constructor(
     private reporteService: ReporteService,
     private notificacion: NotificacionService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes();
     this.cargar();
   }
 

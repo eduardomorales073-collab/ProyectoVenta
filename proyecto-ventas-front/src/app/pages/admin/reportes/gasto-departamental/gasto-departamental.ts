@@ -8,14 +8,15 @@ import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { SucursalService } from '../../../../services/sucursal.service';
 import { Sucursal } from '../../../../models/sucursal.model';
 import { GastoDepartamental } from '../../../../models/reporte.model';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-gasto-departamental',
@@ -47,12 +48,14 @@ export class GastoDepartamentalComponent implements OnInit {
   sucursalSeleccionada = '';
   anioSeleccionado = 0;
   anios: number[] = [];
+  rutaVolver: string = '/admin/reportes'; // ← NUEVO
 
   constructor(
     private fb: FormBuilder,
     private reporteService: ReporteService,
     private sucursalService: SucursalService,
     private notificacion: NotificacionService,
+    private authService: AuthService, // ← NUEVO
     private cdr: ChangeDetectorRef
   ) {
     // Generar años: año actual y los 5 anteriores
@@ -68,6 +71,7 @@ export class GastoDepartamentalComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes(); // ← NUEVO
     this.cargarSucursales();
   }
 
@@ -85,6 +89,7 @@ export class GastoDepartamentalComponent implements OnInit {
 
   buscar(): void {
     if (this.form.invalid) return;
+
     this.cargando = true;
     this.buscado = true;
 

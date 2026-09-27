@@ -27,8 +27,8 @@ namespace Aplicacion.Servicios
         {
             // 1. Buscar el usuario
             var usuarios = await _usuarioRepositorio.GetAllasync();
-            var usuario = usuarios.FirstOrDefault(u => u.email == dto.Email && u.Activo);
-
+            var usuario = usuarios.FirstOrDefault(u =>
+                u.email.ToLower() == dto.Email.ToLower() && u.Activo);
             if (usuario == null)
                 return null;
 
@@ -51,23 +51,24 @@ namespace Aplicacion.Servicios
 
         private string GenerarToken(modelos.Usuarios usuario)
         {
-            // ✅ Mapear id_Rol a nombre de rol
+            // ✅ Mapear id_Rol a nombre de rol (4 roles nuevos)
             string nombreRol = usuario.id_Rol switch
             {
                 1 => "Administrador",
-                2 => "Empleado",
-                3 => "Proveedor",
-                _ => "Empleado"
+                2 => "GestorCompras",
+                3 => "AdministradorProveedor",
+                4 => "Auditor",
+                _ => "Auditor"
             };
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
-                new Claim(ClaimTypes.Email, usuario.email),
-                new Claim(ClaimTypes.Name, usuario.Nombre),
-                new Claim(ClaimTypes.Role, nombreRol),         // ← NUEVO: rol con nombre
-                new Claim("IdRol", usuario.id_Rol.ToString())
-            };
+        new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
+        new Claim(ClaimTypes.Email, usuario.email),
+        new Claim(ClaimTypes.Name, usuario.Nombre),
+        new Claim(ClaimTypes.Role, nombreRol),
+        new Claim("IdRol", usuario.id_Rol.ToString())
+    };
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

@@ -101,16 +101,15 @@
       </mat-card>
     </div>
 
+   
     <!-- Advertencia -->
-    <div class="advertencia" *ngIf="permisos">
-      <mat-icon color="warn">warning</mat-icon>
-      <span>
-        Los cambios afectarán a <strong>todos los usuarios</strong> con rol
-        <strong>
-          {{ permisos.idRol === 1 ? 'Administrador' : permisos.idRol === 2 ? 'Empleado' : 'Proveedor' }}
-        </strong>
-      </span>
-    </div>
+<div class="advertencia" *ngIf="permisos">
+  <mat-icon color="warn">warning</mat-icon>
+  <span>
+    Los cambios afectarán a <strong>todos los usuarios</strong> con rol
+    <strong>{{ permisos.idRol === 1 ? 'Administrador' : permisos.idRol === 2 ? 'Empleado' : 'Proveedor' }}</strong>
+  </span>
+</div>
 
     <!-- Botones -->
     <div class="modal-actions">

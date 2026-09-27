@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { EficienciaCompra } from '../../../../models/reporte.model';
 
 @Component({
@@ -26,14 +27,17 @@ import { EficienciaCompra } from '../../../../models/reporte.model';
 export class EficienciaProceso implements OnInit {
   eficiencia: EficienciaCompra | null = null;
   cargando = false;
+  rutaVolver: string = '/admin/reportes';
 
   constructor(
     private reporteService: ReporteService,
     private notificacion: NotificacionService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes();
     this.cargar();
   }
 

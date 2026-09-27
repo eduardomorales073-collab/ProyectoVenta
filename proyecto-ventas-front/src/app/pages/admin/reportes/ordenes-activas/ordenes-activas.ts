@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';  // ← NUEVO
 import { OrdenActiva } from '../../../../models/reporte.model';
 
 @Component({
@@ -29,14 +30,17 @@ export class OrdenesActivas implements OnInit {
   ordenes: OrdenActiva[] = [];
   displayedColumns: string[] = ['id', 'descripcion', 'fecha_Creacion', 'fecha_Limite'];
   cargando = false;
+  rutaVolver: string = '/admin/reportes';  // ← NUEVO
 
   constructor(
     private reporteService: ReporteService,
     private notificacion: NotificacionService,
+    private authService: AuthService,  // ← NUEVO
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes();  // ← NUEVO
     this.cargar();
   }
 

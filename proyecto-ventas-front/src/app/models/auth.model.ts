@@ -7,8 +7,8 @@ export interface AuthResponse {
   token: string;
   nombre: string;
   email: string;
-  rol: string;      // ← NUEVO
-  idRol: number;    // ← NUEVO
+  rol: string;      
+  idRol: number;    
 }
 
-export type Rol = 'Administrador' | 'Empleado' | 'Proveedor';   // ← NUEVO
+export type Rol = 'Administrador' | 'GestorCompras' | 'AdministradorProveedor' | 'Auditor';

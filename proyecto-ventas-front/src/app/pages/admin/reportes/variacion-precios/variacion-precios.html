@@ -1,6 +1,6 @@
 <div class="reporte-container">
   <div class="header-section">
-    <button mat-icon-button routerLink="/admin/reportes" class="back-btn">
+    <button mat-icon-button [routerLink]="rutaVolver" class="back-btn">
       <mat-icon>arrow_back</mat-icon>
     </button>
     <div>
@@ -23,6 +23,9 @@
             </mat-option>
           </mat-select>
           <mat-icon matPrefix>inventory_2</mat-icon>
+          <mat-error *ngIf="form.get('idArticulo')?.hasError('required')">
+            Selecciona un artículo
+          </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -33,6 +36,9 @@
             </mat-option>
           </mat-select>
           <mat-icon matPrefix>local_shipping</mat-icon>
+          <mat-error *ngIf="form.get('idProveedor')?.hasError('required')">
+            Selecciona un proveedor
+          </mat-error>
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
@@ -50,6 +56,7 @@
         {{ articuloSeleccionado }} - {{ proveedorSeleccionado }}
       </mat-card-title>
     </mat-card-header>
+
     <mat-card-content>
       <div *ngIf="cargando" class="loading">
         <mat-spinner diameter="40"></mat-spinner>

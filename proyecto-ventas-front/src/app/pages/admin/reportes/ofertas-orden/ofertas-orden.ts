@@ -13,6 +13,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { RouterLink } from '@angular/router';
 import { ReporteService } from '../../../../services/reporte.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 import { OrdenCompraService, OrdenCompra } from '../../../../services/orden-compra.service';
 import { OfertaComparativa } from '../../../../models/reporte.model';
 
@@ -41,6 +42,7 @@ export class OfertasOrden implements OnInit {
   ofertas: OfertaComparativa[] = [];
   displayedColumns: string[] = ['proveedor', 'precio', 'fechaOferta', 'estado'];
   cargando = false;
+  rutaVolver: string = '/admin/reportes';
   form: FormGroup;
   buscado = false;
   ordenSeleccionada = '';
@@ -51,6 +53,7 @@ export class OfertasOrden implements OnInit {
     private reporteService: ReporteService,
     private ordenCompraService: OrdenCompraService,
     private notificacion: NotificacionService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
@@ -59,12 +62,13 @@ export class OfertasOrden implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rutaVolver = this.authService.getRutaHubReportes();
     this.cargarOrdenes();
   }
 
   cargarOrdenes(): void {
     this.ordenCompraService.listar().subscribe({
-      next: (data) => {
+      next: (data: OrdenCompra[]) => {
         this.ordenes = data;
         this.cdr.detectChanges();
       },
@@ -84,7 +88,7 @@ export class OfertasOrden implements OnInit {
     this.ordenSeleccionada = orden ? `#${orden.id} - ${orden.descripcion}` : '';
 
     this.reporteService.ofertasPorOrden(idOrden).subscribe({
-      next: (data) => {
+      next: (data: OfertaComparativa[]) => {
         this.ofertas = data;
         const ganador = data.find(o => o.esGanador);
         this.precioGanador = ganador ? ganador.precio : 0;

@@ -8,6 +8,7 @@ import { authGuard } from './guards/auth-guard';
 import { adminGuard } from './guards/admin-guard';
 import { empleadoGuard } from './guards/empleado-guard';
 import { proveedorGuard } from './guards/proveedor-guard';
+import { auditorGuard } from './guards/auditor-guard';
 import { UsuariosComponent } from './pages/admin/usuarios/usuarios';
 import { SucursalesComponent } from './pages/admin/sucursales/sucursales';
 import { DepartamentosComponent } from './pages/admin/departamentos/departamentos';
@@ -27,6 +28,7 @@ import { GastoDepartamentalComponent } from './pages/admin/reportes/gasto-depart
 import { VariacionPreciosComponent } from './pages/admin/reportes/variacion-precios/variacion-precios';
 import { AdjudicacionesComponent } from './pages/admin/adjudicaciones/adjudicaciones';
 import { PedidosInternosComponent } from './pages/admin/pedidos-internos/pedidos-internos';
+import { AuditorReportesComponent } from './pages/auditor/reportes/reportes';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -62,7 +64,25 @@ export const routes: Routes = [
     ]
   },
 
-  // ===== EMPLEADO =====
+   // ===== AUDITOR =====
+  {
+    path: 'auditor',
+    canActivate: [auditorGuard],
+    children: [
+      { path: 'reportes', component: AuditorReportesComponent },
+      { path: 'reportes/ordenes-activas', component: OrdenesActivas },
+      { path: 'reportes/pedidos-pendientes', component: PedidosPendientes },
+      { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
+      { path: 'reportes/ranking-proveedores', component: RankingProveedores },
+      { path: 'reportes/historial-articulo', component: HistorialArticulo },
+      { path: 'reportes/ofertas-orden', component: OfertasOrden },
+      { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
+      { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      { path: '', redirectTo: 'reportes', pathMatch: 'full' }
+    ]
+  },
+
+  // ===== EMPLEADO (Gestor de Compras) =====
   {
     path: 'empleado',
     canActivate: [empleadoGuard],
@@ -73,7 +93,7 @@ export const routes: Routes = [
     ]
   },
 
-  // ===== PROVEEDOR =====
+  // ===== PROVEEDOR (Admin de Proveedor) =====
   {
     path: 'proveedor',
     canActivate: [proveedorGuard],

@@ -34,15 +34,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   // Estadísticas
   totalArticulos = 0;
   totalUsuarios = 0;
-  totalRoles = 3;
+  totalRoles = 4;  // ← Ahora son 4 roles
   totalSucursales = 0;
 
-  // Usuarios por rol
-  usuariosAdmin = 0;
-  usuariosEmpleado = 0;
-  usuariosProveedor = 0;
+  // Usuarios por rol (4 roles nuevos)
+  usuariosAdmin = 0;             // Rol 1: Administrador del Sistema
+  usuariosGestorCompras = 0;     // Rol 2: Gestor de Compras
+  usuariosAdminProveedor = 0;    // Rol 3: Administrador de Proveedor
+  usuariosAuditor = 0;           // Rol 4: Auditor / Reportes
 
-  // Nuevas estadísticas
+  // Estadísticas de actividad
   usuariosActivos = 0;
   usuariosInactivos = 0;
   articulosRecientes: Articulo[] = [];
@@ -77,7 +78,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       next: (articulos) => {
         this.totalArticulos = articulos.length;
 
-        // Últimos 5 artículos (por ID más alto)
         this.articulosRecientes = [...articulos]
           .sort((a, b) => b.id - a.id)
           .slice(0, 5);
@@ -93,9 +93,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     this.usuarioService.listar().subscribe({
       next: (usuarios) => {
         this.totalUsuarios = usuarios.length;
+
+        // Contadores por rol (4 roles)
         this.usuariosAdmin = usuarios.filter(u => u.id_Rol === 1).length;
-        this.usuariosEmpleado = usuarios.filter(u => u.id_Rol === 2).length;
-        this.usuariosProveedor = usuarios.filter(u => u.id_Rol === 3).length;
+        this.usuariosGestorCompras = usuarios.filter(u => u.id_Rol === 2).length;
+        this.usuariosAdminProveedor = usuarios.filter(u => u.id_Rol === 3).length;
+        this.usuariosAuditor = usuarios.filter(u => u.id_Rol === 4).length;
 
         this.usuariosActivos = usuarios.filter(u => u.activo).length;
         this.usuariosInactivos = usuarios.filter(u => !u.activo).length;
@@ -103,7 +106,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.cargando = false;
         this.cdr.detectChanges();
 
-        // Crear gráficos después de tener los datos
         setTimeout(() => this.crearGraficos(), 100);
       },
       error: () => {
@@ -114,15 +116,30 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   }
 
   crearGraficos(): void {
-    // Gráfico 1: Usuarios por rol (Doughnut)
+    // Gráfico 1: Usuarios por rol (Doughnut con 4 roles)
     if (this.graficoRoles) {
       new Chart(this.graficoRoles.nativeElement, {
         type: 'doughnut',
         data: {
-          labels: ['Administradores', 'Empleados', 'Proveedores'],
+          labels: [
+            'Administrador',
+            'Gestor de Compras',
+            'Admin. Proveedor',
+            'Auditor'
+          ],
           datasets: [{
-            data: [this.usuariosAdmin, this.usuariosEmpleado, this.usuariosProveedor],
-            backgroundColor: ['#667eea', '#10b981', '#f59e0b'],
+            data: [
+              this.usuariosAdmin,
+              this.usuariosGestorCompras,
+              this.usuariosAdminProveedor,
+              this.usuariosAuditor
+            ],
+            backgroundColor: [
+              '#667eea',   // Admin - morado
+              '#10b981',   // Gestor - verde
+              '#f59e0b',   // Proveedor - naranja
+              '#8b5cf6'    // Auditor - violeta
+            ],
             borderWidth: 3,
             borderColor: '#fff'
           }]
@@ -135,7 +152,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
               position: 'bottom',
               labels: {
                 padding: 15,
-                font: { size: 13, weight: 'bold' }
+                font: { size: 12, weight: 'bold' }
               }
             }
           }
