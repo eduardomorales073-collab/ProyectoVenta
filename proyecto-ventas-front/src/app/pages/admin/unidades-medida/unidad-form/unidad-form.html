@@ -2,64 +2,44 @@
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h2>{{ esEdicion ? 'Editar Artículo' : 'Nuevo Artículo' }}</h2>
+      <h2>{{ esEdicion ? 'Editar Unidad de Medida' : 'Nueva Unidad de Medida' }}</h2>
       <button mat-icon-button (click)="onCancelar()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-
-      <!-- Código (auto-generado, solo lectura) -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Código</mat-label>
-        <input matInput formControlName="codigo" readonly>
-        <mat-icon matPrefix>qr_code</mat-icon>
-        <mat-hint>Generado automáticamente</mat-hint>
-      </mat-form-field>
-
-      <!-- Nombre -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nombre</mat-label>
-        <input matInput formControlName="nombre" placeholder="Ej: Computadora portátil" required>
-        <mat-icon matPrefix>inventory_2</mat-icon>
+        <input matInput formControlName="nombre" placeholder="Ej: Unidad, Caja, Kg" required>
+        <mat-icon matPrefix>straighten</mat-icon>
         <mat-error *ngIf="form.get('nombre')?.hasError('required')">
           El nombre es obligatorio
         </mat-error>
         <mat-error *ngIf="form.get('nombre')?.hasError('maxlength')">
-          Máximo 100 caracteres
+          Máximo 20 caracteres
         </mat-error>
       </mat-form-field>
 
-      <!-- Descripción -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Abreviatura</mat-label>
+        <input matInput formControlName="abreviatura" placeholder="Ej: Und, Cja, Kg">
+        <mat-icon matPrefix>short_text</mat-icon>
+        <mat-error *ngIf="form.get('abreviatura')?.hasError('maxlength')">
+          Máximo 10 caracteres
+        </mat-error>
+      </mat-form-field>
+
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Descripción</mat-label>
         <textarea matInput formControlName="descripcion" rows="3"
-                  placeholder="Ej: Laptop para trabajo administrativo" required></textarea>
+                  placeholder="Ej: Unidad individual de un producto"></textarea>
         <mat-icon matPrefix>description</mat-icon>
-        <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
-          La descripción es obligatoria
-        </mat-error>
         <mat-error *ngIf="form.get('descripcion')?.hasError('maxlength')">
           Máximo 200 caracteres
         </mat-error>
       </mat-form-field>
 
-      <!-- Unidad de medida -->
-      <mat-form-field appearance="outline" class="full-width">
-  <mat-label>Unidad de medida</mat-label>
-  <mat-select formControlName="unidad_medida" required>
-    <mat-option *ngFor="let u of unidadesMedida" [value]="u.nombre">
-      {{ u.nombre }}
-    </mat-option>
-  </mat-select>
-  <mat-icon matPrefix>straighten</mat-icon>
-  <mat-error *ngIf="form.get('unidad_medida')?.hasError('required')">
-    La unidad de medida es obligatoria
-  </mat-error>
-</mat-form-field>
-
-      <!-- Botones -->
       <div class="modal-actions">
         <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
           Cancelar

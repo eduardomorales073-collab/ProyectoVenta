@@ -317,4 +317,14 @@ namespace Aplicacion.Mappings
         }
     }
 
+    public class UnidadMedidaPerfil : Profile
+    {
+        public UnidadMedidaPerfil()
+        {
+            CreateMap<Unidad_Medida, UnidadMedidaDTO>();
+            CreateMap<CreateUnidadMedidaDTO, Unidad_Medida>();
+            CreateMap<UpdateUnidadMedidaDTO, Unidad_Medida>();
+        }
+    }
+
 }

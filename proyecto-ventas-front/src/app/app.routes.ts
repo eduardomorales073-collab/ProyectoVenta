@@ -30,6 +30,7 @@ import { AdjudicacionesComponent } from './pages/admin/adjudicaciones/adjudicaci
 import { PedidosInternosComponent } from './pages/admin/pedidos-internos/pedidos-internos';
 import { AuditorReportesComponent } from './pages/auditor/reportes/reportes';
 import { CategoriasProveedorComponent } from './pages/admin/categorias-proveedor/categorias-proveedor';
+import { UnidadesMedidaComponent } from './pages/admin/unidades-medida/unidades-medida';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -48,6 +49,7 @@ export const routes: Routes = [
       { path: 'proveedores', component: ProveedoresComponent },
       { path: 'roles', component: RolesComponent },
       { path: 'tipos-orden', component: TiposOrdenComponent },
+      { path: 'unidades-medida', component: UnidadesMedidaComponent },
       { path: 'categorias-proveedor', component: CategoriasProveedorComponent },
 
       // ===== REPORTES =====

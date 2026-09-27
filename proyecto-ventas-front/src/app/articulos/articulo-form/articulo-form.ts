@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Articulo, ArticuloService, CreateArticuloDTO } from '../../services/articulo.service';
 import { NotificacionService } from '../../services/notificacion';
+import { UnidadMedidaService } from '../../services/unidad-medida.service';
+import { UnidadMedida } from '../../models/unidad-medida.model';
 
 @Component({
   selector: 'app-articulo-form',
@@ -33,24 +35,13 @@ export class ArticuloFormComponent implements OnInit {
   guardando = false;
   error = '';
 
-  // Unidades de medida disponibles
-  unidadesMedida: string[] = [
-    'Unidad',
-    'Caja',
-    'Paquete',
-    'Kg',
-    'Litro',
-    'Metro',
-    'Par',
-    'Docena',
-    'Resma',
-    'Galón',
-    'Rollo'
-  ];
+  // Unidades de medida cargadas dinámicamente desde la BD
+  unidadesMedida: UnidadMedida[] = [];
 
   constructor(
     private fb: FormBuilder,
     private articuloService: ArticuloService,
+    private unidadMedidaService: UnidadMedidaService,
     private notificacion: NotificacionService
   ) {
     this.form = this.fb.group({
@@ -62,6 +53,8 @@ export class ArticuloFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.cargarUnidades();
+
     if (this.articulo) {
       // Edición: mostrar el código actual
       this.form.patchValue({
@@ -74,6 +67,17 @@ export class ArticuloFormComponent implements OnInit {
       // Creación: auto-generar el código
       this.generarCodigo();
     }
+  }
+
+  cargarUnidades(): void {
+    this.unidadMedidaService.listar().subscribe({
+      next: (data) => {
+        this.unidadesMedida = data;
+      },
+      error: (err: any) => {
+        this.notificacion.error(`Error al cargar unidades: ${err.status}`);
+      }
+    });
   }
 
   get esEdicion(): boolean {

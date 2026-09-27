@@ -1,0 +1,52 @@
+.container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    color: #1e293b;
+  }
+}
+
+.filtro {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.tabla-container {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tabla-mat {
+  width: 100%;
+}
+
+.chip-abrev {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sin-dato {
+  color: #cbd5e1;
+}
+
+.error {
+  color: #ef4444;
+  padding: 1rem;
+}

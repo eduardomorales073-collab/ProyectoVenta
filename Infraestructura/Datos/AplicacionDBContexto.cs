@@ -34,6 +34,8 @@ namespace Infraestructura.Datos
 
         public DbSet<Categoria_Proveedor> Categoria_Proveedor { get; set; }
 
+        public DbSet<Unidad_Medida> Unidad_Medida { get; set; }
+
         public AplicacionDBContexto(DbContextOptions<AplicacionDBContexto> option) : base(option)
         {
         }

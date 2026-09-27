@@ -94,6 +94,9 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ICategoriaProveedorService, CategoriaProveedorService>();
 builder.Services.AddScoped<CatProvRepositorio, CatProvRepositorioImpl>();
 
+builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
+builder.Services.AddScoped<UnidadMedidaRepositorio, UniMedRepositorio>();
+
 // ===== SWAGGER CON JWT =====
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
