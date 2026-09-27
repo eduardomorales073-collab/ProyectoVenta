@@ -12,17 +12,17 @@ namespace Aplicacion.Servicios
     public class ProveedorService : IProveedorService
     {
         private readonly ProveedorRepositorio _proveedorRepositorio;
-        private readonly ProveRubRepositorio _proveRubRepositorio;   // ← NUEVO
+        private readonly ProveRubRepositorio _proveRubRepositorio;
         private readonly IMapper _mapper;
 
         public ProveedorService(
             ProveedorRepositorio proveedorRepository,
-            ProveRubRepositorio proveRubRepositorio,                  // ← NUEVO
+            ProveRubRepositorio proveRubRepositorio,
             IMapper mapper)
         {
             _mapper = mapper;
             _proveedorRepositorio = proveedorRepository;
-            _proveRubRepositorio = proveRubRepositorio;               // ← NUEVO
+            _proveRubRepositorio = proveRubRepositorio;
         }
 
         public async Task AddAsync(CreateProveedorDTO proveedor)
@@ -53,10 +53,7 @@ namespace Aplicacion.Servicios
 
         public async Task DeleteAsync(int id)
         {
-            // 1. Eliminar asociaciones primero
             await _proveRubRepositorio.EliminarPorProveedorAsync(id);
-
-            // 2. Eliminar el proveedor
             await _proveedorRepositorio.DeletAsync(id);
         }
 
@@ -71,6 +68,8 @@ namespace Aplicacion.Servicios
                 p.Descripcion,
                 p.Telefono,
                 p.Direccion,
+                p.NIT,
+                p.Categoria,
                 asociaciones.Where(a => a.id_Proveedor == p.id).Select(a => a.id_Rubro).ToList()
             )).ToList();
         }
@@ -86,7 +85,16 @@ namespace Aplicacion.Servicios
                 .Select(a => a.id_Rubro)
                 .ToList();
 
-            return new ProveedorDTO(p.id, p.Nombre, p.Descripcion, p.Telefono, p.Direccion, rubros);
+            return new ProveedorDTO(
+                p.id,
+                p.Nombre,
+                p.Descripcion,
+                p.Telefono,
+                p.Direccion,
+                p.NIT,
+                p.Categoria,
+                rubros
+            );
         }
 
         public async Task UpdateAsync(UpdateProveedorDTO proveedor)
@@ -99,6 +107,8 @@ namespace Aplicacion.Servicios
             existente.Descripcion = proveedor.Descripcion;
             existente.Telefono = proveedor.telefono;
             existente.Direccion = proveedor.Direccion;
+            existente.NIT = proveedor.NIT;
+            existente.Categoria = proveedor.Categoria;
 
             await _proveedorRepositorio.UpdateAsync(existente);
 

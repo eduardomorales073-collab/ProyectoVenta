@@ -4,6 +4,8 @@ export interface Proveedor {
   descripcion: string;
   telefono: string;
   direccion: string;
+  nit: string | null;
+  categoria: string | null;
   id_Rubros: number[];
 }
 
@@ -12,6 +14,8 @@ export interface CreateProveedorDTO {
   descripcion: string;
   telefono: string;
   direccion: string;
+  nit: string | null;
+  categoria: string | null;
   id_Rubros: number[];
 }
 
@@ -21,5 +25,7 @@ export interface UpdateProveedorDTO {
   descripcion: string;
   telefono: string;
   direccion: string;
+  nit: string | null;
+  categoria: string | null;
   id_Rubros: number[];
 }

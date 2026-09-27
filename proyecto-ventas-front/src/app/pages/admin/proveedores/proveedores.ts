@@ -39,7 +39,7 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './proveedores.scss'
 })
 export class ProveedoresComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'telefono', 'direccion', 'rubros', 'acciones'];
+  displayedColumns: string[] = ['id', 'nit', 'nombre', 'categoria', 'telefono', 'direccion', 'rubros', 'acciones'];
   dataSource = new MatTableDataSource<Proveedor>([]);
 
   rubros: Rubro[] = [];
@@ -119,6 +119,11 @@ export class ProveedoresComponent implements OnInit, AfterViewInit {
       .map(id => this.rubros.find(r => r.id === id)?.nombre || 'Desconocido')
       .join(', ');
   }
+  nombresRubrosArray(ids: number[]): string[] {
+  if (!ids || ids.length === 0) return [];
+  return ids
+    .map(id => this.rubros.find(r => r.id === id)?.nombre || 'Desconocido');
+}
 
   abrirFormulario(proveedor: Proveedor | null): void {
     this.proveedorSeleccionado = proveedor;

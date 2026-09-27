@@ -6,12 +6,12 @@ namespace Aplicacion.modelos
 {
     public class Proveedor
     {
-        
-     public int id { get; set; }
-     public string Nombre { get; set; }
-     public string Descripcion { get; set; }
-     public string Telefono { get; set; }
-     public string Direccion { get; set; }
-      
-}
+        public int id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public string Telefono { get; set; }
+        public string Direccion { get; set; }
+        public string? NIT { get; set; }
+        public string? Categoria { get; set; }
+    }
 }

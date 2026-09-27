@@ -1,12 +1,13 @@
-﻿// ProveedorControlador.cs
-using Aplicacion.DTO;
+﻿using Aplicacion.DTO;
 using Aplicacion.Interfaz;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProveedorControlador : ControllerBase
     {
         private readonly IProveedorService _proveedorService;
@@ -19,6 +20,7 @@ namespace Venta.Controllers
         public async Task<IActionResult> GetById(int id) => Ok(await _proveedorService.GetByIdAsync(id));
 
         [HttpPost]
+        [Authorize(Roles = "Administrador,GestorCompras")]
         public async Task<IActionResult> Create(CreateProveedorDTO dto)
         {
             await _proveedorService.AddAsync(dto);
@@ -26,6 +28,7 @@ namespace Venta.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Administrador,GestorCompras")]
         public async Task<IActionResult> Update(UpdateProveedorDTO dto)
         {
             await _proveedorService.UpdateAsync(dto);
@@ -33,6 +36,7 @@ namespace Venta.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Delete(int id)
         {
             await _proveedorService.DeleteAsync(id);

@@ -6,9 +6,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { ProveedorService } from '../../../../services/proveedor.service';
 import { Proveedor, CreateProveedorDTO } from '../../../../models/proveedor.model';
+import { RubroService } from '../../../../services/rubro.service';
 import { Rubro } from '../../../../models/rubro.model';
 import { NotificacionService } from '../../../../services/notificacion';
 
@@ -22,45 +22,76 @@ import { NotificacionService } from '../../../../services/notificacion';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatIconModule,
-    MatChipsModule
+    MatIconModule
   ],
   templateUrl: './proveedor-form.html',
   styleUrl: './proveedor-form.scss'
 })
 export class ProveedorFormComponent implements OnInit {
   @Input() proveedor: Proveedor | null = null;
-  @Input() rubros: Rubro[] = [];
   @Output() guardado = new EventEmitter<void>();
   @Output() cancelado = new EventEmitter<void>();
 
   form: FormGroup;
   guardando = false;
 
+  rubros: Rubro[] = [];
+
+  // Categorías de proveedor
+  categorias: string[] = [
+    'Tecnología',
+    'Papelería',
+    'Mobiliario',
+    'Limpieza',
+    'Alimentos',
+    'Servicios',
+    'Construcción',
+    'Textiles',
+    'Otros'
+  ];
+
   constructor(
     private fb: FormBuilder,
     private proveedorService: ProveedorService,
+    private rubroService: RubroService,
     private notificacion: NotificacionService
   ) {
     this.form = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
-      descripcion: ['', [Validators.required, Validators.maxLength(200)]],
-      telefono: ['', [Validators.required, Validators.maxLength(20)]],
-      direccion: ['', [Validators.required, Validators.maxLength(200)]],
-      id_Rubros: [[], [Validators.required]]
+      descripcion: ['', [Validators.maxLength(200)]],
+      nit: ['', [Validators.maxLength(20)]],
+      categoria: ['Otros', [Validators.required]],
+      telefono: ['', [Validators.maxLength(20)]],
+      direccion: ['', [Validators.maxLength(200)]],
+      id_Rubros: [[]]
     });
   }
 
   ngOnInit(): void {
+    this.cargarRubros();
+
     if (this.proveedor) {
       this.form.patchValue({
         nombre: this.proveedor.nombre,
         descripcion: this.proveedor.descripcion,
+        nit: this.proveedor.nit || '',
+        categoria: this.proveedor.categoria || 'Otros',
         telefono: this.proveedor.telefono,
         direccion: this.proveedor.direccion,
         id_Rubros: this.proveedor.id_Rubros || []
       });
     }
+  }
+
+  cargarRubros(): void {
+    this.rubroService.listar().subscribe({
+      next: (data) => {
+        this.rubros = data;
+      },
+      error: (err: any) => {
+        this.notificacion.error(`Error al cargar rubros: ${err.status}`);
+      }
+    });
   }
 
   get esEdicion(): boolean {
@@ -77,11 +108,14 @@ export class ProveedorFormComponent implements OnInit {
       const dto = {
         id: this.proveedor!.id,
         nombre: datos.nombre,
-        descripcion: datos.descripcion,
-        telefono: datos.telefono,
-        direccion: datos.direccion,
-        id_Rubros: datos.id_Rubros
+        descripcion: datos.descripcion || '',
+        telefono: datos.telefono || '',
+        direccion: datos.direccion || '',
+        nit: datos.nit || null,
+        categoria: datos.categoria || null,
+        id_Rubros: datos.id_Rubros || []
       };
+
       this.proveedorService.actualizar(dto).subscribe({
         next: () => {
           this.guardando = false;
@@ -90,17 +124,20 @@ export class ProveedorFormComponent implements OnInit {
         },
         error: (err: any) => {
           this.guardando = false;
-          this.notificacion.error(`Error: ${err.status} ${err.statusText}`);
+          this.notificacion.error(`Error al actualizar: ${err.status} ${err.statusText}`);
         }
       });
     } else {
       const dto: CreateProveedorDTO = {
         nombre: datos.nombre,
-        descripcion: datos.descripcion,
-        telefono: datos.telefono,
-        direccion: datos.direccion,
-        id_Rubros: datos.id_Rubros
+        descripcion: datos.descripcion || '',
+        telefono: datos.telefono || '',
+        direccion: datos.direccion || '',
+        nit: datos.nit || null,
+        categoria: datos.categoria || null,
+        id_Rubros: datos.id_Rubros || []
       };
+
       this.proveedorService.crear(dto).subscribe({
         next: () => {
           this.guardando = false;
@@ -109,7 +146,7 @@ export class ProveedorFormComponent implements OnInit {
         },
         error: (err: any) => {
           this.guardando = false;
-          this.notificacion.error(`Error: ${err.status} ${err.statusText}`);
+          this.notificacion.error(`Error al crear: ${err.status} ${err.statusText}`);
         }
       });
     }
