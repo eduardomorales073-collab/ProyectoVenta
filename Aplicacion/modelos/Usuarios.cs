@@ -14,5 +14,6 @@ namespace Aplicacion.modelos
         public string Contrasena { get; set; }
         public bool Activo { get; set; }
         public int id_Rol { get; set; }
+        public int? id_Proveedor { get; set; }   
     }
 }

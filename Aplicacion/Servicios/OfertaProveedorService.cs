@@ -5,7 +5,9 @@ using Aplicacion.Repositorio;
 using AutoMapper;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Aplicacion.Servicios
 {
@@ -13,15 +15,35 @@ namespace Aplicacion.Servicios
     {
         private readonly OferProvRepositorio _ofertaProveedorRepositorio;
         private readonly IMapper _mapper;
+
         public OfertaProveedorService(OferProvRepositorio ofertaProveedorRepository, IMapper mapper)
         {
             _mapper = mapper;
             _ofertaProveedorRepositorio = ofertaProveedorRepository;
-
         }
+
         public async Task AddAsync(CreateOfertaProveedorDTO oferta)
         {
-            await _ofertaProveedorRepositorio.AddAsync(_mapper.Map<Oferta_Proveedor>(oferta));
+            // ===== VALIDACIÓN: Un proveedor solo puede ofertar UNA VEZ por pedido =====
+            var todas = await _ofertaProveedorRepositorio.GetAllasync();
+
+            var ofertaExistente = todas.FirstOrDefault(o =>
+                o.id_Proveedor == oferta.id_Proveedor &&
+                o.id_Pedido_Interno == oferta.id_Pedido_Interno);
+
+            if (ofertaExistente != null)
+            {
+                throw new InvalidOperationException(
+                    $"Ya has registrado una oferta para este pedido. " +
+                    $"Si deseas cambiar el precio, edita tu oferta existente (ID #{ofertaExistente.id})."
+                );
+            }
+
+            // Calcular id manualmente
+            var nuevaOferta = _mapper.Map<Oferta_Proveedor>(oferta);
+            nuevaOferta.id = todas.Any() ? todas.Max(o => o.id) + 1 : 1;
+
+            await _ofertaProveedorRepositorio.AddAsync(nuevaOferta);
         }
 
         public async Task DeleteAsync(int id)
@@ -42,6 +64,14 @@ namespace Aplicacion.Servicios
         public async Task UpdateAsync(UpdateOfertaProveedorDTO oferta)
         {
             await _ofertaProveedorRepositorio.UpdateAsync(_mapper.Map<Oferta_Proveedor>(oferta));
+        }
+
+        // ← NUEVO: Obtener solo las ofertas de un proveedor específico
+        public async Task<List<OfertaProveedorDTO>> GetByProveedorAsync(int idProveedor)
+        {
+            var todas = await _ofertaProveedorRepositorio.GetAllasync();
+            var filtradas = todas.Where(o => o.id_Proveedor == idProveedor).ToList();
+            return _mapper.Map<List<OfertaProveedorDTO>>(filtradas);
         }
     }
 }

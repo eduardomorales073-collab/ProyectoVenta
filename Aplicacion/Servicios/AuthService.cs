@@ -61,14 +61,21 @@ namespace Aplicacion.Servicios
                 _ => "Auditor"
             };
 
-            var claims = new[]
-            {
+            // Lista dinámica de claims
+            var claims = new List<Claim>
+    {
         new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
         new Claim(ClaimTypes.Email, usuario.email),
         new Claim(ClaimTypes.Name, usuario.Nombre),
         new Claim(ClaimTypes.Role, nombreRol),
         new Claim("IdRol", usuario.id_Rol.ToString())
     };
+
+            // ✅ NUEVO: Agregar id_Proveedor al JWT si existe
+            if (usuario.id_Proveedor.HasValue)
+            {
+                claims.Add(new Claim("IdProveedor", usuario.id_Proveedor.Value.ToString()));
+            }
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

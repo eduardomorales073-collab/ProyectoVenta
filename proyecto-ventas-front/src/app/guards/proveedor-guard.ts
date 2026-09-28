@@ -5,9 +5,7 @@ import { AuthService } from '../services/auth.service';
 export const proveedorGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-
   if (authService.esAdminProveedor() || authService.esAdmin()) return true;
-
-  router.navigate(['/login']);
+  router.navigate(['/acceso-denegado']);
   return false;
 };

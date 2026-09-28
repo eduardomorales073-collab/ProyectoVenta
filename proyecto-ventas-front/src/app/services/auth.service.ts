@@ -14,11 +14,23 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.url}/login`, data).pipe(
       tap(res => {
         localStorage.setItem('token', res.token);
+
+        // Decodificar el JWT para extraer el IdProveedor (si existe)
+        let idProveedor: number | null = null;
+        try {
+          const payload = JSON.parse(atob(res.token.split('.')[1]));
+          const idProv = payload['IdProveedor'] || payload['idProveedor'];
+          idProveedor = idProv ? parseInt(idProv, 10) : null;
+        } catch (error) {
+          console.error('Error al decodificar el token:', error);
+        }
+
         localStorage.setItem('usuario', JSON.stringify({
           nombre: res.nombre,
           email: res.email,
           rol: res.rol,
-          idRol: res.idRol
+          idRol: res.idRol,
+          id_Proveedor: idProveedor
         }));
       })
     );
@@ -39,7 +51,7 @@ export class AuthService {
 
   // ====== USUARIO Y ROL ======
 
-  getUsuario(): { nombre: string; email: string; rol: string; idRol: number } | null {
+  getUsuario(): { nombre: string; email: string; rol: string; idRol: number; id_Proveedor: number | null } | null {
     const raw = localStorage.getItem('usuario');
     return raw ? JSON.parse(raw) : null;
   }
@@ -57,7 +69,6 @@ export class AuthService {
     }
   }
 
-  /** Nombre "bonito" del rol para mostrar en la UI */
   getNombreRolBonito(): string {
     switch (this.getRol()) {
       case 'Administrador': return 'Administrador del Sistema';
@@ -68,33 +79,14 @@ export class AuthService {
     }
   }
 
-  esAdmin(): boolean {
-    return this.getRol() === 'Administrador';
-  }
+  esAdmin(): boolean { return this.getRol() === 'Administrador'; }
+  esGestorCompras(): boolean { return this.getRol() === 'GestorCompras'; }
+  esAdminProveedor(): boolean { return this.getRol() === 'AdministradorProveedor'; }
+  esAuditor(): boolean { return this.getRol() === 'Auditor'; }
+  esEmpleado(): boolean { return this.esGestorCompras(); }
+  esProveedor(): boolean { return this.esAdminProveedor(); }
 
-  esGestorCompras(): boolean {
-    return this.getRol() === 'GestorCompras';
-  }
-
-  esAdminProveedor(): boolean {
-    return this.getRol() === 'AdministradorProveedor';
-  }
-
-  esAuditor(): boolean {
-    return this.getRol() === 'Auditor';
-  }
-
-  /** Alias para no romper código legacy */
-  esEmpleado(): boolean {
-    return this.esGestorCompras();
-  }
-
-  /** Alias para no romper código legacy */
-  esProveedor(): boolean {
-    return this.esAdminProveedor();
-  }
-
-  // ====== RUTA DE INICIO SEGÚN ROL ======
+  // ====== RUTAS ======
 
   getRutaInicio(): string {
     switch (this.getRol()) {
@@ -106,7 +98,6 @@ export class AuthService {
     }
   }
 
-  /** Ruta del HUB de reportes según el rol (Admin y Auditor) */
   getRutaHubReportes(): string {
     switch (this.getRol()) {
       case 'Auditor': return '/auditor/reportes';
@@ -115,36 +106,56 @@ export class AuthService {
     }
   }
 
-  // ====== PERMISOS POR ROL ======
+  // ====== PERMISOS ESPECÍFICOS POR MÓDULO ======
 
-  puedeCrear(): boolean {
-    return this.esAdmin() || this.esGestorCompras();
-  }
+  puedeGestionarArticulos(): boolean { return this.esAdmin(); }
+  puedeGestionarUsuarios(): boolean { return this.esAdmin(); }
+  puedeGestionarProveedores(): boolean { return this.esAdmin(); }
+  puedeGestionarCategorias(): boolean { return this.esAdmin(); }
+  puedeGestionarUnidades(): boolean { return this.esAdmin(); }
+  puedeGestionarCatalogos(): boolean { return this.esAdmin(); }
+  puedeGestionarRoles(): boolean { return this.esAdmin(); }
 
-  puedeEditar(): boolean {
-    return this.esAdmin() || this.esGestorCompras();
-  }
+  puedeCrearPedidos(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEditarPedidos(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEliminarPedidos(): boolean { return this.esAdmin(); }
 
-  puedeEliminar(): boolean {
-    return this.esAdmin();
-  }
+  puedeCrearAdjudicaciones(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEditarAdjudicaciones(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEliminarAdjudicaciones(): boolean { return this.esAdmin(); }
 
-  puedeGestionarUsuarios(): boolean {
-    return this.esAdmin();
-  }
+  puedeGestionarOrdenes(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeGestionarOfertas(): boolean { return this.esAdminProveedor() || this.esAdmin(); }
+  puedeVerReportes(): boolean { return this.esAdmin() || this.esAuditor(); }
 
-  /** Solo Admin y Auditor pueden ver reportes */
-  puedeVerReportes(): boolean {
-    return this.esAdmin() || this.esAuditor();
-  }
+  // Alias genéricos
+  puedeCrear(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEditar(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEliminar(): boolean { return this.esAdmin(); }
+  puedeGestionarCompras(): boolean { return this.esAdmin() || this.esGestorCompras(); }
 
-  /** Solo Admin puede gestionar catálogos */
-  puedeGestionarCatalogos(): boolean {
-    return this.esAdmin();
-  }
+  /**
+   * Obtener el id_Proveedor del usuario logueado.
+   * Primero intenta con localStorage, luego con el JWT (fallback robusto).
+   */
+  getIdProveedor(): number | null {
+    // 1. Intentar con localStorage
+    const usuario = this.getUsuario();
+    if (usuario && usuario.id_Proveedor) {
+      return usuario.id_Proveedor;
+    }
 
-  /** Solo Admin y Gestor de Compras pueden gestionar pedidos/adjudicaciones */
-  puedeGestionarCompras(): boolean {
-    return this.esAdmin() || this.esGestorCompras();
+    // 2. Fallback: decodificar el JWT
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const idProv = payload['IdProveedor'] || payload['idProveedor'];
+      return idProv ? parseInt(idProv, 10) : null;
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      return null;
+    }
   }
 }

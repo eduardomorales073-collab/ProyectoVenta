@@ -5,9 +5,7 @@ import { AuthService } from '../services/auth.service';
 export const auditorGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-
   if (authService.esAuditor() || authService.esAdmin()) return true;
-
-  router.navigate(['/login']);
+  router.navigate(['/acceso-denegado']);
   return false;
 };

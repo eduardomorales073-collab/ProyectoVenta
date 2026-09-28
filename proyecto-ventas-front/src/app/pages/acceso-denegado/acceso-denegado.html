@@ -1,0 +1,26 @@
+<div class="acceso-denegado-container">
+  <mat-card class="denied-card">
+    <mat-card-content>
+      <div class="icon-wrapper">
+        <mat-icon class="denied-icon">lock</mat-icon>
+      </div>
+
+      <h1>Acceso Denegado</h1>
+      <p>No tienes permisos para acceder a esta sección.</p>
+      <p class="subtitle">
+        Si crees que esto es un error, contacta al Administrador del Sistema.
+      </p>
+
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="irAInicio()">
+          <mat-icon>home</mat-icon>
+          Ir a mi inicio
+        </button>
+        <button mat-button (click)="cerrarSesion()">
+          <mat-icon>logout</mat-icon>
+          Cerrar sesión
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,79 @@
+<div class="container">
+  <div class="header-section">
+    <h1>
+      <mat-icon>assignment</mat-icon>
+      Pedidos Disponibles
+    </h1>
+    <p>Pedidos sin orden asignada. Puedes ofertar por ellos.</p>
+  </div>
+
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div *ngIf="cargando" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando pedidos...</p>
+      </div>
+
+      <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
+        <mat-icon>check_circle</mat-icon>
+        <h3>No hay pedidos disponibles</h3>
+        <p>Todos los pedidos ya tienen una orden asignada.</p>
+      </div>
+
+      <table mat-table [dataSource]="pedidos" *ngIf="!cargando && pedidos.length > 0">
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef>Código</th>
+          <td mat-cell *matCellDef="let p">
+            <mat-chip class="chip-codigo">
+              {{ p.codigo }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cantidad">
+          <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+          <td mat-cell *matCellDef="let p">
+            <span class="cantidad-badge">{{ p.cantidad || 1 }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="departamento">
+          <th mat-header-cell *matHeaderCellDef>Departamento</th>
+          <td mat-cell *matCellDef="let p">
+            <mat-chip class="chip-departamento">
+              {{ nombreDepartamento(p.id_Departamento) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fecha_Solicitada">
+          <th mat-header-cell *matHeaderCellDef>Fecha Solicitada</th>
+          <td mat-cell *matCellDef="let p">{{ p.fecha_Solicitada | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+  <td mat-cell *matCellDef="let p">
+    <mat-chip *ngIf="yaOferto(p.id)" class="chip-ya-oferto" highlighted>
+      <mat-icon>check_circle</mat-icon>
+      Ya ofertaste
+    </mat-chip>
+    <button *ngIf="!yaOferto(p.id)" mat-raised-button color="primary" (click)="abrirOferta(p)">
+      <mat-icon>local_offer</mat-icon>
+      Ofertar
+    </button>
+  </td>
+</ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<app-oferta-form *ngIf="mostrarFormulario"
+                 [pedido]="pedidoSeleccionado"
+                 (guardado)="onOfertado()"
+                 (cancelado)="cerrarFormulario()">
+</app-oferta-form>

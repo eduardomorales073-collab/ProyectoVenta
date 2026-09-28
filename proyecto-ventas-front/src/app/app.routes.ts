@@ -31,6 +31,8 @@ import { PedidosInternosComponent } from './pages/admin/pedidos-internos/pedidos
 import { AuditorReportesComponent } from './pages/auditor/reportes/reportes';
 import { CategoriasProveedorComponent } from './pages/admin/categorias-proveedor/categorias-proveedor';
 import { UnidadesMedidaComponent } from './pages/admin/unidades-medida/unidades-medida';
+import { AccesoDenegadoComponent } from './pages/acceso-denegado/acceso-denegado';
+import { PedidosDisponiblesComponent } from './pages/proveedor/pedidos-disponibles/pedidos-disponibles';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -64,7 +66,9 @@ export const routes: Routes = [
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'adjudicaciones', component: AdjudicacionesComponent },
       { path: 'pedidos-internos', component: PedidosInternosComponent },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      { path: 'acceso-denegado', component: AccesoDenegadoComponent },
     ]
   },
 
@@ -104,6 +108,7 @@ export const routes: Routes = [
     children: [
       { path: 'ofertas', component: ProveedorOfertasComponent },
       { path: 'articulos', component: ArticulosComponent },
+      { path: 'pedidos-disponibles', component: PedidosDisponiblesComponent },
       { path: '', redirectTo: 'ofertas', pathMatch: 'full' }
     ]
   },

@@ -121,6 +121,20 @@
         <mat-icon>inventory_2</mat-icon>
         Artículos
       </a>
+      <ng-container *ngIf="esProveedor">
+  <a mat-button routerLink="/proveedor/pedidos-disponibles" routerLinkActive="active-link">
+    <mat-icon>assignment</mat-icon>
+    Pedidos Disponibles
+  </a>
+  <a mat-button routerLink="/proveedor/ofertas" routerLinkActive="active-link">
+    <mat-icon>local_offer</mat-icon>
+    Mis Ofertas
+  </a>
+  <a mat-button routerLink="/proveedor/articulos" routerLinkActive="active-link">
+    <mat-icon>inventory_2</mat-icon>
+    Artículos
+  </a>
+</ng-container>
     </ng-container>
 
     <!-- ===== AUDITOR ===== -->

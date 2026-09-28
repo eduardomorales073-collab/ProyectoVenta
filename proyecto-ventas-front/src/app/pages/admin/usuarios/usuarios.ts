@@ -16,6 +16,7 @@ import { UsuarioFormComponent } from './usuario-form/usuario-form';
 import { PermisosModalComponent } from './permisos-modal/permisos-modal';
 import { NotificacionService } from '../../../services/notificacion';
 import { ConfirmService } from '../../../services/confirm';   
+import { AuthService } from '../../../services/auth.service';
 
 
 
@@ -59,7 +60,8 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
     private usuarioService: UsuarioService,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
-    private confirm: ConfirmService  
+    private confirm: ConfirmService,  
+    private authService: AuthService,  
   ) { }
 
   ngOnInit(): void {
@@ -169,4 +171,12 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
     this.cerrarPermisos();
     this.cargar();
   }
+
+  puedeGestionarUsuarios(): boolean {
+  return this.authService.puedeGestionarUsuarios();
+}
+
+puedeEliminarUsuarios(): boolean {
+  return this.authService.esAdmin();
+}
 }

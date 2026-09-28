@@ -59,6 +59,7 @@ namespace Aplicacion.Servicios
             usuarioExistente.email = usuario.email;
             usuarioExistente.Activo = usuario.Activo;
             usuarioExistente.id_Rol = usuario.id_Rol;
+            usuarioExistente.id_Proveedor = usuario.id_Proveedor;   
 
             if (!string.IsNullOrWhiteSpace(usuario.Contrasena))
             {
