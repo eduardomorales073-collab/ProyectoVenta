@@ -33,6 +33,7 @@ import { CategoriasProveedorComponent } from './pages/admin/categorias-proveedor
 import { UnidadesMedidaComponent } from './pages/admin/unidades-medida/unidades-medida';
 import { AccesoDenegadoComponent } from './pages/acceso-denegado/acceso-denegado';
 import { PedidosDisponiblesComponent } from './pages/proveedor/pedidos-disponibles/pedidos-disponibles';
+import { creadorGuard } from './guards/creador-guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -71,6 +72,15 @@ export const routes: Routes = [
       { path: 'acceso-denegado', component: AccesoDenegadoComponent },
     ]
   },
+  // ===== CREADOR DE PEDIDOS =====
+{
+  path: 'creador',
+  canActivate: [creadorGuard],
+  children: [
+    { path: 'pedidos', component: PedidosInternosComponent },
+    { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
+  ]
+},
 
    // ===== AUDITOR =====
   {
@@ -91,15 +101,24 @@ export const routes: Routes = [
   },
 
   // ===== EMPLEADO (Gestor de Compras) =====
-  {
-    path: 'empleado',
-    canActivate: [empleadoGuard],
-    children: [
-      { path: 'pedidos', component: EmpleadoPedidosComponent },
-      { path: 'articulos', component: ArticulosComponent },
-      { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
-    ]
-  },
+{
+  path: 'empleado',
+  canActivate: [empleadoGuard],
+  children: [
+    { path: 'pedidos', component: PedidosInternosComponent },        // ← Reutiliza componente del Admin
+    { path: 'adjudicaciones', component: AdjudicacionesComponent },  // ← Reutiliza componente del Admin
+    { path: 'articulos', component: ArticulosComponent },
+    { path: 'ordenes-activas', component: OrdenesActivas },
+    { path: 'pedidos-pendientes', component: PedidosPendientes },
+    { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
+    { path: 'reportes/ranking-proveedores', component: RankingProveedores },
+    { path: 'reportes/historial-articulo', component: HistorialArticulo },
+    { path: 'reportes/ofertas-orden', component: OfertasOrden },
+    { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
+    { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+    { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
+  ]
+},
 
   // ===== PROVEEDOR (Admin de Proveedor) =====
   {

@@ -50,6 +50,9 @@ export class HeaderComponent implements OnInit {
     this.estaAutenticado.set(this.authService.isLoggedIn());
     this.usuario.set(this.authService.getUsuario());
   }
+  get esCreadorPedidos(): boolean {
+  return this.usuario()?.idRol === 5;
+}
 
   get esAdmin(): boolean {
     return this.usuario()?.idRol === 1;
@@ -69,6 +72,7 @@ export class HeaderComponent implements OnInit {
       case 2: return 'Gestor de Compras';
       case 3: return 'Administrador de Proveedor';
       case 4: return 'Auditor / Reportes';
+      case 5: return 'Creador de Pedidos';
       default: return '';
     }
   }

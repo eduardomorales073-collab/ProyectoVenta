@@ -11,8 +11,6 @@
 
     <!-- ===== ADMINISTRADOR ===== -->
     <ng-container *ngIf="esAdmin">
-
-      <!-- Enlaces principales -->
       <a mat-button routerLink="/admin/dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon>
         Dashboard
@@ -26,7 +24,6 @@
         Usuarios
       </a>
 
-      <!-- ===== Menú: Catálogos ===== -->
       <button mat-button [matMenuTriggerFor]="menuCatalogos" class="menu-btn">
         <mat-icon>category</mat-icon>
         Catálogos
@@ -58,12 +55,11 @@
           <span>Categorías de Proveedores</span>
         </button>
         <button mat-menu-item routerLink="/admin/unidades-medida">
-            <mat-icon>straighten</mat-icon>
-            <span>Unidades de Medida</span>
-  </button>
+          <mat-icon>straighten</mat-icon>
+          <span>Unidades de Medida</span>
+        </button>
       </mat-menu>
 
-      <!-- ===== Menú: Compras ===== -->
       <button mat-button [matMenuTriggerFor]="menuCompras" class="menu-btn">
         <mat-icon>shopping_cart</mat-icon>
         Compras
@@ -80,7 +76,6 @@
         </button>
       </mat-menu>
 
-      <!-- ===== Menú: Admin ===== -->
       <button mat-button [matMenuTriggerFor]="menuAdmin" class="menu-btn">
         <mat-icon>admin_panel_settings</mat-icon>
         Admin
@@ -96,23 +91,77 @@
           <span>Reportes</span>
         </button>
       </mat-menu>
-
     </ng-container>
 
     <!-- ===== EMPLEADO (Gestor de Compras) ===== -->
     <ng-container *ngIf="esEmpleado">
       <a mat-button routerLink="/empleado/pedidos" routerLinkActive="active-link">
         <mat-icon>assignment</mat-icon>
-        Pedidos
+        Pedidos Internos
+      </a>
+      <a mat-button routerLink="/empleado/adjudicaciones" routerLinkActive="active-link">
+        <mat-icon>gavel</mat-icon>
+        Adjudicaciones
       </a>
       <a mat-button routerLink="/empleado/articulos" routerLinkActive="active-link">
         <mat-icon>inventory_2</mat-icon>
         Artículos
       </a>
+      <button mat-button [matMenuTriggerFor]="menuReportesEmpleado" class="menu-btn">
+        <mat-icon>analytics</mat-icon>
+        Reportes
+        <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #menuReportesEmpleado="matMenu">
+        <button mat-menu-item routerLink="/empleado/ordenes-activas">
+          <mat-icon>play_circle</mat-icon>
+          <span>Órdenes Activas</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/pedidos-pendientes">
+          <mat-icon>pending_actions</mat-icon>
+          <span>Pedidos Pendientes</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/reportes/eficiencia-proceso">
+          <mat-icon>speed</mat-icon>
+          <span>Eficiencia</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/reportes/ranking-proveedores">
+          <mat-icon>leaderboard</mat-icon>
+          <span>Ranking Proveedores</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/reportes/historial-articulo">
+          <mat-icon>history</mat-icon>
+          <span>Historial Artículo</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/reportes/ofertas-orden">
+          <mat-icon>compare_arrows</mat-icon>
+          <span>Ofertas por Orden</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/reportes/gasto-departamental">
+          <mat-icon>account_balance</mat-icon>
+          <span>Gasto Departamental</span>
+        </button>
+        <button mat-menu-item routerLink="/empleado/reportes/variacion-precios">
+          <mat-icon>trending_up</mat-icon>
+          <span>Variación Precios</span>
+        </button>
+      </mat-menu>
+    </ng-container>
+
+    <!-- ===== CREADOR DE PEDIDOS ===== -->
+    <ng-container *ngIf="esCreadorPedidos">
+      <a mat-button routerLink="/creador/pedidos" routerLinkActive="active-link">
+        <mat-icon>assignment</mat-icon>
+        Mis Pedidos
+      </a>
     </ng-container>
 
     <!-- ===== PROVEEDOR (Admin de Proveedor) ===== -->
     <ng-container *ngIf="esProveedor">
+      <a mat-button routerLink="/proveedor/pedidos-disponibles" routerLinkActive="active-link">
+        <mat-icon>assignment</mat-icon>
+        Pedidos Disponibles
+      </a>
       <a mat-button routerLink="/proveedor/ofertas" routerLinkActive="active-link">
         <mat-icon>local_offer</mat-icon>
         Mis Ofertas
@@ -121,20 +170,6 @@
         <mat-icon>inventory_2</mat-icon>
         Artículos
       </a>
-      <ng-container *ngIf="esProveedor">
-  <a mat-button routerLink="/proveedor/pedidos-disponibles" routerLinkActive="active-link">
-    <mat-icon>assignment</mat-icon>
-    Pedidos Disponibles
-  </a>
-  <a mat-button routerLink="/proveedor/ofertas" routerLinkActive="active-link">
-    <mat-icon>local_offer</mat-icon>
-    Mis Ofertas
-  </a>
-  <a mat-button routerLink="/proveedor/articulos" routerLinkActive="active-link">
-    <mat-icon>inventory_2</mat-icon>
-    Artículos
-  </a>
-</ng-container>
     </ng-container>
 
     <!-- ===== AUDITOR ===== -->

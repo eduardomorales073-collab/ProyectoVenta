@@ -65,6 +65,7 @@ export class AuthService {
       case 2: return 'GestorCompras';
       case 3: return 'AdministradorProveedor';
       case 4: return 'Auditor';
+      case 5: return 'CreadorPedidos';
       default: return null;
     }
   }
@@ -75,14 +76,17 @@ export class AuthService {
       case 'GestorCompras': return 'Gestor de Compras';
       case 'AdministradorProveedor': return 'Administrador de Proveedor';
       case 'Auditor': return 'Auditor / Reportes';
+      case 'CreadorPedidos': return 'Creador de Pedidos';
       default: return '';
     }
   }
 
+  // ====== VERIFICADORES DE ROL ======
   esAdmin(): boolean { return this.getRol() === 'Administrador'; }
   esGestorCompras(): boolean { return this.getRol() === 'GestorCompras'; }
   esAdminProveedor(): boolean { return this.getRol() === 'AdministradorProveedor'; }
   esAuditor(): boolean { return this.getRol() === 'Auditor'; }
+  esCreadorPedidos(): boolean { return this.getRol() === 'CreadorPedidos'; }
   esEmpleado(): boolean { return this.esGestorCompras(); }
   esProveedor(): boolean { return this.esAdminProveedor(); }
 
@@ -94,6 +98,7 @@ export class AuthService {
       case 'GestorCompras': return '/empleado/pedidos';
       case 'AdministradorProveedor': return '/proveedor/ofertas';
       case 'Auditor': return '/auditor/reportes';
+      case 'CreadorPedidos': return '/creador/pedidos';
       default: return '/login';
     }
   }
@@ -116,19 +121,30 @@ export class AuthService {
   puedeGestionarCatalogos(): boolean { return this.esAdmin(); }
   puedeGestionarRoles(): boolean { return this.esAdmin(); }
 
-  puedeCrearPedidos(): boolean { return this.esAdmin() || this.esGestorCompras(); }
-  puedeEditarPedidos(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  // --- PEDIDOS ---
+  puedeCrearPedidos(): boolean {
+    return this.esAdmin() || this.esGestorCompras() || this.esCreadorPedidos();
+  }
+
+  puedeEditarPedidos(): boolean {
+    return this.esAdmin() || this.esGestorCompras();
+  }
+
   puedeEliminarPedidos(): boolean { return this.esAdmin(); }
 
+  // --- ADJUDICACIONES ---
   puedeCrearAdjudicaciones(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEditarAdjudicaciones(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEliminarAdjudicaciones(): boolean { return this.esAdmin(); }
 
+  // --- ÓRDENES Y OFERTAS ---
   puedeGestionarOrdenes(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeGestionarOfertas(): boolean { return this.esAdminProveedor() || this.esAdmin(); }
-  puedeVerReportes(): boolean { return this.esAdmin() || this.esAuditor(); }
 
-  // Alias genéricos
+  // --- REPORTES ---
+  puedeVerReportes(): boolean { return this.esAdmin() || this.esAuditor() || this.esGestorCompras(); }
+
+  // ====== ALIAS GENÉRICOS (para compatibilidad) ======
   puedeCrear(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEditar(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEliminar(): boolean { return this.esAdmin(); }

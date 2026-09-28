@@ -7,7 +7,7 @@ namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador, Auditor")]  
+    [Authorize(Roles = "Administrador,Auditor,GestorCompras")]
     public class ReporteControlador : ControllerBase
     {
         private readonly ReporteRepositorio _reporteRepositorio;

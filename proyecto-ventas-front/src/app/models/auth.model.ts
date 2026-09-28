@@ -11,4 +11,9 @@ export interface AuthResponse {
   idRol: number;    
 }
 
-export type Rol = 'Administrador' | 'GestorCompras' | 'AdministradorProveedor' | 'Auditor';
+export type Rol = 
+  | 'Administrador' 
+  | 'GestorCompras' 
+  | 'AdministradorProveedor' 
+  | 'Auditor'
+  | 'CreadorPedidos';   

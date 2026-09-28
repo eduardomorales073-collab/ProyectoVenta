@@ -13,6 +13,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { PedidoInternoService } from '../../../services/pedido-interno.service';
 import { DepartamentoService } from '../../../services/departamento.service';
 import { OrdenCompraService } from '../../../services/orden-compra.service';
+import { AuthService } from '../../../services/auth.service';   // ← NUEVO
 import { PedidoInterno } from '../../../models/pedido-interno.model';
 import { Departamento } from '../../../models/departamento.model';
 import { OrdenCompra } from '../../../services/orden-compra.service';
@@ -41,7 +42,8 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './pedidos-internos.scss'
 })
 export class PedidosInternosComponent implements OnInit, AfterViewInit {
-displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];  dataSource = new MatTableDataSource<PedidoInterno>([]);
+  displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];
+  dataSource = new MatTableDataSource<PedidoInterno>([]);
   departamentos: Departamento[] = [];
   ordenes: OrdenCompra[] = [];
   cargando = false;
@@ -56,6 +58,7 @@ displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden
     private pedidoService: PedidoInternoService,
     private departamentoService: DepartamentoService,
     private ordenCompraService: OrdenCompraService,
+    private authService: AuthService,           // ← NUEVO
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -69,7 +72,13 @@ displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden
     this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
       const dep = this.nombreDepartamento(pedido.id_Departamento).toLowerCase();
       const orden = this.nombreOrden(pedido.id_OrdenCompra).toLowerCase();
-      const dataStr = (pedido.id + ' ' + dep + ' ' + orden).toLowerCase();
+      const dataStr = (
+        pedido.id + ' ' +
+        (pedido.codigo || '') + ' ' +
+        (pedido.cantidad || '') + ' ' +
+        dep + ' ' +
+        orden
+      ).toLowerCase();
       return dataStr.includes(filtro);
     };
     this.cargarCatalogos();
@@ -103,18 +112,7 @@ displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden
 
   aplicarFiltro(event: Event): void {
     const valor = (event.target as HTMLInputElement).value;
-    this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
-  const dep = this.nombreDepartamento(pedido.id_Departamento).toLowerCase();
-  const orden = this.nombreOrden(pedido.id_OrdenCompra).toLowerCase();
-  const dataStr = (
-    pedido.id + ' ' +
-    (pedido.codigo || '') + ' ' +
-    (pedido.cantidad || '') + ' ' +
-    dep + ' ' +
-    orden
-  ).toLowerCase();
-  return dataStr.includes(filtro);
-};
+    this.dataSource.filter = valor.trim().toLowerCase();
   }
 
   nombreDepartamento(id: number): string {
@@ -146,6 +144,7 @@ displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden
   confirmarEliminar(pedido: PedidoInterno): void {
     this.confirm.eliminar(`Pedido #${pedido.id}`).subscribe((confirmado: boolean) => {
       if (!confirmado) return;
+
       this.pedidoService.eliminar(pedido.id).subscribe({
         next: () => {
           this.notificacion.exito(`Pedido #${pedido.id} eliminado correctamente`);
@@ -156,5 +155,18 @@ displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden
         }
       });
     });
+  }
+
+  // ===== PERMISOS =====
+  puedeCrearPedidos(): boolean {
+    return this.authService.puedeCrearPedidos();
+  }
+
+  puedeEditarPedidos(): boolean {
+    return this.authService.puedeEditarPedidos();
+  }
+
+  puedeEliminarPedidos(): boolean {
+    return this.authService.esAdmin();
   }
 }

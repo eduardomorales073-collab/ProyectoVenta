@@ -58,6 +58,7 @@ namespace Aplicacion.Servicios
                 2 => "GestorCompras",
                 3 => "AdministradorProveedor",
                 4 => "Auditor",
+                5 => "CreadorPedidos",
                 _ => "Auditor"
             };
 
