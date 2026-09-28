@@ -107,20 +107,44 @@ namespace Aplicacion.Servicios
                 .Where(o => o.id_Pedido_Interno == idPedido)
                 .ToList();
 
+            // Encontrar el menor precio
             var menorPrecio = ofertasDelPedido.Min(o => o.Precio);
-            var mejorOferta = ofertasDelPedido.First(o => o.Precio == menorPrecio);
 
+            // Verificar si el proveedor seleccionado tiene el menor precio (permite empates)
             var proveedorEsGanador = ofertasDelPedido
                 .Any(o => o.id_Proveedor == idProveedor && o.Precio == menorPrecio);
 
             if (!proveedorEsGanador)
             {
-                throw new InvalidOperationException(
-                    $"La adjudicación del pedido #{idPedido} debe ir al proveedor con menor precio " +
-                    $"(Q {menorPrecio:N2} del proveedor #{mejorOferta.id_Proveedor}). " +
-                    $"El proveedor seleccionado (#{idProveedor}) ofertó Q {precioAdjudicado:N2}."
-                );
+                // Obtener TODOS los proveedores que tienen el menor precio
+                var proveedoresMenor = string.Join(", ",
+                    ofertasDelPedido
+                        .Where(o => o.Precio == menorPrecio)
+                        .Select(o => $"#{o.id_Proveedor}"));
+
+                // Buscar si el proveedor seleccionado participó (con otro precio)
+                var ofertaDelProveedor = ofertasDelPedido
+                    .FirstOrDefault(o => o.id_Proveedor == idProveedor);
+
+                string mensaje;
+                if (ofertaDelProveedor == null)
+                {
+                    // Escenario A: Proveedor NO participó
+                    mensaje = $"El proveedor #{idProveedor} no tiene una oferta registrada para el pedido #{idPedido}. " +
+                              $"La adjudicación debe ir al proveedor con menor precio (Q {menorPrecio:N2} de los proveedores {proveedoresMenor}).";
+                }
+                else
+                {
+                    // Escenario B: Proveedor participó pero con mayor precio
+                    mensaje = $"La adjudicación del pedido #{idPedido} debe ir al proveedor con menor precio " +
+                              $"(Q {menorPrecio:N2} de los proveedores {proveedoresMenor}). " +
+                              $"El proveedor seleccionado (#{idProveedor}) ofertó Q {ofertaDelProveedor.Precio:N2}.";
+                }
+
+                throw new InvalidOperationException(mensaje);
             }
+
+            // Escenario C: El proveedor tiene el menor precio (o está en empate) → ✅ Permitir
         }
     }
 }
