@@ -12,5 +12,7 @@ namespace Aplicacion.Interfaz
         Task AddAsync(CreateAdjudicacionDTO adjudicacion);
         Task DeleteAsync(int id);
         Task UpdateAsync(UpdateAdjudicacionDTO adjudicacion);
+
+        Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado);
     }
 }

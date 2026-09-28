@@ -14,17 +14,20 @@ namespace Aplicacion.Servicios
     public class AdjudicacionService : IAdjudicacionService
     {
         private readonly AdjuRepositorio _adjuRepositorio;
-        private readonly OrdComRepositorio _ordenCompraRepositorio;  // ← NUEVO
+        private readonly OrdComRepositorio _ordenCompraRepositorio;
+        private readonly OferProvRepositorio _ofertaRepositorio;   
         private readonly IMapper _mapper;
 
         public AdjudicacionService(
             AdjuRepositorio adjuRepository,
-            OrdComRepositorio ordenCompraRepositorio,  // ← NUEVO
+            OrdComRepositorio ordenCompraRepositorio,
+            OferProvRepositorio ofertaRepositorio,                 
             IMapper mapper)
         {
             _mapper = mapper;
             _adjuRepositorio = adjuRepository;
-            _ordenCompraRepositorio = ordenCompraRepositorio;  // ← NUEVO
+            _ordenCompraRepositorio = ordenCompraRepositorio;
+            _ofertaRepositorio = ofertaRepositorio;                 
         }
 
         public async Task AddAsync(CreateAdjudicacionDTO adjudicacion)
@@ -49,7 +52,7 @@ namespace Aplicacion.Servicios
                 );
             }
 
-            // Calcular el id manualmente (porque la BD no tiene IDENTITY)
+            // Calcular el id manualmente
             var todas = await _adjuRepositorio.GetAllasync();
             var nuevaAdjudicacion = _mapper.Map<Adjudicacion>(adjudicacion);
             nuevaAdjudicacion.id = todas.Any() ? todas.Max(a => a.id) + 1 : 1;
@@ -94,6 +97,52 @@ namespace Aplicacion.Servicios
             }
 
             await _adjuRepositorio.UpdateAsync(_mapper.Map<Adjudicacion>(adjudicacion));
+        }
+
+        // ===== REGLA DE NEGOCIO 4 =====
+        // El proveedor adjudicado debe ser el que tenga la oferta con MENOR precio
+        public async Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado)
+        {
+            // 1. Obtener todas las ofertas del pedido
+            var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
+            var ofertasDelPedido = todasLasOfertas
+                .Where(o => o.id_Pedido_Interno == idPedido)
+                .ToList();
+
+            // 2. Validar que existan ofertas
+            if (!ofertasDelPedido.Any())
+            {
+                throw new InvalidOperationException(
+                    $"No se puede adjudicar el pedido #{idPedido} porque no tiene ofertas registradas."
+                );
+            }
+
+            // 3. Encontrar la oferta con el menor precio
+            var mejorOferta = ofertasDelPedido
+                .OrderBy(o => o.Precio)
+                .First();
+
+            // 4. Verificar si hay empate en el menor precio
+            var ofertasConMenorPrecio = ofertasDelPedido
+                .Where(o => o.Precio == mejorOferta.Precio)
+                .ToList();
+
+            // 5. Si el proveedor seleccionado NO está entre los de menor precio, lanzar error
+            var proveedorEsGanador = ofertasConMenorPrecio
+                .Any(o => o.id_Proveedor == idProveedor);
+
+            if (!proveedorEsGanador)
+            {
+                // Construir lista de proveedores con el menor precio
+                var proveedoresMenor = string.Join(", ",
+                    ofertasConMenorPrecio.Select(o => $"#{o.id_Proveedor}"));
+
+                throw new InvalidOperationException(
+                    $"La adjudicación del pedido #{idPedido} debe ir al proveedor con menor precio " +
+                    $"(Q {mejorOferta.Precio:N2} del proveedor {proveedoresMenor}). " +
+                    $"El proveedor seleccionado (#{idProveedor}) ofertó Q {precioAdjudicado:N2}."
+                );
+            }
         }
     }
 }
