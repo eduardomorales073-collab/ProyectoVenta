@@ -11,6 +11,7 @@ namespace Aplicacion.DTO
         string Contrasena,
         bool Activo,
         int id_Rol,
-        int? id_Proveedor
-    );
+        int? id_Proveedor,
+        int? id_Departamento
+        );
 }

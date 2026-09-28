@@ -3,9 +3,12 @@ export interface PedidoInterno {
   codigo: string | null;
   cantidad: number | null;
   id_Departamento: number;
+  nombreDepartamento: string | null;
   id_OrdenCompra: number | null;
   fecha_Solicitada: string;
   fecha_Ingreso: string;
+  nombreSucursal: string | null;
+  id_Sucursal: number | null;
 }
 
 export interface CreatePedidoInternoDTO {

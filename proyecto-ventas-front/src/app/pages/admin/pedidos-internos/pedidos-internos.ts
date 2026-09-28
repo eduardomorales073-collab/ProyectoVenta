@@ -13,7 +13,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { PedidoInternoService } from '../../../services/pedido-interno.service';
 import { DepartamentoService } from '../../../services/departamento.service';
 import { OrdenCompraService } from '../../../services/orden-compra.service';
-import { AuthService } from '../../../services/auth.service';   // ← NUEVO
+import { AuthService } from '../../../services/auth.service';
 import { PedidoInterno } from '../../../models/pedido-interno.model';
 import { Departamento } from '../../../models/departamento.model';
 import { OrdenCompra } from '../../../services/orden-compra.service';
@@ -42,7 +42,7 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './pedidos-internos.scss'
 })
 export class PedidosInternosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];
+  displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'sucursal', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];
   dataSource = new MatTableDataSource<PedidoInterno>([]);
   departamentos: Departamento[] = [];
   ordenes: OrdenCompra[] = [];
@@ -58,7 +58,7 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     private pedidoService: PedidoInternoService,
     private departamentoService: DepartamentoService,
     private ordenCompraService: OrdenCompraService,
-    private authService: AuthService,           // ← NUEVO
+    private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -69,20 +69,26 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+
+    // ===== FILTRO PERSONALIZADO =====
     this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
-      const dep = this.nombreDepartamento(pedido.id_Departamento).toLowerCase();
-      const orden = this.nombreOrden(pedido.id_OrdenCompra).toLowerCase();
       const dataStr = (
         pedido.id + ' ' +
         (pedido.codigo || '') + ' ' +
         (pedido.cantidad || '') + ' ' +
-        dep + ' ' +
-        orden
+        (pedido.nombreDepartamento || '') + ' ' +
+        (pedido.nombreSucursal || '')
       ).toLowerCase();
       return dataStr.includes(filtro);
     };
+
     this.cargarCatalogos();
     this.cargar();
+  }
+
+  aplicarFiltro(event: Event): void {
+    const valor = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = valor.trim().toLowerCase();
   }
 
   cargarCatalogos(): void {
@@ -96,23 +102,46 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
   cargar(): void {
     this.cargando = true;
-    this.pedidoService.listar().subscribe({
-      next: (data) => {
-        this.dataSource.data = data;
-        this.cargando = false;
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        this.error = `Error: ${err.status} ${err.statusText}`;
+    this.error = '';
+
+    // Admin y Auditor ven TODOS los pedidos
+    if (this.authService.esAdmin() || this.authService.esAuditor()) {
+      this.pedidoService.listar().subscribe({
+        next: (data) => {
+          this.dataSource.data = data;
+          this.cargando = false;
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          this.error = `Error: ${err.status} ${err.statusText}`;
+          this.cargando = false;
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      // Gestor de Compras y Creador de Pedidos: solo su departamento
+      const idDepto = this.authService.getIdDepartamento();
+
+      if (idDepto) {
+        this.pedidoService.listarPorDepartamento(idDepto).subscribe({
+          next: (data) => {
+            this.dataSource.data = data;
+            this.cargando = false;
+            this.cdr.detectChanges();
+          },
+          error: (err: any) => {
+            this.error = `Error: ${err.status} ${err.statusText}`;
+            this.cargando = false;
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        // Sin departamento asignado → lista vacía
+        this.dataSource.data = [];
         this.cargando = false;
         this.cdr.detectChanges();
       }
-    });
-  }
-
-  aplicarFiltro(event: Event): void {
-    const valor = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = valor.trim().toLowerCase();
+    }
   }
 
   nombreDepartamento(id: number): string {

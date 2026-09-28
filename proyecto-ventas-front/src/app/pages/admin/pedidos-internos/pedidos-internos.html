@@ -1,7 +1,9 @@
 <div class="container">
   <div class="header-actions">
     <h2>Lista de Pedidos Internos</h2>
-    <button mat-raised-button color="primary" (click)="abrirFormulario(null)">
+    <button mat-raised-button color="primary" 
+            (click)="abrirFormulario(null)" 
+            *ngIf="puedeCrearPedidos()">
       <mat-icon>add</mat-icon>
       Nuevo Pedido
     </button>
@@ -9,7 +11,7 @@
 
   <mat-form-field appearance="outline" class="filtro">
     <mat-label>Buscar pedido</mat-label>
-    <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, departamento u orden...">
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, código, departamento, sucursal...">
     <mat-icon matPrefix>search</mat-icon>
   </mat-form-field>
 
@@ -18,38 +20,54 @@
 
   <div class="tabla-container">
     <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
+
+      <!-- Columna ID -->
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
         <td mat-cell *matCellDef="let p">{{ p.id }}</td>
       </ng-container>
+
       <!-- Columna Código -->
-<ng-container matColumnDef="codigo">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
-  <td mat-cell *matCellDef="let p">
-    <mat-chip class="chip-codigo" *ngIf="p.codigo; else sinCodigo">
-      {{ p.codigo }}
-    </mat-chip>
-    <ng-template #sinCodigo><span class="sin-dato">—</span></ng-template>
-  </td>
-</ng-container>
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
+        <td mat-cell *matCellDef="let p">
+          <mat-chip class="chip-codigo" *ngIf="p.codigo; else sinCodigo">
+            {{ p.codigo }}
+          </mat-chip>
+          <ng-template #sinCodigo><span class="sin-dato">—</span></ng-template>
+        </td>
+      </ng-container>
 
-<!-- Columna Cantidad -->
-<ng-container matColumnDef="cantidad">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Cantidad</th>
-  <td mat-cell *matCellDef="let p">
-    <span class="cantidad-badge">{{ p.cantidad || 1 }}</span>
-  </td>
-</ng-container>
+      <!-- Columna Cantidad -->
+      <ng-container matColumnDef="cantidad">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Cantidad</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="cantidad-badge">{{ p.cantidad || 1 }}</span>
+        </td>
+      </ng-container>
 
+      <!-- Columna Departamento -->
       <ng-container matColumnDef="departamento">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Departamento</th>
         <td mat-cell *matCellDef="let p">
           <mat-chip class="chip-departamento">
-            {{ nombreDepartamento(p.id_Departamento) }}
+            {{ p.nombreDepartamento || nombreDepartamento(p.id_Departamento) }}
           </mat-chip>
         </td>
       </ng-container>
 
+      <!-- Columna Sucursal -->
+      <ng-container matColumnDef="sucursal">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Sucursal</th>
+        <td mat-cell *matCellDef="let p">
+          <mat-chip class="chip-sucursal" *ngIf="p.nombreSucursal; else sinSucursal">
+            {{ p.nombreSucursal }}
+          </mat-chip>
+          <ng-template #sinSucursal><span class="sin-dato">—</span></ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Columna Orden de Compra -->
       <ng-container matColumnDef="orden">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Orden de Compra</th>
         <td mat-cell *matCellDef="let p">
@@ -60,31 +78,34 @@
         </td>
       </ng-container>
 
+      <!-- Columna Fecha Solicitada -->
       <ng-container matColumnDef="fecha_Solicitada">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Solicitada</th>
         <td mat-cell *matCellDef="let p">{{ p.fecha_Solicitada | date:'dd/MM/yyyy' }}</td>
       </ng-container>
 
+      <!-- Columna Fecha Ingreso -->
       <ng-container matColumnDef="fecha_Ingreso">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
         <td mat-cell *matCellDef="let p">{{ p.fecha_Ingreso | date:'dd/MM/yyyy' }}</td>
       </ng-container>
 
+      <!-- Columna Acciones -->
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let p">
-          <button mat-icon-button color="accent" 
-        (click)="abrirFormulario(p)" 
-        matTooltip="Editar"
-        *ngIf="puedeEditarPedidos()">
-  <mat-icon>edit</mat-icon>
-</button>
-<button mat-icon-button color="warn" 
-        (click)="confirmarEliminar(p)" 
-        matTooltip="Eliminar"
-        *ngIf="puedeEliminarPedidos()">
-  <mat-icon>delete</mat-icon>
-</button> 
+          <button mat-icon-button color="accent"
+                  (click)="abrirFormulario(p)"
+                  matTooltip="Editar"
+                  *ngIf="puedeEditarPedidos()">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn"
+                  (click)="confirmarEliminar(p)"
+                  matTooltip="Eliminar"
+                  *ngIf="puedeEliminarPedidos()">
+            <mat-icon>delete</mat-icon>
+          </button>
         </td>
       </ng-container>
 

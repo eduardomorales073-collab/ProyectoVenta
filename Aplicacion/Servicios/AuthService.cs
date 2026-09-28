@@ -51,7 +51,6 @@ namespace Aplicacion.Servicios
 
         private string GenerarToken(modelos.Usuarios usuario)
         {
-            // ✅ Mapear id_Rol a nombre de rol (4 roles nuevos)
             string nombreRol = usuario.id_Rol switch
             {
                 1 => "Administrador",
@@ -62,7 +61,6 @@ namespace Aplicacion.Servicios
                 _ => "Auditor"
             };
 
-            // Lista dinámica de claims
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
@@ -72,10 +70,16 @@ namespace Aplicacion.Servicios
         new Claim("IdRol", usuario.id_Rol.ToString())
     };
 
-            // ✅ NUEVO: Agregar id_Proveedor al JWT si existe
+            // IdProveedor (si existe)
             if (usuario.id_Proveedor.HasValue)
             {
                 claims.Add(new Claim("IdProveedor", usuario.id_Proveedor.Value.ToString()));
+            }
+
+            // IdDepartamento (si existe) ← NUEVO
+            if (usuario.id_Departamento.HasValue)
+            {
+                claims.Add(new Claim("IdDepartamento", usuario.id_Departamento.Value.ToString()));
             }
 
             var key = new SymmetricSecurityKey(

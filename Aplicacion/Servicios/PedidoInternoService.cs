@@ -15,16 +15,22 @@ namespace Aplicacion.Servicios
     {
         private readonly PedIntRepositorio _pedidoInternoRepositorio;
         private readonly OrdComRepositorio _ordenCompraRepositorio;
+        private readonly DepartaRepositorio _departamentoRepositorio;
+        private readonly SucursalRepositorio _sucursalRepositorio;
         private readonly IMapper _mapper;
 
         public PedidoInternoService(
             PedIntRepositorio pedidoInternoRepository,
             OrdComRepositorio ordenCompraRepositorio,
+            DepartaRepositorio departamentoRepositorio,
+            SucursalRepositorio sucursalRepositorio,
             IMapper mapper)
         {
             _mapper = mapper;
             _pedidoInternoRepositorio = pedidoInternoRepository;
             _ordenCompraRepositorio = ordenCompraRepositorio;
+            _departamentoRepositorio = departamentoRepositorio;
+            _sucursalRepositorio = sucursalRepositorio;
         }
 
         public async Task AddAsync(CreatePedidoInternoDTO pedido)
@@ -77,14 +83,60 @@ namespace Aplicacion.Servicios
             await _pedidoInternoRepositorio.DeletAsync(id);
         }
 
+        // ===== GET ALL CON DEPARTAMENTO Y SUCURSAL =====
         public async Task<List<PedidoInternoDTO>> GetAllsync()
         {
-            return _mapper.Map<List<PedidoInternoDTO>>(await _pedidoInternoRepositorio.GetAllasync());
+            var pedidos = await _pedidoInternoRepositorio.GetAllasync();
+            var departamentos = await _departamentoRepositorio.GetAllasync();
+            var sucursales = await _sucursalRepositorio.GetAllasync();
+
+            return pedidos.Select(p =>
+            {
+                var depto = departamentos.FirstOrDefault(d => d.id == p.id_Departamento);
+                var sucursal = depto != null
+                    ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
+                    : null;
+
+                return new PedidoInternoDTO(
+                    p.id,
+                    p.codigo,
+                    p.cantidad,
+                    p.id_Departamento,
+                    depto?.Nombre,
+                    p.id_OrdenCompra,
+                    p.Fecha_Solicitada,
+                    p.Fecha_Ingreso,
+                    sucursal?.Nombre,
+                    sucursal?.id
+                );
+            }).ToList();
         }
 
         public async Task<PedidoInternoDTO> GetByIdAsync(int id)
         {
-            return _mapper.Map<PedidoInternoDTO>(await _pedidoInternoRepositorio.GetAsync(id));
+            var pedido = await _pedidoInternoRepositorio.GetAsync(id);
+            if (pedido == null) return null;
+
+            var departamentos = await _departamentoRepositorio.GetAllasync();
+            var sucursales = await _sucursalRepositorio.GetAllasync();
+
+            var depto = departamentos.FirstOrDefault(d => d.id == pedido.id_Departamento);
+            var sucursal = depto != null
+                ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
+                : null;
+
+            return new PedidoInternoDTO(
+                pedido.id,
+                pedido.codigo,
+                pedido.cantidad,
+                pedido.id_Departamento,
+                depto?.Nombre,
+                pedido.id_OrdenCompra,
+                pedido.Fecha_Solicitada,
+                pedido.Fecha_Ingreso,
+                sucursal?.Nombre,
+                sucursal?.id
+            );
         }
 
         public async Task UpdateAsync(UpdatePedidoInternoDTO pedido)
@@ -96,7 +148,6 @@ namespace Aplicacion.Servicios
                 throw new InvalidOperationException($"El pedido #{pedido.id} no existe.");
             }
 
-            // Si el pedido ya tenía una orden asignada y se intenta cambiar a otra
             if (pedidoExistente.id_OrdenCompra.HasValue
                 && pedido.id_OrdenCompra.HasValue
                 && pedidoExistente.id_OrdenCompra.Value != pedido.id_OrdenCompra.Value)
@@ -129,7 +180,6 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== VALORES POR DEFECTO =====
             var pedidoActualizar = _mapper.Map<Pedido_Interno>(pedido);
             if (!pedidoActualizar.cantidad.HasValue)
             {
@@ -137,6 +187,13 @@ namespace Aplicacion.Servicios
             }
 
             await _pedidoInternoRepositorio.UpdateAsync(pedidoActualizar);
+        }
+
+        // ===== GET BY DEPARTAMENTO (NUEVO) =====
+        public async Task<List<PedidoInternoDTO>> GetByDepartamentoAsync(int idDepartamento)
+        {
+            var todos = await GetAllsync();
+            return todos.Where(p => p.id_Departamento == idDepartamento).ToList();
         }
     }
 }

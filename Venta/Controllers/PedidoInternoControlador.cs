@@ -48,5 +48,13 @@ namespace Venta.Controllers
             await _pedIntService.DeleteAsync(id);
             return Ok();
         }
+
+        [HttpGet("por-departamento/{idDepartamento}")]
+        [Authorize(Roles = "Administrador,GestorCompras,CreadorPedidos")]
+        public async Task<IActionResult> GetByDepartamento(int idDepartamento)
+        {
+            var pedidos = await _pedIntService.GetByDepartamentoAsync(idDepartamento);
+            return Ok(pedidos);
+        }
     }
 }

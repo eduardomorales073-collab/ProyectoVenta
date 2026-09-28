@@ -29,4 +29,8 @@ export class PedidoInternoService {
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
+  
+  listarPorDepartamento(idDepartamento: number): Observable<PedidoInterno[]> {
+  return this.http.get<PedidoInterno[]>(`${this.url}/por-departamento/${idDepartamento}`);
+}
 }

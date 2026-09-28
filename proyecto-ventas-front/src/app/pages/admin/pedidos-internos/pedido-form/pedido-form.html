@@ -44,6 +44,14 @@
         </mat-error>
       </mat-form-field>
 
+      <!-- Sucursal (auto-detectada, solo lectura) -->
+<mat-form-field appearance="outline" class="full-width" *ngIf="sucursalSeleccionada">
+  <mat-label>Sucursal</mat-label>
+  <input matInput [value]="sucursalSeleccionada" readonly>
+  <mat-icon matPrefix>business</mat-icon>
+  <mat-hint>Asignada automáticamente según el departamento</mat-hint>
+</mat-form-field>
+
       <!-- Orden de Compra (opcional) -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Orden de Compra (opcional)</mat-label>

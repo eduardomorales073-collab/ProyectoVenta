@@ -102,14 +102,28 @@ export class AuthService {
       default: return '/login';
     }
   }
+  getIdDepartamento(): number | null {
+  const token = this.getToken();
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const idDepto = payload['IdDepartamento'] || payload['idDepartamento'];
+    return idDepto ? parseInt(idDepto, 10) : null;
+  } catch (error) {
+    console.error('Error al decodificar el token:', error);
+    return null;
+  }
+}
 
   getRutaHubReportes(): string {
-    switch (this.getRol()) {
-      case 'Auditor': return '/auditor/reportes';
-      case 'Administrador':
-      default: return '/admin/reportes';
-    }
+  switch (this.getRol()) {
+    case 'Auditor': return '/auditor/reportes';
+    case 'GestorCompras': return '/empleado/pedidos';   // ← NUEVO
+    case 'Administrador':
+    default: return '/admin/reportes';
   }
+}
 
   // ====== PERMISOS ESPECÍFICOS POR MÓDULO ======
 
