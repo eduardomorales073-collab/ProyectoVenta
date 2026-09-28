@@ -13,6 +13,7 @@ import { OfertaProveedor } from '../../../models/oferta-proveedor.model';
 import { PedidoInterno } from '../../../models/pedido-interno.model';
 import { NotificacionService } from '../../../services/notificacion';
 import { ConfirmService } from '../../../services/confirm';
+import { OfertaEditFormComponent } from './oferta-edit-form/oferta-edit-form';
 
 @Component({
   selector: 'app-ofertas',
@@ -25,7 +26,8 @@ import { ConfirmService } from '../../../services/confirm';
     MatTableModule,
     MatProgressSpinnerModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    OfertaEditFormComponent
   ],
   templateUrl: './ofertas.html',
   styleUrl: './ofertas.scss'
@@ -43,6 +45,9 @@ export class ProveedorOfertasComponent implements OnInit {
     private confirm: ConfirmService,
     private cdr: ChangeDetectorRef
   ) { }
+
+  mostrarFormulario = false;
+ofertaSeleccionada: OfertaProveedor | null = null;
 
   ngOnInit(): void {
     this.cargarPedidos();
@@ -91,4 +96,21 @@ export class ProveedorOfertasComponent implements OnInit {
       });
     });
   }
+
+  abrirFormulario(oferta: OfertaProveedor): void {
+  this.ofertaSeleccionada = oferta;
+  this.mostrarFormulario = true;
+  this.cdr.detectChanges();
+}
+
+cerrarFormulario(): void {
+  this.mostrarFormulario = false;
+  this.ofertaSeleccionada = null;
+  this.cdr.detectChanges();
+}
+
+onGuardado(): void {
+  this.cerrarFormulario();
+  this.cargarOfertas();
+}
 }
