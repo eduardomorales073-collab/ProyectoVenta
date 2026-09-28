@@ -14,7 +14,7 @@ namespace Aplicacion.Servicios
     public class DetalleAdjudicacionService : IDetAdjuService
     {
         private readonly DetaAdjRepositorio _detaAdjRepositorio;
-        private readonly OferProvRepositorio _ofertaRepositorio;   // ← NUEVO
+        private readonly OferProvRepositorio _ofertaRepositorio;   // ← NUEVO (Regla 4 y 7)
         private readonly IMapper _mapper;
 
         public DetalleAdjudicacionService(
@@ -29,8 +29,13 @@ namespace Aplicacion.Servicios
 
         public async Task AddAsync(CreateDetalleAdjudicacionDTO detalle)
         {
-            // ===== REGLA DE NEGOCIO 4 =====
-            // La adjudicación debe ir al proveedor con MENOR precio
+            // ===== REGLA 5: Un pedido solo puede tener 1 adjudicación =====
+            await ValidarUnicaAdjudicacionAsync(detalle.id_Pedido);
+
+            // ===== REGLA 7: No adjudicar sin ofertas =====
+            await ValidarExistenOfertasAsync(detalle.id_Pedido);
+
+            // ===== REGLA 4: Adjudicación al proveedor con menor precio =====
             await ValidarMenorPrecioAsync(detalle.id_Pedido, detalle.id_Proveedor, detalle.Precio);
 
             await _detaAdjRepositorio.AddAsync(_mapper.Map<Detalle_Adjudicacion>(detalle));
@@ -54,41 +59,62 @@ namespace Aplicacion.Servicios
 
         public async Task UpdateAsync(UpdateDetalleAdjudicacionDTO detalle)
         {
-            // ===== REGLA DE NEGOCIO 4 (también al actualizar) =====
+            // ===== REGLA 7: No adjudicar sin ofertas =====
+            await ValidarExistenOfertasAsync(detalle.id_Pedido);
+
+            // ===== REGLA 4: Adjudicación al proveedor con menor precio =====
             await ValidarMenorPrecioAsync(detalle.id_Pedido, detalle.id_Proveedor, detalle.Precio);
 
             await _detaAdjRepositorio.UpdateAsync(_mapper.Map<Detalle_Adjudicacion>(detalle));
         }
 
-        // ===== REGLA DE NEGOCIO 4: Validar menor precio =====
-        private async Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado)
+        // ===== REGLA 5: Un pedido solo puede tener 1 adjudicación =====
+        private async Task ValidarUnicaAdjudicacionAsync(int idPedido)
         {
-            // 1. Obtener todas las ofertas del pedido
+            var todosLosDetalles = await _detaAdjRepositorio.GetAllasync();
+            var detalleExistente = todosLosDetalles.FirstOrDefault(d => d.id_Pedido == idPedido);
+
+            if (detalleExistente != null)
+            {
+                throw new InvalidOperationException(
+                    $"El pedido #{idPedido} ya está adjudicado en la adjudicación #{detalleExistente.id_adjudicacion}. " +
+                    $"Un pedido solo puede tener una única adjudicación."
+                );
+            }
+        }
+
+        // ===== REGLA 7: No adjudicar sin ofertas =====
+        private async Task ValidarExistenOfertasAsync(int idPedido)
+        {
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
             var ofertasDelPedido = todasLasOfertas
                 .Where(o => o.id_Pedido_Interno == idPedido)
                 .ToList();
 
-            // 2. Validar que existan ofertas
             if (!ofertasDelPedido.Any())
             {
                 throw new InvalidOperationException(
                     $"No se puede adjudicar el pedido #{idPedido} porque no tiene ofertas registradas."
                 );
             }
+        }
 
-            // 3. Encontrar el menor precio
+        // ===== REGLA 4: Adjudicación al proveedor con menor precio =====
+        private async Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado)
+        {
+            var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
+            var ofertasDelPedido = todasLasOfertas
+                .Where(o => o.id_Pedido_Interno == idPedido)
+                .ToList();
+
             var menorPrecio = ofertasDelPedido.Min(o => o.Precio);
+            var mejorOferta = ofertasDelPedido.First(o => o.Precio == menorPrecio);
 
-            // 4. Verificar si el proveedor seleccionado tiene el menor precio
             var proveedorEsGanador = ofertasDelPedido
                 .Any(o => o.id_Proveedor == idProveedor && o.Precio == menorPrecio);
 
             if (!proveedorEsGanador)
             {
-                // Obtener info del proveedor que SÍ tiene el menor precio
-                var mejorOferta = ofertasDelPedido.First(o => o.Precio == menorPrecio);
-
                 throw new InvalidOperationException(
                     $"La adjudicación del pedido #{idPedido} debe ir al proveedor con menor precio " +
                     $"(Q {menorPrecio:N2} del proveedor #{mejorOferta.id_Proveedor}). " +
