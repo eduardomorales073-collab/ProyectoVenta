@@ -1,8 +1,11 @@
 ﻿using Aplicacion.DTO;
 using Aplicacion.Interfaz;
+using Aplicacion.Mensajeria.Eventos;
 using Aplicacion.modelos;
 using Aplicacion.Repositorio;
 using AutoMapper;
+using MassTransit;
+using MassTransit.Transports;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +20,8 @@ namespace Aplicacion.Servicios
         private readonly OrdComRepositorio _ordenCompraRepositorio;
         private readonly DepartaRepositorio _departamentoRepositorio;
         private readonly SucursalRepositorio _sucursalRepositorio;
+        private readonly IPublishEndpoint _publishEndpoint;
+        
         private readonly IMapper _mapper;
 
         public PedidoInternoService(
@@ -24,13 +29,15 @@ namespace Aplicacion.Servicios
             OrdComRepositorio ordenCompraRepositorio,
             DepartaRepositorio departamentoRepositorio,
             SucursalRepositorio sucursalRepositorio,
-            IMapper mapper)
+            IPublishEndpoint publishEndpoint,
+        IMapper mapper)
         {
             _mapper = mapper;
             _pedidoInternoRepositorio = pedidoInternoRepository;
             _ordenCompraRepositorio = ordenCompraRepositorio;
             _departamentoRepositorio = departamentoRepositorio;
             _sucursalRepositorio = sucursalRepositorio;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task AddAsync(CreatePedidoInternoDTO pedido)
@@ -59,6 +66,7 @@ namespace Aplicacion.Servicios
 
             // Calcular el id manualmente
             var todos = await _pedidoInternoRepositorio.GetAllasync();
+
             var nuevoPedido = _mapper.Map<Pedido_Interno>(pedido);
             nuevoPedido.id = todos.Any() ? todos.Max(p => p.id) + 1 : 1;
 
@@ -76,11 +84,34 @@ namespace Aplicacion.Servicios
             }
 
             await _pedidoInternoRepositorio.AddAsync(nuevoPedido);
+            // ===== PUBLICAR EVENTO: PedidoCreado =====
+            await _publishEndpoint.Publish(new PedidoCreado(
+                PedidoId: nuevoPedido.id,
+                Codigo: nuevoPedido.codigo ?? "",
+                IdDepartamento: nuevoPedido.id_Departamento,
+                Cantidad: nuevoPedido.cantidad ?? 1,
+                Fecha: DateTime.UtcNow,
+                Usuario: "Sistema"
+            ));
         }
+
 
         public async Task DeleteAsync(int id)
         {
-            await _pedidoInternoRepositorio.DeletAsync(id);
+            var pedido = await _pedidoInternoRepositorio.GetAsync(id);
+            if (pedido != null)
+            {
+                await _pedidoInternoRepositorio.DeletAsync(id);
+
+                // ===== PUBLICAR EVENTO: PedidoCancelado =====
+                await _publishEndpoint.Publish(new PedidoCancelado(
+                    PedidoId: id,
+                    Codigo: pedido.codigo ?? "",
+                    Motivo: "Cancelado por el usuario",
+                    Fecha: DateTime.UtcNow,
+                    Usuario: "Sistema"
+                ));
+            }
         }
 
         // ===== GET ALL CON DEPARTAMENTO Y SUCURSAL =====

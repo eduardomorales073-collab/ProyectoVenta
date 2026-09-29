@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
 using Aplicacion.Mensajeria.Consumidores;
+using Aplicacion.Mensajeria.Eventos;
+
 using Aplicacion.Modelos;
 using MassTransit;
 using MongoDB.Driver;
@@ -141,6 +143,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -150,7 +154,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+            NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         };
     });
 
@@ -164,18 +171,36 @@ builder.Services.AddCors(options =>
 });
 
 // ===== MONGODB =====
+// ===== MONGODB =====
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB")
     ?? "mongodb://localhost:27017";
 var mongoClient = new MongoClient(mongoConnectionString);
 var mongoDatabase = mongoClient.GetDatabase("LogsDB");
-var compraCollection = mongoDatabase.GetCollection<CompraHistorial>("compras_historial");
 
-builder.Services.AddSingleton<IMongoCollection<CompraHistorial>>(compraCollection);
+// Registrar las 5 colecciones
+builder.Services.AddSingleton<IMongoCollection<CompraHistorial>>(
+    mongoDatabase.GetCollection<CompraHistorial>("compras_historial"));
+
+builder.Services.AddSingleton<IMongoCollection<PedidoHistorial>>(
+    mongoDatabase.GetCollection<PedidoHistorial>("pedidos_historial"));
+
+builder.Services.AddSingleton<IMongoCollection<OfertaHistorial>>(
+    mongoDatabase.GetCollection<OfertaHistorial>("ofertas_historial"));
+
+builder.Services.AddSingleton<IMongoCollection<OrdenHistorial>>(
+    mongoDatabase.GetCollection<OrdenHistorial>("ordenes_historial"));
+
+builder.Services.AddSingleton<IMongoCollection<CancelacionHistorial>>(
+    mongoDatabase.GetCollection<CancelacionHistorial>("cancelaciones_historial"));
 
 // ===== MASSTRANSIT + RABBITMQ =====
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<CompraRegistradaConsumer>();
+    x.AddConsumer<PedidoCreadoConsumer>();        
+    x.AddConsumer<OfertaRegistradaConsumer>();   
+    x.AddConsumer<OrdenCreadaConsumer>();       
+    x.AddConsumer<PedidoCanceladoConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

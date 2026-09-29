@@ -8,7 +8,7 @@ namespace Venta.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize] // ← Solo requiere autenticación, NO rol específico
     public class OfertaProveedorControlador : ControllerBase
     {
         private readonly IOfeProveService _ofeProveService;
@@ -20,24 +20,22 @@ namespace Venta.Controllers
         public async Task<IActionResult> GetAll() => Ok(await _ofeProveService.GetAllsync());
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Administrador,GestorCompras,AdministradorProveedor")]
         public async Task<IActionResult> GetById(int id) => Ok(await _ofeProveService.GetByIdAsync(id));
 
-        // ← NUEVO: Endpoint para que el Administrador de Proveedor vea SOLO sus ofertas
+        // Endpoint para que el Administrador de Proveedor vea SOLO sus ofertas
         [HttpGet("mis-ofertas")]
         [Authorize(Roles = "AdministradorProveedor,Administrador")]
         public async Task<IActionResult> MisOfertas()
         {
             var idProveedorClaim = User.FindFirst("IdProveedor")?.Value;
 
-            // Si no tiene IdProveedor en el token:
             if (string.IsNullOrEmpty(idProveedorClaim))
             {
-                // Si es Admin, devolver todas las ofertas
                 if (User.IsInRole("Administrador"))
                 {
                     return Ok(await _ofeProveService.GetAllsync());
                 }
-                // Si es Admin de Proveedor pero no tiene proveedor asignado, devolver vacío
                 return Ok(new List<OfertaProveedorDTO>());
             }
 
@@ -45,12 +43,11 @@ namespace Venta.Controllers
             return Ok(await _ofeProveService.GetByProveedorAsync(idProveedor));
         }
 
-        // ← NUEVO: Endpoint para crear ofertas (solo Admin de Proveedor)
+        // Endpoint para crear ofertas (solo Admin de Proveedor)
         [HttpPost("ofertar")]
         [Authorize(Roles = "AdministradorProveedor")]
         public async Task<IActionResult> Ofertar(CreateOfertaProveedorDTO dto)
         {
-            // Verificar que el proveedor del token coincida con el del DTO
             var idProveedorClaim = User.FindFirst("IdProveedor")?.Value;
             if (string.IsNullOrEmpty(idProveedorClaim))
             {

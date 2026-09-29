@@ -8,17 +8,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Aplicacion.Mensajeria.Eventos;
+using MassTransit;
 
 namespace Aplicacion.Servicios
 {
     public class OrdenCompraService : IOrdComService
     {
         private readonly OrdComRepositorio _ordenCompraRepositorio;
+
+        private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
-        public OrdenCompraService(OrdComRepositorio ordenCompraRepository, IMapper mapper)
+        public OrdenCompraService(
+            
+            OrdComRepositorio ordenCompraRepository,
+
+            IPublishEndpoint publishEndpoint,
+
+            IMapper mapper)
         {
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
             _ordenCompraRepositorio = ordenCompraRepository;
         }
 
@@ -37,6 +48,14 @@ namespace Aplicacion.Servicios
             }
 
             await _ordenCompraRepositorio.AddAsync(nuevaOrden);
+            // ===== PUBLICAR EVENTO: OrdenCreada =====
+            await _publishEndpoint.Publish(new OrdenCreada(
+                OrdenId: nuevaOrden.id,
+                Descripcion: nuevaOrden.Descripcion,
+                Fecha_Creacion: nuevaOrden.Fecha_Creacion,
+                Fecha_Limite: nuevaOrden.Fecha_Limite,
+                Tipo_Orden: nuevaOrden.Tipo_Orden
+            ));
         }
 
         public async Task DeleteAsync(int id)

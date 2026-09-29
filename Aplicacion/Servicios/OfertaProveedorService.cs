@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Aplicacion.Mensajeria.Eventos;
+using MassTransit;
+
 
 namespace Aplicacion.Servicios
 {
@@ -16,10 +19,23 @@ namespace Aplicacion.Servicios
         private readonly OferProvRepositorio _ofertaProveedorRepositorio;
         private readonly IMapper _mapper;
 
-        public OfertaProveedorService(OferProvRepositorio ofertaProveedorRepository, IMapper mapper)
+        private readonly IPublishEndpoint _publishEndpoint;
+
+        public OfertaProveedorService(
+
+            
+            OferProvRepositorio ofertaProveedorRepository,
+            
+            IPublishEndpoint publishEndpoint,
+            
+            IMapper mapper
+            )
         {
             _mapper = mapper;
             _ofertaProveedorRepositorio = ofertaProveedorRepository;
+
+            _publishEndpoint = publishEndpoint;
+
         }
 
         public async Task AddAsync(CreateOfertaProveedorDTO oferta)
@@ -44,6 +60,15 @@ namespace Aplicacion.Servicios
             nuevaOferta.id = todas.Any() ? todas.Max(o => o.id) + 1 : 1;
 
             await _ofertaProveedorRepositorio.AddAsync(nuevaOferta);
+            // ===== PUBLICAR EVENTO: OfertaRegistrada =====
+            await _publishEndpoint.Publish(new OfertaRegistrada(
+                OfertaId: nuevaOferta.id,
+                IdProveedor: nuevaOferta.id_Proveedor,
+                IdPedidoInterno: nuevaOferta.id_Pedido_Interno,
+                Precio: nuevaOferta.Precio,
+                Fecha: DateTime.UtcNow,
+                Proveedor: $"Proveedor #{nuevaOferta.id_Proveedor}"
+            ));
         }
 
         public async Task DeleteAsync(int id)
