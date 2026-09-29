@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-acceso-denegado',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatCardModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule],
   templateUrl: './acceso-denegado.html',
   styleUrl: './acceso-denegado.scss'
 })

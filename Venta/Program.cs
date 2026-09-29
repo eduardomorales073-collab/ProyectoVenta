@@ -9,6 +9,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using Aplicacion.Mensajeria.Consumidores;
+using Aplicacion.Modelos;
+using MassTransit;
+using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+
+BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -152,6 +161,32 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod());
+});
+
+// ===== MONGODB =====
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB")
+    ?? "mongodb://localhost:27017";
+var mongoClient = new MongoClient(mongoConnectionString);
+var mongoDatabase = mongoClient.GetDatabase("LogsDB");
+var compraCollection = mongoDatabase.GetCollection<CompraHistorial>("compras_historial");
+
+builder.Services.AddSingleton<IMongoCollection<CompraHistorial>>(compraCollection);
+
+// ===== MASSTRANSIT + RABBITMQ =====
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<CompraRegistradaConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
 });
 
 // ===== BUILD =====

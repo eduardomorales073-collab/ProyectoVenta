@@ -1,12 +1,13 @@
 ﻿using Aplicacion.DTO;
 using Aplicacion.Interfaz;
+using Aplicacion.Mensajeria.Eventos;
 using Aplicacion.modelos;
 using Aplicacion.Repositorio;
 using AutoMapper;
+using MassTransit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Aplicacion.Servicios
@@ -15,25 +16,27 @@ namespace Aplicacion.Servicios
     {
         private readonly AdjuRepositorio _adjuRepositorio;
         private readonly OrdComRepositorio _ordenCompraRepositorio;
-        private readonly OferProvRepositorio _ofertaRepositorio;   
+        private readonly OferProvRepositorio _ofertaRepositorio;
+        private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
         public AdjudicacionService(
             AdjuRepositorio adjuRepository,
             OrdComRepositorio ordenCompraRepositorio,
-            OferProvRepositorio ofertaRepositorio,                 
+            OferProvRepositorio ofertaRepositorio,
+            IPublishEndpoint publishEndpoint,
             IMapper mapper)
         {
             _mapper = mapper;
             _adjuRepositorio = adjuRepository;
             _ordenCompraRepositorio = ordenCompraRepositorio;
-            _ofertaRepositorio = ofertaRepositorio;                 
+            _ofertaRepositorio = ofertaRepositorio;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task AddAsync(CreateAdjudicacionDTO adjudicacion)
         {
             // ===== REGLA DE NEGOCIO 2 =====
-            // La fecha de resolución no puede ser anterior a la fecha de creación de la orden
             var orden = await _ordenCompraRepositorio.GetAsync(adjudicacion.Orden_Compra);
 
             if (orden == null)
@@ -58,6 +61,15 @@ namespace Aplicacion.Servicios
             nuevaAdjudicacion.id = todas.Any() ? todas.Max(a => a.id) + 1 : 1;
 
             await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
+
+            // ===== PUBLICAR EVENTO A RABBITMQ (asíncrono, no bloquea) =====
+            await _publishEndpoint.Publish(new CompraRegistrada(
+                OrdenId: Guid.NewGuid(),
+                Detalle: $"Adjudicación de la orden #{adjudicacion.Orden_Compra}",
+                Monto: 0,
+                Fecha: DateTime.UtcNow,
+                Proveedor: "Por definir"
+            ));
         }
 
         public async Task DeleteAsync(int id)
@@ -100,16 +112,13 @@ namespace Aplicacion.Servicios
         }
 
         // ===== REGLA DE NEGOCIO 4 =====
-        // El proveedor adjudicado debe ser el que tenga la oferta con MENOR precio
         public async Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado)
         {
-            // 1. Obtener todas las ofertas del pedido
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
             var ofertasDelPedido = todasLasOfertas
                 .Where(o => o.id_Pedido_Interno == idPedido)
                 .ToList();
 
-            // 2. Validar que existan ofertas
             if (!ofertasDelPedido.Any())
             {
                 throw new InvalidOperationException(
@@ -117,23 +126,19 @@ namespace Aplicacion.Servicios
                 );
             }
 
-            // 3. Encontrar la oferta con el menor precio
             var mejorOferta = ofertasDelPedido
                 .OrderBy(o => o.Precio)
                 .First();
 
-            // 4. Verificar si hay empate en el menor precio
             var ofertasConMenorPrecio = ofertasDelPedido
                 .Where(o => o.Precio == mejorOferta.Precio)
                 .ToList();
 
-            // 5. Si el proveedor seleccionado NO está entre los de menor precio, lanzar error
             var proveedorEsGanador = ofertasConMenorPrecio
                 .Any(o => o.id_Proveedor == idProveedor);
 
             if (!proveedorEsGanador)
             {
-                // Construir lista de proveedores con el menor precio
                 var proveedoresMenor = string.Join(", ",
                     ofertasConMenorPrecio.Select(o => $"#{o.id_Proveedor}"));
 

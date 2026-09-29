@@ -68,21 +68,21 @@ export const routes: Routes = [
       { path: 'adjudicaciones', component: AdjudicacionesComponent },
       { path: 'pedidos-internos', component: PedidosInternosComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-
       { path: 'acceso-denegado', component: AccesoDenegadoComponent },
     ]
   },
-  // ===== CREADOR DE PEDIDOS =====
-{
-  path: 'creador',
-  canActivate: [creadorGuard],
-  children: [
-    { path: 'pedidos', component: PedidosInternosComponent },
-    { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
-  ]
-},
 
-   // ===== AUDITOR =====
+  // ===== CREADOR DE PEDIDOS =====
+  {
+    path: 'creador',
+    canActivate: [creadorGuard],
+    children: [
+      { path: 'pedidos', component: PedidosInternosComponent },
+      { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
+    ]
+  },
+
+  // ===== AUDITOR =====
   {
     path: 'auditor',
     canActivate: [auditorGuard],
@@ -101,24 +101,24 @@ export const routes: Routes = [
   },
 
   // ===== EMPLEADO (Gestor de Compras) =====
-{
-  path: 'empleado',
-  canActivate: [empleadoGuard],
-  children: [
-    { path: 'pedidos', component: PedidosInternosComponent },        // ← Reutiliza componente del Admin
-    { path: 'adjudicaciones', component: AdjudicacionesComponent },  // ← Reutiliza componente del Admin
-    { path: 'articulos', component: ArticulosComponent },
-    { path: 'ordenes-activas', component: OrdenesActivas },
-    { path: 'pedidos-pendientes', component: PedidosPendientes },
-    { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
-    { path: 'reportes/ranking-proveedores', component: RankingProveedores },
-    { path: 'reportes/historial-articulo', component: HistorialArticulo },
-    { path: 'reportes/ofertas-orden', component: OfertasOrden },
-    { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
-    { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
-    { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
-  ]
-},
+  {
+    path: 'empleado',
+    canActivate: [empleadoGuard],
+    children: [
+      { path: 'pedidos', component: PedidosInternosComponent },
+      { path: 'adjudicaciones', component: AdjudicacionesComponent },
+      { path: 'articulos', component: ArticulosComponent },
+      { path: 'ordenes-activas', component: OrdenesActivas },
+      { path: 'pedidos-pendientes', component: PedidosPendientes },
+      { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
+      { path: 'reportes/ranking-proveedores', component: RankingProveedores },
+      { path: 'reportes/historial-articulo', component: HistorialArticulo },
+      { path: 'reportes/ofertas-orden', component: OfertasOrden },
+      { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
+      { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
+    ]
+  },
 
   // ===== PROVEEDOR (Admin de Proveedor) =====
   {
