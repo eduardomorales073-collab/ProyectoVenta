@@ -55,7 +55,10 @@ export class AuditoriaComponent implements OnInit {
     { valor: 'Pedido', etiqueta: 'Pedidos' },
     { valor: 'Oferta', etiqueta: 'Ofertas' },
     { valor: 'Orden', etiqueta: 'Órdenes' },
-    { valor: 'Cancelacion', etiqueta: 'Cancelaciones' }
+    { valor: 'Cancelacion', etiqueta: 'Cancelaciones' },
+    { valor: 'Adjudicacion', etiqueta: 'Adjudicaciones' },        
+  { valor: 'PedidoActualizado', etiqueta: 'Pedidos Actualizados' }, 
+  { valor: 'OfertaActualizada', etiqueta: 'Ofertas Actualizadas' } ,
   ];
 
   constructor(
@@ -107,6 +110,9 @@ export class AuditoriaComponent implements OnInit {
       case 'Oferta': return 'tipo-oferta';
       case 'Orden': return 'tipo-orden';
       case 'Cancelacion': return 'tipo-cancelacion';
+      case 'Adjudicacion': return 'tipo-adjudicacion';              
+    case 'PedidoActualizado': return 'tipo-pedido-actualizado';   
+    case 'OfertaActualizada': return 'tipo-oferta-actualizada';
       default: return '';
     }
   }
@@ -118,6 +124,9 @@ export class AuditoriaComponent implements OnInit {
       case 'Oferta': return 'local_offer';
       case 'Orden': return 'receipt_long';
       case 'Cancelacion': return 'cancel';
+      case 'Adjudicacion': return 'gavel';                         
+    case 'PedidoActualizado': return 'edit_note';                
+    case 'OfertaActualizada': return 'price_change';
       default: return 'event';
     }
   }

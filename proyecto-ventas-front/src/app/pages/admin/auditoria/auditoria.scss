@@ -238,3 +238,41 @@ th {
   color: #334155;
   font-weight: 600;
 }
+.tipo-adjudicacion {
+  background: #ede9fe !important;
+  color: #5b21b6 !important;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+  }
+}
+
+.tipo-pedido-actualizado {
+  background: #fce7f3 !important;
+  color: #9d174d !important;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+  }
+}
+
+.tipo-oferta-actualizada {
+  background: #cffafe !important;
+  color: #155e75 !important;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+  }
+}
