@@ -79,6 +79,9 @@ builder.Services.AddScoped<UsuarioRepositorio, UsuarRepositorio>();
 builder.Services.AddScoped<IProvRubService, ProveeRubroService>();
 builder.Services.AddScoped<ProveRubRepositorio, ProvRubRepositorio>();
 
+builder.Services.AddScoped<TelefonoRepositorio, TelRepositorio>();
+builder.Services.AddScoped<DetaTelRepositorio, DetaTelRepositorioImpl>();
+
 // --- Entidades de clave compuesta ---
 builder.Services.AddScoped<IDetAdjuService, DetalleAdjudicacionService>();
 builder.Services.AddScoped<DetaAdjRepositorio, DeARepositorio>();

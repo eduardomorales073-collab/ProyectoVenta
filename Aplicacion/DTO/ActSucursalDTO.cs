@@ -4,5 +4,9 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record UpdateSucursalDTO(int id, string Nombre);
+    public record UpdateSucursalDTO(
+        int id,
+        string Nombre,
+        List<string> Telefonos
+    );
 }

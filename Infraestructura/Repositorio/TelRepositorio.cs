@@ -21,7 +21,7 @@ namespace Infraestructura.Repositorio
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeletAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var telefono = await _context.Telefono.FindAsync(id);
             if (telefono != null)

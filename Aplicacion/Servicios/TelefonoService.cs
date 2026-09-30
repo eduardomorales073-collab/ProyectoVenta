@@ -26,7 +26,7 @@ namespace Aplicacion.Servicios
 
         public  async Task DeleteAsync(int id)
         {
-            await _telefonoRepositorio.DeletAsync(id);
+            await _telefonoRepositorio.DeleteAsync(id);
         }
 
         public  async Task<List<TelefonoDTO>> GetAllsync()

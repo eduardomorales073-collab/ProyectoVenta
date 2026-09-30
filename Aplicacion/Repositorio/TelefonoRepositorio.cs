@@ -9,8 +9,8 @@ namespace Aplicacion.Repositorio
     {
         Task<List<Telefono>> GetAllasync();
         Task<Telefono> GetAsync(int id);
-        Task DeletAsync(int id);
         Task AddAsync(Telefono telefono);
         Task UpdateAsync(Telefono telefono);
+        Task DeleteAsync(int id);
     }
 }
