@@ -16,19 +16,28 @@ namespace Aplicacion.Servicios
         private readonly IMongoCollection<OfertaHistorial> _ofertas;
         private readonly IMongoCollection<OrdenHistorial> _ordenes;
         private readonly IMongoCollection<CancelacionHistorial> _cancelaciones;
+        private readonly IMongoCollection<AdjudicacionHistorial> _adjudicaciones;
+        private readonly IMongoCollection<PedidoActualizacionHistorial> _pedidosActualizados;
+        private readonly IMongoCollection<OfertaActualizacionHistorial> _ofertasActualizadas;
 
         public AuditoriaService(
             IMongoCollection<CompraHistorial> compras,
             IMongoCollection<PedidoHistorial> pedidos,
             IMongoCollection<OfertaHistorial> ofertas,
             IMongoCollection<OrdenHistorial> ordenes,
-            IMongoCollection<CancelacionHistorial> cancelaciones)
+            IMongoCollection<CancelacionHistorial> cancelaciones,
+            IMongoCollection<AdjudicacionHistorial> adjudicaciones,
+            IMongoCollection<PedidoActualizacionHistorial> pedidosActualizados,
+            IMongoCollection<OfertaActualizacionHistorial> ofertasActualizadas)
         {
             _compras = compras;
             _pedidos = pedidos;
             _ofertas = ofertas;
             _ordenes = ordenes;
             _cancelaciones = cancelaciones;
+            _adjudicaciones = adjudicaciones;
+            _pedidosActualizados = pedidosActualizados;
+            _ofertasActualizadas = ofertasActualizadas;
         }
 
         public async Task<List<EventoAuditoriaDTO>> GetHistorialAsync(
@@ -110,6 +119,51 @@ namespace Aplicacion.Servicios
                     Detalle: $"Motivo: {c.Motivo}",
                     Usuario: c.Usuario,
                     Referencia: c.PedidoId.ToString()
+                )));
+            }
+
+            // ===== 6. ADJUDICACIONES =====
+            if (string.IsNullOrEmpty(tipo) || tipo.Equals("Adjudicacion", StringComparison.OrdinalIgnoreCase))
+            {
+                var adjudicaciones = await _adjudicaciones.Find(_ => true).ToListAsync();
+                eventos.AddRange(adjudicaciones.Select(a => new EventoAuditoriaDTO(
+                    Id: a.Id ?? "",
+                    Tipo: "Adjudicacion",
+                    Fecha: a.Fecha,
+                    Titulo: $"Adjudicación #{a.AdjudicacionId}",
+                    Detalle: $"Orden #{a.OrdenCompra} | Estado: {a.Estado} | Resolución: {a.Fecha_Resolucion:dd/MM/yyyy}",
+                    Usuario: a.Usuario,
+                    Referencia: a.AdjudicacionId.ToString()
+                )));
+            }
+
+            // ===== 7. PEDIDOS ACTUALIZADOS =====
+            if (string.IsNullOrEmpty(tipo) || tipo.Equals("PedidoActualizado", StringComparison.OrdinalIgnoreCase))
+            {
+                var pedidosAct = await _pedidosActualizados.Find(_ => true).ToListAsync();
+                eventos.AddRange(pedidosAct.Select(p => new EventoAuditoriaDTO(
+                    Id: p.Id ?? "",
+                    Tipo: "PedidoActualizado",
+                    Fecha: p.Fecha,
+                    Titulo: p.Codigo,
+                    Detalle: $"Cantidad actualizada: {p.Cantidad} | Departamento: #{p.IdDepartamento}",
+                    Usuario: p.Usuario,
+                    Referencia: p.PedidoId.ToString()
+                )));
+            }
+
+            // ===== 8. OFERTAS ACTUALIZADAS =====
+            if (string.IsNullOrEmpty(tipo) || tipo.Equals("OfertaActualizada", StringComparison.OrdinalIgnoreCase))
+            {
+                var ofertasAct = await _ofertasActualizadas.Find(_ => true).ToListAsync();
+                eventos.AddRange(ofertasAct.Select(o => new EventoAuditoriaDTO(
+                    Id: o.Id ?? "",
+                    Tipo: "OfertaActualizada",
+                    Fecha: o.Fecha,
+                    Titulo: $"Oferta #{o.OfertaId}",
+                    Detalle: $"{o.Proveedor}: Q {o.PrecioAnterior:N2} → Q {o.PrecioNuevo:N2}",
+                    Usuario: null,
+                    Referencia: o.OfertaId.ToString()
                 )));
             }
 

@@ -62,13 +62,23 @@ namespace Aplicacion.Servicios
 
             await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
 
-            // ===== PUBLICAR EVENTO A RABBITMQ (asíncrono, no bloquea) =====
+            // ===== EVENTO EXISTENTE: CompraRegistrada =====
             await _publishEndpoint.Publish(new CompraRegistrada(
                 OrdenId: Guid.NewGuid(),
                 Detalle: $"Adjudicación de la orden #{adjudicacion.Orden_Compra}",
                 Monto: 0,
                 Fecha: DateTime.UtcNow,
                 Proveedor: "Por definir"
+            ));
+
+            // ===== EVENTO NUEVO: AdjudicacionCreada =====
+            await _publishEndpoint.Publish(new AdjudicacionCreada(
+                AdjudicacionId: nuevaAdjudicacion.id,
+                OrdenCompra: nuevaAdjudicacion.Orden_Compra,
+                Fecha_Resolucion: nuevaAdjudicacion.Fecha_Resolucion,
+                Estado: nuevaAdjudicacion.Estado ?? "Activa",
+                Fecha: DateTime.UtcNow,
+                Usuario: "Sistema"
             ));
         }
 

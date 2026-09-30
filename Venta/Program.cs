@@ -193,6 +193,15 @@ builder.Services.AddSingleton<IMongoCollection<OrdenHistorial>>(
 builder.Services.AddSingleton<IMongoCollection<CancelacionHistorial>>(
     mongoDatabase.GetCollection<CancelacionHistorial>("cancelaciones_historial"));
 
+builder.Services.AddSingleton<IMongoCollection<AdjudicacionHistorial>>(
+    mongoDatabase.GetCollection<AdjudicacionHistorial>("adjudicaciones_historial"));
+
+builder.Services.AddSingleton<IMongoCollection<PedidoActualizacionHistorial>>(
+    mongoDatabase.GetCollection<PedidoActualizacionHistorial>("pedidos_actualizaciones_historial"));
+
+builder.Services.AddSingleton<IMongoCollection<OfertaActualizacionHistorial>>(
+    mongoDatabase.GetCollection<OfertaActualizacionHistorial>("ofertas_actualizaciones_historial"));
+
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
 // ===== MASSTRANSIT + RABBITMQ =====
@@ -203,6 +212,9 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<OfertaRegistradaConsumer>();   
     x.AddConsumer<OrdenCreadaConsumer>();       
     x.AddConsumer<PedidoCanceladoConsumer>();
+    x.AddConsumer<AdjudicacionCreadaConsumer>();
+    x.AddConsumer<PedidoActualizadoConsumer>();
+    x.AddConsumer<OfertaActualizadaConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

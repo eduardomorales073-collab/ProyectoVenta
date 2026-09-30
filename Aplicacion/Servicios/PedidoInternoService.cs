@@ -5,11 +5,9 @@ using Aplicacion.modelos;
 using Aplicacion.Repositorio;
 using AutoMapper;
 using MassTransit;
-using MassTransit.Transports;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Aplicacion.Servicios
@@ -21,7 +19,6 @@ namespace Aplicacion.Servicios
         private readonly DepartaRepositorio _departamentoRepositorio;
         private readonly SucursalRepositorio _sucursalRepositorio;
         private readonly IPublishEndpoint _publishEndpoint;
-        
         private readonly IMapper _mapper;
 
         public PedidoInternoService(
@@ -30,7 +27,7 @@ namespace Aplicacion.Servicios
             DepartaRepositorio departamentoRepositorio,
             SucursalRepositorio sucursalRepositorio,
             IPublishEndpoint publishEndpoint,
-        IMapper mapper)
+            IMapper mapper)
         {
             _mapper = mapper;
             _pedidoInternoRepositorio = pedidoInternoRepository;
@@ -64,27 +61,23 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // Calcular el id manualmente
             var todos = await _pedidoInternoRepositorio.GetAllasync();
-
             var nuevoPedido = _mapper.Map<Pedido_Interno>(pedido);
             nuevoPedido.id = todos.Any() ? todos.Max(p => p.id) + 1 : 1;
 
-            // ===== AUTO-GENERAR CÓDIGO =====
             if (string.IsNullOrEmpty(nuevoPedido.codigo))
             {
                 var anio = DateTime.Now.Year;
                 nuevoPedido.codigo = $"PED-{anio}-{nuevoPedido.id.ToString("D3")}";
             }
 
-            // ===== VALORES POR DEFECTO =====
             if (!nuevoPedido.cantidad.HasValue)
             {
                 nuevoPedido.cantidad = 1;
             }
 
             await _pedidoInternoRepositorio.AddAsync(nuevoPedido);
-            // ===== PUBLICAR EVENTO: PedidoCreado =====
+
             await _publishEndpoint.Publish(new PedidoCreado(
                 PedidoId: nuevoPedido.id,
                 Codigo: nuevoPedido.codigo ?? "",
@@ -95,7 +88,6 @@ namespace Aplicacion.Servicios
             ));
         }
 
-
         public async Task DeleteAsync(int id)
         {
             var pedido = await _pedidoInternoRepositorio.GetAsync(id);
@@ -103,7 +95,6 @@ namespace Aplicacion.Servicios
             {
                 await _pedidoInternoRepositorio.DeletAsync(id);
 
-                // ===== PUBLICAR EVENTO: PedidoCancelado =====
                 await _publishEndpoint.Publish(new PedidoCancelado(
                     PedidoId: id,
                     Codigo: pedido.codigo ?? "",
@@ -114,7 +105,6 @@ namespace Aplicacion.Servicios
             }
         }
 
-        // ===== GET ALL CON DEPARTAMENTO Y SUCURSAL =====
         public async Task<List<PedidoInternoDTO>> GetAllsync()
         {
             var pedidos = await _pedidoInternoRepositorio.GetAllasync();
@@ -170,15 +160,17 @@ namespace Aplicacion.Servicios
             );
         }
 
+        // ===== MÉTODO CORREGIDO: UpdateAsync =====
         public async Task UpdateAsync(UpdatePedidoInternoDTO pedido)
         {
-            // ===== VALIDACIÓN: Pedido no puede estar en 2 órdenes =====
+            // ===== OBTENER LA ENTIDAD YA RASTREADA =====
             var pedidoExistente = await _pedidoInternoRepositorio.GetAsync(pedido.id);
             if (pedidoExistente == null)
             {
                 throw new InvalidOperationException($"El pedido #{pedido.id} no existe.");
             }
 
+            // ===== VALIDACIÓN: Pedido no puede estar en 2 órdenes =====
             if (pedidoExistente.id_OrdenCompra.HasValue
                 && pedido.id_OrdenCompra.HasValue
                 && pedidoExistente.id_OrdenCompra.Value != pedido.id_OrdenCompra.Value)
@@ -211,16 +203,27 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            var pedidoActualizar = _mapper.Map<Pedido_Interno>(pedido);
-            if (!pedidoActualizar.cantidad.HasValue)
-            {
-                pedidoActualizar.cantidad = 1;
-            }
+            // ===== ACTUALIZAR LA ENTIDAD YA RASTREADA (NO mapear) =====
+            pedidoExistente.codigo = pedido.codigo;
+            pedidoExistente.cantidad = pedido.cantidad ?? 1;
+            pedidoExistente.id_Departamento = pedido.id_Departamento;
+            pedidoExistente.id_OrdenCompra = pedido.id_OrdenCompra;
+            pedidoExistente.Fecha_Solicitada = pedido.Fecha_Solicitada;
+            pedidoExistente.Fecha_Ingreso = pedido.Fecha_Ingreso;
 
-            await _pedidoInternoRepositorio.UpdateAsync(pedidoActualizar);
+            await _pedidoInternoRepositorio.UpdateAsync(pedidoExistente);
+
+            // ===== EVENTO: PedidoActualizado =====
+            await _publishEndpoint.Publish(new PedidoActualizado(
+                PedidoId: pedidoExistente.id,
+                Codigo: pedidoExistente.codigo ?? "",
+                Cantidad: pedidoExistente.cantidad ?? 1,
+                IdDepartamento: pedidoExistente.id_Departamento,
+                Fecha: DateTime.UtcNow,
+                Usuario: "Sistema"
+            ));
         }
 
-        // ===== GET BY DEPARTAMENTO (NUEVO) =====
         public async Task<List<PedidoInternoDTO>> GetByDepartamentoAsync(int idDepartamento)
         {
             var todos = await GetAllsync();
