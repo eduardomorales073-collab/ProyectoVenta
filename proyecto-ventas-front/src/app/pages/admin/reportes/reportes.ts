@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
 interface ReporteCard {
+  id: string;              // ← NUEVO
   titulo: string;
   descripcion: string;
   icono: string;
@@ -28,6 +29,7 @@ interface ReporteCard {
 export class ReportesComponent {
   reportes: ReporteCard[] = [
     {
+      id: 'historial-articulo',           // ← NUEVO
       titulo: 'Historial por Artículo',
       descripcion: 'Compras de un artículo con proveedor y precio de adjudicación.',
       icono: 'history',
@@ -35,6 +37,7 @@ export class ReportesComponent {
       color: 'gradient-blue'
     },
     {
+      id: 'ranking-proveedores',          // ← NUEVO
       titulo: 'Ranking de Proveedores',
       descripcion: 'Top 5 proveedores con mayores montos adjudicados.',
       icono: 'leaderboard',
@@ -42,6 +45,7 @@ export class ReportesComponent {
       color: 'gradient-green'
     },
     {
+      id: 'ofertas-orden',                // ← NUEVO
       titulo: 'Ofertas por Orden',
       descripcion: 'Comparativa de ofertas recibidas, resaltando al ganador.',
       icono: 'compare_arrows',
@@ -49,6 +53,7 @@ export class ReportesComponent {
       color: 'gradient-orange'
     },
     {
+      id: 'pedidos-pendientes',           // ← NUEVO
       titulo: 'Pedidos Pendientes',
       descripcion: 'Pedidos internos sin asignar a una orden de compra.',
       icono: 'pending_actions',
@@ -56,6 +61,7 @@ export class ReportesComponent {
       color: 'gradient-purple'
     },
     {
+      id: 'ordenes-activas',              // ← NUEVO
       titulo: 'Órdenes Activas',
       descripcion: 'Órdenes de compra abiertas a recibir ofertas.',
       icono: 'play_circle',
@@ -63,6 +69,7 @@ export class ReportesComponent {
       color: 'gradient-cyan'
     },
     {
+      id: 'gasto-departamental',          // ← NUEVO
       titulo: 'Gasto Departamental',
       descripcion: 'Monto total gastado por departamento en una sucursal y año.',
       icono: 'account_balance',
@@ -70,6 +77,7 @@ export class ReportesComponent {
       color: 'gradient-red'
     },
     {
+      id: 'eficiencia-proceso',           // ← NUEVO
       titulo: 'Eficiencia del Proceso',
       descripcion: 'Tiempo promedio (días) desde la orden hasta la adjudicación.',
       icono: 'speed',
@@ -77,6 +85,7 @@ export class ReportesComponent {
       color: 'gradient-teal'
     },
     {
+      id: 'variacion-precios',            // ← NUEVO
       titulo: 'Variación de Precios',
       descripcion: 'Evolución de precios de oferta por artículo y proveedor.',
       icono: 'trending_up',

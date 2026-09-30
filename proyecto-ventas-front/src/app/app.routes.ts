@@ -35,6 +35,7 @@ import { AccesoDenegadoComponent } from './pages/acceso-denegado/acceso-denegado
 import { PedidosDisponiblesComponent } from './pages/proveedor/pedidos-disponibles/pedidos-disponibles';
 import { creadorGuard } from './guards/creador-guard';
 import { AuditoriaComponent } from './pages/admin/auditoria/auditoria';
+import { ReporteJasperComponent } from './pages/admin/reportes/reporte-jasper/reporte-jasper';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -71,6 +72,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'acceso-denegado', component: AccesoDenegadoComponent },
       { path: 'auditoria', component: AuditoriaComponent },
+      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
     ]
   },
 
@@ -99,6 +101,7 @@ export const routes: Routes = [
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'auditoria', component: AuditoriaComponent },
+      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: '', redirectTo: 'reportes', pathMatch: 'full' }
     ]
   },
@@ -120,6 +123,7 @@ export const routes: Routes = [
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'auditoria', component: AuditoriaComponent },
+      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
     ]
   },

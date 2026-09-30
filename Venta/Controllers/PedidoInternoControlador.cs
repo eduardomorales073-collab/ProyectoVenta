@@ -15,7 +15,7 @@ namespace Venta.Controllers
         public PedidoInternoControlador(IPedIntService pedIntService) => _pedIntService = pedIntService;
 
         [HttpGet]
-        [Authorize(Roles = "Administrador,GestorCompras,CreadorPedidos")]
+        [Authorize(Roles = "Administrador,GestorCompras,CreadorPedidos,AdministradorProveedor")]
         public async Task<IActionResult> GetAll() => Ok(await _pedIntService.GetAllsync());
 
         [HttpGet("{id}")]
