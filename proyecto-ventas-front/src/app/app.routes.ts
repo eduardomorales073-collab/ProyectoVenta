@@ -34,6 +34,7 @@ import { UnidadesMedidaComponent } from './pages/admin/unidades-medida/unidades-
 import { AccesoDenegadoComponent } from './pages/acceso-denegado/acceso-denegado';
 import { PedidosDisponiblesComponent } from './pages/proveedor/pedidos-disponibles/pedidos-disponibles';
 import { creadorGuard } from './guards/creador-guard';
+import { AuditoriaComponent } from './pages/admin/auditoria/auditoria';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -69,6 +70,7 @@ export const routes: Routes = [
       { path: 'pedidos-internos', component: PedidosInternosComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'acceso-denegado', component: AccesoDenegadoComponent },
+      { path: 'auditoria', component: AuditoriaComponent },
     ]
   },
 
@@ -96,6 +98,7 @@ export const routes: Routes = [
       { path: 'reportes/ofertas-orden', component: OfertasOrden },
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      { path: 'auditoria', component: AuditoriaComponent },
       { path: '', redirectTo: 'reportes', pathMatch: 'full' }
     ]
   },
@@ -116,6 +119,7 @@ export const routes: Routes = [
       { path: 'reportes/ofertas-orden', component: OfertasOrden },
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      { path: 'auditoria', component: AuditoriaComponent },
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
     ]
   },

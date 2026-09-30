@@ -90,6 +90,10 @@
           <mat-icon>analytics</mat-icon>
           <span>Reportes</span>
         </button>
+        <button mat-menu-item routerLink="/admin/auditoria">
+          <mat-icon>history</mat-icon>
+          <span>Auditoría</span>
+        </button>
       </mat-menu>
     </ng-container>
 
@@ -145,13 +149,11 @@
           <mat-icon>trending_up</mat-icon>
           <span>Variación Precios</span>
         </button>
-        
+        <button mat-menu-item routerLink="/empleado/auditoria">
+          <mat-icon>history</mat-icon>
+          <span>Auditoría</span>
+        </button>
       </mat-menu>
-
-      <button mat-menu-item routerLink="/admin/reportes/ssrs-articulos">
-  <mat-icon>description</mat-icon>
-  <span>Reporte SSRS</span>
-</button>
     </ng-container>
 
     <!-- ===== CREADOR DE PEDIDOS ===== -->
@@ -183,6 +185,10 @@
       <a mat-button routerLink="/auditor/reportes" routerLinkActive="active-link">
         <mat-icon>analytics</mat-icon>
         Reportes
+      </a>
+      <a mat-button routerLink="/auditor/auditoria" routerLinkActive="active-link">
+        <mat-icon>history</mat-icon>
+        Auditoría
       </a>
     </ng-container>
 

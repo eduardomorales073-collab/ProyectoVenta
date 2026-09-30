@@ -193,6 +193,8 @@ builder.Services.AddSingleton<IMongoCollection<OrdenHistorial>>(
 builder.Services.AddSingleton<IMongoCollection<CancelacionHistorial>>(
     mongoDatabase.GetCollection<CancelacionHistorial>("cancelaciones_historial"));
 
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
+
 // ===== MASSTRANSIT + RABBITMQ =====
 builder.Services.AddMassTransit(x =>
 {
