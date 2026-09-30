@@ -1,7 +1,13 @@
+export interface TelefonoInfo {
+  id: number;
+  telefono: string;
+  fecha: string;
+}
+
 export interface Sucursal {
   id: number;
   nombre: string;
-  telefonos: string[];
+  telefonos: TelefonoInfo[];
 }
 
 export interface CreateSucursalDTO {

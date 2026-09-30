@@ -58,3 +58,13 @@
   font-style: italic;
   font-size: 0.875rem;
 }
+/* Chip de teléfono reciente (el más nuevo) */
+.chip-reciente {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+  mat-icon {
+    color: #ffffff !important;
+  }
+}

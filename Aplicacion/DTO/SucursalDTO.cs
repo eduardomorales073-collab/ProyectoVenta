@@ -7,6 +7,6 @@ namespace Aplicacion.DTO
     public record SucursalDTO(
         int id,
         string Nombre,
-        List<string> Telefonos
+        List<TelefonoDTO> Telefonos
     );
 }

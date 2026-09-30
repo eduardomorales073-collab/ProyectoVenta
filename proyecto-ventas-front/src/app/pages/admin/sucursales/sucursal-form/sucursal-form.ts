@@ -5,8 +5,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SucursalService } from '../../../../services/sucursal.service';
-import { Sucursal, CreateSucursalDTO } from '../../../../models/sucursal.model';
+import { Sucursal, CreateSucursalDTO, TelefonoInfo } from '../../../../models/sucursal.model';
 import { NotificacionService } from '../../../../services/notificacion';
 
 @Component({
@@ -18,7 +19,8 @@ import { NotificacionService } from '../../../../services/notificacion';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatTooltipModule
   ],
   templateUrl: './sucursal-form.html',
   styleUrl: './sucursal-form.scss'
@@ -30,6 +32,9 @@ export class SucursalFormComponent implements OnInit {
 
   form: FormGroup;
   guardando = false;
+  
+  // Mapa de fechas por índice (para mostrar en el formulario de edición)
+  fechasTelefonos: { [index: number]: string } = {};
 
   constructor(
     private fb: FormBuilder,
@@ -43,34 +48,41 @@ export class SucursalFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  if (this.sucursal) {
-    this.form.patchValue({ nombre: this.sucursal.nombre });
-    
-    // ⚠️ IMPORTANTE: Limpiar el FormArray antes de agregar
-    this.telefonos.clear();
-    
-    // Cargar los teléfonos existentes
-    if (this.sucursal.telefonos && this.sucursal.telefonos.length > 0) {
-      this.sucursal.telefonos.forEach(tel => {
-        this.telefonos.push(this.fb.control(tel, [Validators.maxLength(20)]));
-      });
+    if (this.sucursal) {
+      this.form.patchValue({ nombre: this.sucursal.nombre });
+      this.telefonos.clear();
+
+      if (this.sucursal.telefonos && this.sucursal.telefonos.length > 0) {
+        this.sucursal.telefonos.forEach((tel, index) => {
+          this.telefonos.push(this.fb.control(tel.telefono, [Validators.maxLength(20)]));
+          // Guardar la fecha
+          if (tel.fecha) {
+            this.fechasTelefonos[index] = tel.fecha;
+          }
+        });
+      } else {
+        this.agregarTelefono();
+      }
     } else {
-      // Si no tiene teléfonos, agregar uno vacío
       this.agregarTelefono();
     }
-  } else {
-    // Al crear una sucursal nueva, agregar un campo de teléfono vacío
-    this.agregarTelefono();
   }
-}
 
-  // Getter para el FormArray de teléfonos
   get telefonos(): FormArray {
     return this.form.get('telefonos') as FormArray;
   }
 
   get esEdicion(): boolean {
     return !!this.sucursal;
+  }
+
+  // ===== HELPERS PARA LAS FECHAS =====
+  tieneFecha(index: number): boolean {
+    return !!this.fechasTelefonos[index];
+  }
+
+  getFecha(index: number): string {
+    return this.fechasTelefonos[index] || '';
   }
 
   agregarTelefono(): void {
@@ -80,9 +92,11 @@ export class SucursalFormComponent implements OnInit {
   eliminarTelefono(index: number): void {
     if (this.telefonos.length > 1) {
       this.telefonos.removeAt(index);
+      // Reorganizar las fechas
+      delete this.fechasTelefonos[index];
     } else {
-      // Si es el último, solo limpiar el valor
       this.telefonos.at(0).setValue('');
+      delete this.fechasTelefonos[0];
     }
   }
 
@@ -92,7 +106,6 @@ export class SucursalFormComponent implements OnInit {
     this.guardando = true;
     const datos = this.form.value;
 
-    // Filtrar teléfonos vacíos
     const telefonosFiltrados = datos.telefonos
       ? datos.telefonos.filter((t: string) => t && t.trim() !== '')
       : [];

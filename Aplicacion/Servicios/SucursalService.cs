@@ -31,17 +31,12 @@ namespace Aplicacion.Servicios
 
         public async Task AddAsync(CreateSucursalDTO sucursal)
         {
-            // 1. Mapear el DTO a la entidad
             var nuevaSucursal = _mapper.Map<Sucursal>(sucursal);
-
-            // 2. Calcular el siguiente id
             var todos = await _sucursalRepositorio.GetAllasync();
             nuevaSucursal.id = todos.Any() ? todos.Max(s => s.id) + 1 : 1;
 
-            // 3. Guardar la sucursal
             await _sucursalRepositorio.AddAsync(nuevaSucursal);
 
-            // 4. Guardar los teléfonos asociados
             if (sucursal.Telefonos != null && sucursal.Telefonos.Any())
             {
                 foreach (var numero in sucursal.Telefonos)
@@ -73,10 +68,7 @@ namespace Aplicacion.Servicios
 
         public async Task DeleteAsync(int id)
         {
-            // 1. Eliminar las relaciones de teléfonos
             await _detalleTelefonoRepositorio.DeleteBySucursalAsync(id);
-
-            // 2. Eliminar la sucursal
             await _sucursalRepositorio.DeletAsync(id);
         }
 
@@ -105,13 +97,9 @@ namespace Aplicacion.Servicios
 
         public async Task UpdateAsync(UpdateSucursalDTO sucursal)
         {
-            // 1. Actualizar la sucursal
             await _sucursalRepositorio.UpdateAsync(_mapper.Map<Sucursal>(sucursal));
-
-            // 2. Eliminar las relaciones anteriores
             await _detalleTelefonoRepositorio.DeleteBySucursalAsync(sucursal.id);
 
-            // 3. Crear las nuevas relaciones
             if (sucursal.Telefonos != null && sucursal.Telefonos.Any())
             {
                 foreach (var numero in sucursal.Telefonos)
@@ -141,22 +129,22 @@ namespace Aplicacion.Servicios
             }
         }
 
-        // ===== HELPER: Obtener los teléfonos de una sucursal =====
-        private async Task<List<string>> GetTelefonosBySucursalAsync(int idSucursal)
+        // ===== HELPER: Obtener los teléfonos con fecha =====
+        private async Task<List<TelefonoDTO>> GetTelefonosBySucursalAsync(int idSucursal)
         {
             var detalles = await _detalleTelefonoRepositorio.GetBySucursalAsync(idSucursal);
-            var telefonos = new List<string>();
+            var telefonos = new List<TelefonoDTO>();
 
             foreach (var d in detalles)
             {
                 var tel = await _telefonoRepositorio.GetAsync(d.id_Telefono);
                 if (tel != null)
                 {
-                    telefonos.Add(tel.Tel);
+                    telefonos.Add(new TelefonoDTO(tel.id, tel.Tel, tel.Fecha));
                 }
             }
 
-            return telefonos;
+            return telefonos.OrderByDescending(t => t.fecha).ToList();
         }
     }
 }

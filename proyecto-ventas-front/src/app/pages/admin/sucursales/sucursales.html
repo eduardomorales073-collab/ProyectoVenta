@@ -32,22 +32,24 @@
       </ng-container>
 
       <!-- Columna Teléfonos -->
-      <ng-container matColumnDef="telefonos">
-        <th mat-header-cell *matHeaderCellDef>Teléfonos</th>
-        <td mat-cell *matCellDef="let s">
-          <mat-chip 
-            *ngFor="let t of s.telefonos" 
-            class="chip-telefono"
-            highlighted>
-            <mat-icon>phone</mat-icon>
-            {{ t }}
-          </mat-chip>
-          <span *ngIf="!s.telefonos || s.telefonos.length === 0" class="sin-dato">
-            Sin teléfonos
-          </span>
-        </td>
-      </ng-container>
-
+      <!-- Columna Teléfonos -->
+<ng-container matColumnDef="telefonos">
+  <th mat-header-cell *matHeaderCellDef>Teléfonos</th>
+  <td mat-cell *matCellDef="let s">
+    <mat-chip 
+      *ngFor="let t of s.telefonos; let i = index" 
+      class="chip-telefono"
+      [class.chip-reciente]="i === 0"
+      [matTooltip]="'Agregado el ' + (t.fecha | date:'dd/MM/yyyy HH:mm')"
+      highlighted>
+      <mat-icon>phone</mat-icon>
+      {{ t.telefono }}
+    </mat-chip>
+    <span *ngIf="!s.telefonos || s.telefonos.length === 0" class="sin-dato">
+      Sin teléfonos
+    </span>
+  </td>
+</ng-container>
       <!-- Columna Acciones -->
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>

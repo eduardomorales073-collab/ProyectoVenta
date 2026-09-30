@@ -4,5 +4,9 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record TelefonoDTO(int id,  string Tel, DateTime fecha);
+    public record TelefonoDTO(
+        int id,
+        string telefono,
+        DateTime fecha
+    );
 }

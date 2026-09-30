@@ -23,49 +23,58 @@
         </mat-error>
       </mat-form-field>
 
+      
       <!-- Teléfonos -->
-      <div class="telefonos-section">
-        <div class="telefonos-header">
-          <label>Teléfonos</label>
-          <button 
-            mat-icon-button 
-            color="primary" 
-            type="button" 
-            (click)="agregarTelefono()" 
-            matTooltip="Agregar teléfono">
-            <mat-icon>add_circle</mat-icon>
-          </button>
-        </div>
-
-        <div formArrayName="telefonos" class="telefonos-list">
-  <div 
-    *ngFor="let tel of telefonos.controls; let i = index" 
-    class="telefono-row">
-    
-    <mat-form-field appearance="outline" class="telefono-field">
-      <mat-label>Teléfono {{ i + 1 }}</mat-label>
-      <input 
-        matInput 
-        [formControlName]="i" 
-        placeholder="Ej: 5555-1234"
-        maxlength="20">
-      <mat-icon matPrefix>phone</mat-icon>
-      <mat-error *ngIf="telefonos.at(i).hasError('maxlength')">
-        Máximo 20 caracteres
-      </mat-error>
-    </mat-form-field>
-
+<div class="telefonos-section">
+  <div class="telefonos-header">
+    <label>Teléfonos</label>
     <button 
       mat-icon-button 
-      color="warn" 
+      color="primary" 
       type="button" 
-      (click)="eliminarTelefono(i)" 
-      matTooltip="Eliminar teléfono">
-      <mat-icon>remove_circle</mat-icon>
+      (click)="agregarTelefono()" 
+      matTooltip="Agregar teléfono">
+      <mat-icon>add_circle</mat-icon>
     </button>
   </div>
+
+  <div formArrayName="telefonos" class="telefonos-list">
+    <div 
+      *ngFor="let tel of telefonos.controls; let i = index" 
+      class="telefono-row">
+      
+      <mat-form-field appearance="outline" class="telefono-field">
+        <mat-label>
+          Teléfono {{ i + 1 }}
+          <span *ngIf="esEdicion && tieneFecha(i)" class="fecha-label">
+            ({{ getFecha(i) | date:'dd/MM/yyyy' }})
+          </span>
+        </mat-label>
+        <input 
+          matInput 
+          [formControlName]="i" 
+          placeholder="Ej: 5555-1234"
+          maxlength="20">
+        <mat-icon matPrefix>phone</mat-icon>
+        <mat-hint *ngIf="esEdicion && tieneFecha(i)">
+          Agregado el {{ getFecha(i) | date:'dd/MM/yyyy HH:mm' }}
+        </mat-hint>
+        <mat-error *ngIf="telefonos.at(i).hasError('maxlength')">
+          Máximo 20 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <button 
+        mat-icon-button 
+        color="warn" 
+        type="button" 
+        (click)="eliminarTelefono(i)" 
+        matTooltip="Eliminar teléfono">
+        <mat-icon>remove_circle</mat-icon>
+      </button>
+    </div>
+  </div>
 </div>
-      </div>
 
       <!-- Botones -->
       <div class="modal-actions">
