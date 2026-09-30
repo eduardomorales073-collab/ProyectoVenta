@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { SucursalService } from '../../../services/sucursal.service';
 import { Sucursal } from '../../../models/sucursal.model';
 import { SucursalFormComponent } from './sucursal-form/sucursal-form';
@@ -29,13 +30,14 @@ import { NotificacionService } from '../../../services/notificacion';
     MatInputModule,
     MatIconModule,
     MatButtonModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatChipsModule
   ],
   templateUrl: './sucursales.html',
   styleUrl: './sucursales.scss'
 })
 export class SucursalesComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'telefonos', 'acciones'];
   dataSource = new MatTableDataSource<Sucursal>([]);
 
   cargando = false;
@@ -61,7 +63,8 @@ export class SucursalesComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
 
     this.dataSource.filterPredicate = (sucursal: Sucursal, filtro: string) => {
-      const dataStr = (sucursal.id + ' ' + sucursal.nombre).toLowerCase();
+      const telefonosStr = sucursal.telefonos ? sucursal.telefonos.join(' ') : '';
+      const dataStr = (sucursal.id + ' ' + sucursal.nombre + ' ' + telefonosStr).toLowerCase();
       return dataStr.includes(filtro);
     };
 

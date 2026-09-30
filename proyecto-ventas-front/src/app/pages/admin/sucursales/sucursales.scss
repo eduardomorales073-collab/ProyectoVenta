@@ -36,3 +36,25 @@
   color: #ef4444;
   padding: 1rem;
 }
+/* Chips de teléfono */
+.chip-telefono {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 500;
+  font-size: 0.75rem;
+  margin: 2px;
+
+  mat-icon {
+    font-size: 0.875rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin-right: 0.25rem;
+  }
+}
+
+/* Guion cuando no hay dato */
+.sin-dato {
+  color: #cbd5e1;
+  font-style: italic;
+  font-size: 0.875rem;
+}

@@ -47,3 +47,38 @@
     margin-right: 0.25rem;
   }
 }
+
+/* Sección de teléfonos */
+.telefonos-section {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.telefonos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  label {
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+  }
+}
+
+.telefonos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.telefono-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .telefono-field {
+    flex: 1;
+  }
+}

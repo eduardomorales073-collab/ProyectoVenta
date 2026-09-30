@@ -9,6 +9,8 @@
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      
+      <!-- Nombre -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nombre</mat-label>
         <input matInput formControlName="nombre" placeholder="Ej: Sucursal Central" required>
@@ -21,6 +23,51 @@
         </mat-error>
       </mat-form-field>
 
+      <!-- Teléfonos -->
+      <div class="telefonos-section">
+        <div class="telefonos-header">
+          <label>Teléfonos</label>
+          <button 
+            mat-icon-button 
+            color="primary" 
+            type="button" 
+            (click)="agregarTelefono()" 
+            matTooltip="Agregar teléfono">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+
+        <div formArrayName="telefonos" class="telefonos-list">
+  <div 
+    *ngFor="let tel of telefonos.controls; let i = index" 
+    class="telefono-row">
+    
+    <mat-form-field appearance="outline" class="telefono-field">
+      <mat-label>Teléfono {{ i + 1 }}</mat-label>
+      <input 
+        matInput 
+        [formControlName]="i" 
+        placeholder="Ej: 5555-1234"
+        maxlength="20">
+      <mat-icon matPrefix>phone</mat-icon>
+      <mat-error *ngIf="telefonos.at(i).hasError('maxlength')">
+        Máximo 20 caracteres
+      </mat-error>
+    </mat-form-field>
+
+    <button 
+      mat-icon-button 
+      color="warn" 
+      type="button" 
+      (click)="eliminarTelefono(i)" 
+      matTooltip="Eliminar teléfono">
+      <mat-icon>remove_circle</mat-icon>
+    </button>
+  </div>
+</div>
+      </div>
+
+      <!-- Botones -->
       <div class="modal-actions">
         <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
           Cancelar
