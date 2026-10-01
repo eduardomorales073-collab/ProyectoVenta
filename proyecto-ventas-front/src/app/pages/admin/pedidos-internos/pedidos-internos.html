@@ -11,7 +11,7 @@
 
   <mat-form-field appearance="outline" class="filtro">
     <mat-label>Buscar pedido</mat-label>
-    <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, código, departamento, sucursal...">
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="Buscar por código, departamento, estado...">
     <mat-icon matPrefix>search</mat-icon>
   </mat-form-field>
 
@@ -87,6 +87,17 @@
           <span *ngIf="!p.id_OrdenCompra" class="sin-orden">Sin asignar</span>
         </td>
       </ng-container>
+
+      <!-- Columna Estado -->
+<ng-container matColumnDef="estado">
+  <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+  <td mat-cell *matCellDef="let p">
+    <mat-chip [class]="claseEstado(p)" [matTooltip]="tooltipEstado(p)" matTooltipClass="tooltip-estado">
+      <mat-icon class="icon-chip">{{ iconoEstado(p) }}</mat-icon>
+      {{ estadoPedido(p) }}
+    </mat-chip>
+  </td>
+</ng-container>
 
       <!-- Columna Fecha Solicitada -->
       <ng-container matColumnDef="fecha_Solicitada">

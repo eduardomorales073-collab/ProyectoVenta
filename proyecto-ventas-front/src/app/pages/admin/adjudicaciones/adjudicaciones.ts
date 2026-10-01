@@ -164,10 +164,14 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
         return 'chip-activa';
       case 'cancelada':
         return 'chip-cancelada';
+        case 'completada':  
+        return 'chip-cerrada';
       case 'cerrada':
         return 'chip-cerrada';
       case 'pendiente':
         return 'chip-pendiente';
+      case 'aprobada':                      
+        return 'chip-aprobada';
       default:
         return 'chip-default';
     }

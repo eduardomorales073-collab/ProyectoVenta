@@ -19,6 +19,10 @@ namespace Aplicacion.Servicios
         private readonly DepartaRepositorio _departamentoRepositorio;
         private readonly SucursalRepositorio _sucursalRepositorio;
         private readonly IPublishEndpoint _publishEndpoint;
+
+        private readonly OferProvRepositorio _ofertaRepositorio;         
+        private readonly DetaAdjRepositorio _detalleAdjRepositorio;      
+        private readonly ProveedorRepositorio _proveedorRepositorio;
         private readonly IMapper _mapper;
 
         public PedidoInternoService(
@@ -26,6 +30,9 @@ namespace Aplicacion.Servicios
             OrdComRepositorio ordenCompraRepositorio,
             DepartaRepositorio departamentoRepositorio,
             SucursalRepositorio sucursalRepositorio,
+            OferProvRepositorio ofertaRepositorio,                        
+            DetaAdjRepositorio detalleAdjRepositorio,
+            ProveedorRepositorio proveedorRepositorio,
             IPublishEndpoint publishEndpoint,
             IMapper mapper)
         {
@@ -34,6 +41,9 @@ namespace Aplicacion.Servicios
             _ordenCompraRepositorio = ordenCompraRepositorio;
             _departamentoRepositorio = departamentoRepositorio;
             _sucursalRepositorio = sucursalRepositorio;
+            _ofertaRepositorio = ofertaRepositorio;                       
+            _detalleAdjRepositorio = detalleAdjRepositorio;                
+            _proveedorRepositorio = proveedorRepositorio;
             _publishEndpoint = publishEndpoint;
         }
 
@@ -115,9 +125,12 @@ namespace Aplicacion.Servicios
             var pedidos = await _pedidoInternoRepositorio.GetAllasync();
             var departamentos = await _departamentoRepositorio.GetAllasync();
             var sucursales = await _sucursalRepositorio.GetAllasync();
+            var ofertas = await _ofertaRepositorio.GetAllasync();                // ← NUEVO
+            var detallesAdj = await _detalleAdjRepositorio.GetAllasync();        // ← NUEVO
+            var proveedores = await _proveedorRepositorio.GetAllasync();         // ← NUEVO
 
             return pedidos
-                .OrderByDescending(p => p.urgente)   // ✅ URGENTES PRIMERO
+                .OrderByDescending(p => p.urgente)
                 .ThenByDescending(p => p.id)
                 .Select(p =>
                 {
@@ -125,6 +138,28 @@ namespace Aplicacion.Servicios
                     var sucursal = depto != null
                         ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
                         : null;
+
+                    // ===== CÁLCULO DEL ESTADO =====
+                    // 1. ¿Cuántas ofertas tiene este pedido?
+                    var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == p.id).ToList();
+                    var totalOfertas = ofertasDelPedido.Count;
+
+                    // 2. ¿Está adjudicado?
+                    var detalleAdj = detallesAdj.FirstOrDefault(d => d.id_Pedido == p.id);
+                    var adjudicado = detalleAdj != null;
+
+                    // 3. ¿Quién es el proveedor ganador?
+                    int? idProveedorGanador = null;
+                    string? nombreProveedorGanador = null;
+                    decimal? precioAdjudicado = null;
+
+                    if (adjudicado && detalleAdj != null)
+                    {
+                        idProveedorGanador = detalleAdj.id_Proveedor;
+                        precioAdjudicado = detalleAdj.Precio;
+                        var proveedor = proveedores.FirstOrDefault(pr => pr.id == detalleAdj.id_Proveedor);
+                        nombreProveedorGanador = proveedor?.Nombre;
+                    }
 
                     return new PedidoInternoDTO(
                         p.id,
@@ -137,7 +172,12 @@ namespace Aplicacion.Servicios
                         p.Fecha_Ingreso,
                         sucursal?.Nombre,
                         sucursal?.id,
-                        p.urgente                          
+                        p.urgente,
+                        totalOfertas,                 // ← NUEVO
+                        adjudicado,                    // ← NUEVO
+                        idProveedorGanador,            // ← NUEVO
+                        nombreProveedorGanador,        // ← NUEVO
+                        precioAdjudicado               // ← NUEVO
                     );
                 }).ToList();
         }
@@ -149,11 +189,33 @@ namespace Aplicacion.Servicios
 
             var departamentos = await _departamentoRepositorio.GetAllasync();
             var sucursales = await _sucursalRepositorio.GetAllasync();
+            var ofertas = await _ofertaRepositorio.GetAllasync();
+            var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
+            var proveedores = await _proveedorRepositorio.GetAllasync();
 
             var depto = departamentos.FirstOrDefault(d => d.id == pedido.id_Departamento);
             var sucursal = depto != null
                 ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
                 : null;
+
+            // ===== CÁLCULO DEL ESTADO =====
+            var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == pedido.id).ToList();
+            var totalOfertas = ofertasDelPedido.Count;
+
+            var detalleAdj = detallesAdj.FirstOrDefault(d => d.id_Pedido == pedido.id);
+            var adjudicado = detalleAdj != null;
+
+            int? idProveedorGanador = null;
+            string? nombreProveedorGanador = null;
+            decimal? precioAdjudicado = null;
+
+            if (adjudicado && detalleAdj != null)
+            {
+                idProveedorGanador = detalleAdj.id_Proveedor;
+                precioAdjudicado = detalleAdj.Precio;
+                var proveedor = proveedores.FirstOrDefault(pr => pr.id == detalleAdj.id_Proveedor);
+                nombreProveedorGanador = proveedor?.Nombre;
+            }
 
             return new PedidoInternoDTO(
                 pedido.id,
@@ -166,7 +228,12 @@ namespace Aplicacion.Servicios
                 pedido.Fecha_Ingreso,
                 sucursal?.Nombre,
                 sucursal?.id,
-                pedido.urgente                             // ✅ NUEVO
+                pedido.urgente,
+                totalOfertas,
+                adjudicado,
+                idProveedorGanador,
+                nombreProveedorGanador,
+                precioAdjudicado
             );
         }
 

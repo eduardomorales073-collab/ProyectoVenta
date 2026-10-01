@@ -1,7 +1,7 @@
 <div class="modal-overlay" (click)="onCerrar()">
   <div class="modal-adjudicar" (click)="$event.stopPropagation()">
 
-    <!-- Header -->
+    <!-- Header (fijo, no hace scroll) -->
     <div class="modal-header">
       <div>
         <h2>
@@ -17,71 +17,73 @@
       </button>
     </div>
 
-    <!-- Loading -->
-    <div *ngIf="cargando" class="loading">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>Cargando pedidos y ofertas...</p>
-    </div>
+    <!-- Contenido (hace SCROLL) -->
+    <div class="modal-contenido">
 
-    <!-- Contenido -->
-    <div *ngIf="!cargando">
+      <!-- Loading -->
+      <div *ngIf="cargando" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando pedidos y ofertas...</p>
+      </div>
 
-      <!-- Selector de orden -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Orden de Compra</mat-label>
-        <mat-select [(ngModel)]="ordenSeleccionada" (selectionChange)="onOrdenSeleccionada()">
-          <mat-option *ngFor="let o of ordenesConPedidos" [value]="o">
-            Orden #{{ o }}
-          </mat-option>
-        </mat-select>
-        <mat-icon matPrefix>shopping_cart</mat-icon>
-        <mat-hint *ngIf="ordenesConPedidos.length === 0">
-          No hay órdenes con pedidos disponibles para adjudicar
-        </mat-hint>
-      </mat-form-field>
+      <!-- Contenido -->
+      <div *ngIf="!cargando">
 
-      <!-- Lista de pedidos con ofertas -->
-      <div *ngIf="ordenSeleccionada && pedidosConOfertas.length > 0" class="pedidos-lista">
-        <h3>Pedidos de la Orden #{{ ordenSeleccionada }}</h3>
+        <!-- Selector de orden -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Orden de Compra</mat-label>
+          <mat-select [(ngModel)]="ordenSeleccionada" (selectionChange)="onOrdenSeleccionada()">
+            <mat-option *ngFor="let o of ordenesConPedidos" [value]="o">
+              Orden #{{ o }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>shopping_cart</mat-icon>
+          <mat-hint *ngIf="ordenesConPedidos.length === 0">
+            No hay órdenes con pedidos disponibles para adjudicar
+          </mat-hint>
+        </mat-form-field>
 
-        <div *ngFor="let p of pedidosConOfertas" class="pedido-card">
-          <div class="pedido-header">
-            <mat-checkbox [(ngModel)]="p.seleccionado" color="primary">
-              <strong>{{ p.pedido.codigo }}</strong>
-              <span class="unidades">({{ p.pedido.cantidad }} unidades)</span>
-            </mat-checkbox>
+        <!-- Lista de pedidos -->
+        <div *ngIf="ordenSeleccionada && pedidosConOfertas.length > 0" class="pedidos-lista">
+          <h3>Pedidos de la Orden #{{ ordenSeleccionada }}</h3>
 
-            <mat-chip class="chip-ofertas">
-              {{ p.ofertas.length }} ofertas
-            </mat-chip>
+          <div *ngFor="let p of pedidosConOfertas" class="pedido-card">
+            <div class="pedido-header">
+              <mat-checkbox [(ngModel)]="p.seleccionado" color="primary">
+                <strong>{{ p.pedido.codigo }}</strong>
+                <span class="unidades">({{ p.pedido.cantidad }} unidades)</span>
+              </mat-checkbox>
+
+              <mat-chip class="chip-ofertas">
+                {{ p.ofertas.length }} ofertas
+              </mat-chip>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width" *ngIf="p.seleccionado">
+              <mat-label>Proveedor ganador (menor precio)</mat-label>
+              <mat-select [(ngModel)]="p.id_ProveedorSeleccionado">
+                <mat-option *ngFor="let o of p.ofertas" [value]="o.id_Proveedor">
+                  {{ nombreProveedor(o.id_Proveedor) }} · Q {{ o.precio | number:'1.2-2' }}
+                  <span *ngIf="o === p.ofertas[0]" class="ganador">⭐ MENOR PRECIO</span>
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix>local_shipping</mat-icon>
+              <mat-hint>El backend valida que sea el menor precio</mat-hint>
+            </mat-form-field>
           </div>
-
-          <mat-form-field appearance="outline" class="full-width" *ngIf="p.seleccionado">
-            <mat-label>Proveedor ganador (menor precio)</mat-label>
-            <mat-select [(ngModel)]="p.id_ProveedorSeleccionado">
-              <mat-option *ngFor="let o of p.ofertas" [value]="o.id_Proveedor">
-                {{ nombreProveedor(o.id_Proveedor) }} · Q {{ o.precio | number:'1.2-2' }}
-                <span *ngIf="o === p.ofertas[0]" class="ganador">⭐ MENOR PRECIO</span>
-              </mat-option>
-            </mat-select>
-            <mat-icon matPrefix>local_shipping</mat-icon>
-            <mat-hint>
-              El backend valida que sea el menor precio
-            </mat-hint>
-          </mat-form-field>
         </div>
-      </div>
 
-      <!-- Sin pedidos -->
-      <div *ngIf="ordenSeleccionada && pedidosConOfertas.length === 0" class="empty-state">
-        <mat-icon>inbox</mat-icon>
-        <h3>No hay pedidos con ofertas</h3>
-        <p>Esta orden no tiene pedidos con ofertas registradas.</p>
-      </div>
+        <!-- Sin pedidos -->
+        <div *ngIf="ordenSeleccionada && pedidosConOfertas.length === 0" class="empty-state">
+          <mat-icon>inbox</mat-icon>
+          <h3>No hay pedidos con ofertas</h3>
+          <p>Esta orden no tiene pedidos con ofertas registradas.</p>
+        </div>
 
+      </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer (fijo, siempre visible) -->
     <div class="modal-footer" *ngIf="!cargando && ordenSeleccionada && pedidosConOfertas.length > 0">
       <div class="resumen">
         <strong>{{ totalPedidosSeleccionados }}</strong> pedidos seleccionados ·

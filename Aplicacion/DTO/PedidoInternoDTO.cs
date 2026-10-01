@@ -15,6 +15,11 @@ namespace Aplicacion.DTO
     DateTime Fecha_Ingreso,
     string? nombreSucursal,
     int? id_Sucursal,
-    bool urgente
+    bool urgente,
+    int totalOfertas,          
+    bool adjudicado,           
+    int? idProveedorGanador,   
+    string? nombreProveedorGanador,  
+    decimal? precioAdjudicado  
 );
 }

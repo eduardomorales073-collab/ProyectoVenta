@@ -51,7 +51,8 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     'cantidad',
     'departamento',       // ← Coincide con el HTML
     'sucursal',           // ← Coincide con el HTML
-    'orden',              // ← Coincide con el HTML
+    'orden',   
+    'estado',            
     'fecha_Solicitada',
     'fecha_Ingreso',
     'acciones'
@@ -86,15 +87,17 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
     // ===== FILTRO PERSONALIZADO =====
     this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
-      const dataStr = (
-        pedido.id + ' ' +
-        (pedido.codigo || '') + ' ' +
-        (pedido.cantidad || '') + ' ' +
-        (pedido.nombreDepartamento || '') + ' ' +
-        (pedido.nombreSucursal || '')
-      ).toLowerCase();
-      return dataStr.includes(filtro);
-    };
+  const estadoStr = this.estadoPedido(pedido).toLowerCase();
+  const dataStr = (
+    pedido.id + ' ' +
+    (pedido.codigo || '') + ' ' +
+    (pedido.cantidad || '') + ' ' +
+    (pedido.nombreDepartamento || '') + ' ' +
+    (pedido.nombreSucursal || '') + ' ' +
+    estadoStr
+  ).toLowerCase();
+  return dataStr.includes(filtro);
+};
 
     this.cargarCatalogos();
     this.cargar();
@@ -211,4 +214,40 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   puedeEliminarPedidos(): boolean {
     return this.authService.esAdmin();
   }
+
+  // ===== ESTADO DEL PEDIDO =====
+estadoPedido(pedido: PedidoInterno): string {
+  if (pedido.adjudicado) return 'Adjudicado';
+  if (!pedido.id_OrdenCompra) return 'Sin Orden';
+  if (pedido.totalOfertas > 0) return 'Con Ofertas';
+  return 'Creado';
+}
+
+claseEstado(pedido: PedidoInterno): string {
+  if (pedido.adjudicado) return 'chip-adjudicado';
+  if (!pedido.id_OrdenCompra) return 'chip-sin-orden';
+  if (pedido.totalOfertas > 0) return 'chip-con-ofertas';
+  return 'chip-creado';
+}
+
+iconoEstado(pedido: PedidoInterno): string {
+  if (pedido.adjudicado) return 'check_circle';
+  if (!pedido.id_OrdenCompra) return 'remove_circle_outline';
+  if (pedido.totalOfertas > 0) return 'local_offer';
+  return 'fiber_new';
+}
+
+tooltipEstado(pedido: PedidoInterno): string {
+  if (pedido.adjudicado) {
+    return `Adjudicado a ${pedido.nombreProveedorGanador || 'Proveedor #' + pedido.idProveedorGanador}` +
+           `\nPrecio: Q ${(pedido.precioAdjudicado || 0).toFixed(2)}`;
+  }
+  if (!pedido.id_OrdenCompra) {
+    return 'Sin orden de compra asignada';
+  }
+  if (pedido.totalOfertas > 0) {
+    return `${pedido.totalOfertas} oferta(s) recibida(s). Pendiente de adjudicar.`;
+  }
+  return 'Sin ofertas aún';
+}
 }

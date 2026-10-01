@@ -36,6 +36,7 @@ import { PedidosDisponiblesComponent } from './pages/proveedor/pedidos-disponibl
 import { creadorGuard } from './guards/creador-guard';
 import { AuditoriaComponent } from './pages/admin/auditoria/auditoria';
 import { ReporteJasperComponent } from './pages/admin/reportes/reporte-jasper/reporte-jasper';
+import { OrdenesCompraComponent } from './pages/admin/ordenes-compra/ordenes-compra';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -56,6 +57,7 @@ export const routes: Routes = [
       { path: 'tipos-orden', component: TiposOrdenComponent },
       { path: 'unidades-medida', component: UnidadesMedidaComponent },
       { path: 'categorias-proveedor', component: CategoriasProveedorComponent },
+      { path: 'ordenes-compra', component: OrdenesCompraComponent },
 
       // ===== REPORTES =====
       { path: 'reportes', component: ReportesComponent },
@@ -124,6 +126,7 @@ export const routes: Routes = [
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'auditoria', component: AuditoriaComponent },
       { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
+      { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
     ]
   },

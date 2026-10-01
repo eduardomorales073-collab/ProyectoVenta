@@ -1,0 +1,101 @@
+.container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    color: #1e293b;
+  }
+}
+
+.filtro {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.tabla-container {
+  background: #fff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-mat {
+  width: 100%;
+}
+
+.icon-mini {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+  color: #64748b;
+  margin-right: 0.25rem;
+}
+
+.chip-fecha {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-tipo {
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.sin-dato {
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+.error {
+  color: #dc2626;
+  margin: 1rem 0;
+}
+
+.chip-tipo-normal {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-tipo-grande {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-tipo-urgente {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  font-weight: 700;
+  font-size: 0.75rem;
+  animation: pulse-urgente 1.5s infinite;
+}
+
+.icon-chip {
+  font-size: 0.875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+@keyframes pulse-urgente {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

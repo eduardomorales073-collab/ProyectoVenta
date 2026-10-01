@@ -1,0 +1,103 @@
+<div class="container">
+  <div class="header-actions">
+    <h2>Lista de Órdenes de Compra</h2>
+    <button mat-raised-button color="primary" (click)="abrirFormulario(null)">
+      <mat-icon>add</mat-icon>
+      Nueva Orden
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="filtro">
+    <mat-label>Buscar orden</mat-label>
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, descripción...">
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  <p *ngIf="cargando">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div class="tabla-container">
+    <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
+
+      <!-- Columna ID -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let o">{{ o.id }}</td>
+      </ng-container>
+
+      <!-- Columna Descripción -->
+      <ng-container matColumnDef="descripcion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción</th>
+        <td mat-cell *matCellDef="let o">{{ o.descripcion }}</td>
+      </ng-container>
+
+      <!-- Columna Fecha Creación -->
+      <ng-container matColumnDef="fecha_Creacion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Creación</th>
+        <td mat-cell *matCellDef="let o">
+          <mat-icon class="icon-mini">event</mat-icon>
+          {{ o.fecha_Creacion | date:'dd/MM/yyyy' }}
+        </td>
+      </ng-container>
+
+      <!-- Columna Fecha Límite -->
+      <ng-container matColumnDef="fecha_Limite">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Límite</th>
+        <td mat-cell *matCellDef="let o">
+          <mat-chip class="chip-fecha">
+            {{ o.fecha_Limite | date:'dd/MM/yyyy' }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Columna Fecha Límite Ofertas -->
+      <ng-container matColumnDef="fecha_limite_ofertas">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Límite Ofertas</th>
+        <td mat-cell *matCellDef="let o">
+          <span *ngIf="o.fecha_limite_ofertas; else sinFecha">
+            {{ o.fecha_limite_ofertas | date:'dd/MM/yyyy' }}
+          </span>
+          <ng-template #sinFecha>
+            <span class="sin-dato">—</span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Columna Tipo de Orden -->
+<ng-container matColumnDef="tipo_Orden">
+  <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+  <td mat-cell *matCellDef="let o">
+    <mat-chip [class]="claseTipo(o.tipo_Orden)">
+      <mat-icon class="icon-chip">{{ iconoTipo(o.tipo_Orden) }}</mat-icon>
+      {{ nombreTipo(o.tipo_Orden) }}
+    </mat-chip>
+  </td>
+</ng-container>
+
+      <!-- Columna Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let o">
+          <button mat-icon-button color="accent" (click)="abrirFormulario(o)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmarEliminar(o)" matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>
+
+<app-orden-compra-form *ngIf="mostrarFormulario"
+                       [orden]="ordenSeleccionada"
+                       (guardado)="onGuardado()"
+                       (cancelado)="cerrarFormulario()">
+</app-orden-compra-form>

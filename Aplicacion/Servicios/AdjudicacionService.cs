@@ -167,14 +167,50 @@ namespace Aplicacion.Servicios
             }
 
             // ===== CREAR LA ADJUDICACIÓN (CABECERA) CON FECHA Y ESTADO AUTOMÁTICOS =====
+            // Verificar si TODOS los pedidos de la orden quedarán adjudicados después de esta operación
+            var pedidosDeLaOrden = await _pedidoRepositorio.GetAllasync();
+            var pedidosDeLaOrdenFiltrados = pedidosDeLaOrden
+                .Where(p => p.id_OrdenCompra == dto.Orden_Compra)
+                .ToList();
+
+            // Pedidos que ya estaban adjudicados antes de esta operación
+            var pedidosYaAdjudicados = todosLosDetalles
+                .Select(d => d.id_Pedido)
+                .ToHashSet();
+
+            // Pedidos que se adjudicarán en esta operación
+            var pedidosNuevos = dto.Pedidos
+                .Select(p => p.id_Pedido)
+                .ToHashSet();
+
+            // Un pedido está adjudicado si:
+            // - ya lo estaba antes, O
+            // - se va a adjudicar ahora
+            var todosAdjudicados = pedidosDeLaOrdenFiltrados.All(p =>
+                pedidosYaAdjudicados.Contains(p.id) || pedidosNuevos.Contains(p.id)
+            );
+
+            // Determinar el estado
+            string estadoFinal;
+            if (todosAdjudicados && pedidosDeLaOrdenFiltrados.Any())
+            {
+                estadoFinal = "Completada";
+            }
+            else
+            {
+                estadoFinal = "Activa";
+            }
+
             var todasLasAdjudicaciones = await _adjuRepositorio.GetAllasync();
             var nuevaAdjudicacion = new Adjudicacion
             {
                 id = todasLasAdjudicaciones.Any() ? todasLasAdjudicaciones.Max(a => a.id) + 1 : 1,
-                Fecha_Resolucion = DateTime.Now,      // ✅ Fecha automática
+                Fecha_Resolucion = DateTime.Now,
                 Orden_Compra = dto.Orden_Compra,
-                Estado = "Activa"                      // ✅ Estado automático
+                Estado = estadoFinal          // ← Ahora es dinámico
             };
+
+            await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
 
             await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
 

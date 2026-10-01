@@ -10,6 +10,13 @@ export interface PedidoInterno {
   nombreSucursal?: string;
   id_Sucursal?: number;
   urgente: boolean;
+
+  // ===== ESTADO DEL PEDIDO =====
+  totalOfertas: number;
+  adjudicado: boolean;
+  idProveedorGanador?: number;
+  nombreProveedorGanador?: string;
+  precioAdjudicado?: number;
 }
 
 export interface CreatePedidoInternoDTO {
@@ -19,7 +26,6 @@ export interface CreatePedidoInternoDTO {
   id_OrdenCompra: number | null;
   fecha_Solicitada: string;
   urgente: boolean;
-  // ⚠️ NO tiene fecha_Ingreso
 }
 
 export interface UpdatePedidoInternoDTO {

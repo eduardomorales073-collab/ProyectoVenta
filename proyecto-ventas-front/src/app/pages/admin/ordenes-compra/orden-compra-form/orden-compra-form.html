@@ -1,0 +1,76 @@
+<div class="modal-overlay" (click)="onCancelar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Orden de Compra' : 'Nueva Orden de Compra' }}</h2>
+      <button mat-icon-button (click)="onCancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <!-- Descripción -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <input matInput formControlName="descripcion" placeholder="Ej: Compra de suministros de oficina" required>
+        <mat-icon matPrefix>description</mat-icon>
+        <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
+          La descripción es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Tipo de Orden -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Tipo de Orden</mat-label>
+        <mat-select formControlName="tipo_Orden" required>
+  <mat-option *ngFor="let t of tiposOrden" [value]="t.id">
+    {{ nombreTipo(t) }}
+  </mat-option>
+</mat-select>
+        <mat-icon matPrefix>category</mat-icon>
+        <mat-error *ngIf="form.get('tipo_Orden')?.hasError('required')">
+          El tipo es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Fecha Creación -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha Creación</mat-label>
+        <input matInput type="date" formControlName="fecha_Creacion" required>
+        <mat-icon matPrefix>event</mat-icon>
+        <mat-hint>Automática (no se puede cambiar en edición)</mat-hint>
+      </mat-form-field>
+
+      <!-- Fecha Límite -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha Límite</mat-label>
+        <input matInput type="date" formControlName="fecha_Limite" required>
+        <mat-icon matPrefix>event_available</mat-icon>
+        <mat-hint>Fecha máxima para completar la orden</mat-hint>
+        <mat-error *ngIf="form.get('fecha_Limite')?.hasError('required')">
+          La fecha límite es obligatoria
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Fecha Límite Ofertas -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Límite de Ofertas (opcional)</mat-label>
+        <input matInput type="date" formControlName="fecha_limite_ofertas">
+        <mat-icon matPrefix>schedule</mat-icon>
+        <mat-hint>Fecha máxima para recibir ofertas de proveedores</mat-hint>
+      </mat-form-field>
+
+      <!-- Botones -->
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

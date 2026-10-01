@@ -26,6 +26,8 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 1.5rem 1.5rem 1rem;
+  flex-shrink: 0;  /* ← No se encoge */
+  border-bottom: 1px solid #e2e8f0;
 
   h2 {
     display: flex;
@@ -55,14 +57,19 @@
   color: #64748b;
 }
 
+/* ⚠️ El contenedor del contenido es el que hace SCROLL */
+.modal-contenido {
+  flex: 1;
+  overflow-y: auto;  /* ← AQUÍ ESTÁ EL SCROLL */
+  padding: 1rem 1.5rem;
+}
+
 .full-width {
   width: 100%;
 }
 
 .pedidos-lista {
-  padding: 0 1.5rem;
-  overflow-y: auto;
-  flex: 1;
+  padding: 0;
 
   h3 {
     font-size: 0.875rem;
@@ -117,6 +124,7 @@
   margin-left: 0.5rem;
 }
 
+/* ⚠️ El footer NO se encoge, siempre visible */
 .modal-footer {
   display: flex;
   justify-content: space-between;
@@ -124,6 +132,7 @@
   padding: 1rem 1.5rem;
   border-top: 1px solid #e2e8f0;
   background: #f8fafc;
+  flex-shrink: 0;  /* ← No se encoge */
 
   .resumen {
     color: #475569;
