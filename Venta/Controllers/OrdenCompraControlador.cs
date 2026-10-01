@@ -1,5 +1,4 @@
-﻿// OrdenCompraControlador.cs
-using Aplicacion.DTO;
+﻿using Aplicacion.DTO;
 using Aplicacion.Interfaz;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,5 +37,15 @@ namespace Venta.Controllers
             await _ordComService.DeleteAsync(id);
             return Ok();
         }
+
+        // ==================== NUEVOS ENDPOINTS ====================
+
+        [HttpGet("con-contadores")]
+        public async Task<IActionResult> GetConContadores()
+            => Ok(await _ordComService.GetConContadoresAsync());
+
+        [HttpGet("{id}/pedidos")]
+        public async Task<IActionResult> GetPedidosDeOrden(int id)
+            => Ok(await _ordComService.GetPedidosDeOrdenAsync(id));
     }
 }

@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { OrdenCompraService, OrdenCompra, CreateOrdenCompraDTO } from '../../../../services/orden-compra.service';
+import { OrdenCompraService, OrdenCompraConContadores, CreateOrdenCompraDTO } from '../../../../services/orden-compra.service';
 import { TipoOrdenService } from '../../../../services/tipo-orden.service';
 import { NotificacionService } from '../../../../services/notificacion';
 import { TipoOrden } from '../../../../models/tipo-orden.model';
@@ -27,13 +27,14 @@ import { TipoOrden } from '../../../../models/tipo-orden.model';
   styleUrl: './orden-compra-form.scss'
 })
 export class OrdenCompraFormComponent implements OnInit {
-  @Input() orden: OrdenCompra | null = null;
+  // ⚠️ CAMBIO: Acepta tanto OrdenCompra como OrdenCompraConContadores
+  @Input() orden: OrdenCompraConContadores | null = null;
   @Output() guardado = new EventEmitter<void>();
   @Output() cancelado = new EventEmitter<void>();
 
   form: FormGroup;
   guardando = false;
-  tiposOrden: any[] = [];
+  tiposOrden: TipoOrden[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -130,13 +131,13 @@ export class OrdenCompraFormComponent implements OnInit {
   }
 
   // ===== HELPER PARA EL TIPO =====
-nombreTipo(tipo: TipoOrden | undefined): string {
-  if (!tipo) return '';
-  const partes: string[] = [];
-  if (tipo.grande) partes.push('Grande');
-  if (tipo.urgente) partes.push('Urgente');
-  return partes.length > 0
-    ? `Tipo #${tipo.id} — ${partes.join(' · ')}`
-    : `Tipo #${tipo.id} — Normal`;
-}
+  nombreTipo(tipo: TipoOrden | undefined): string {
+    if (!tipo) return '';
+    const partes: string[] = [];
+    if (tipo.grande) partes.push('Grande');
+    if (tipo.urgente) partes.push('Urgente');
+    return partes.length > 0
+      ? `Tipo #${tipo.id} — ${partes.join(' · ')}`
+      : `Tipo #${tipo.id} — Normal`;
+  }
 }

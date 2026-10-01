@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { PedidoInternoService } from '../../../../services/pedido-interno.service';
 import { SucursalService } from '../../../../services/sucursal.service';
+import { AuthService } from '../../../../services/auth.service';
 import { PedidoInterno, CreatePedidoInternoDTO } from '../../../../models/pedido-interno.model';
 import { Departamento } from '../../../../models/departamento.model';
 import { Sucursal } from '../../../../models/sucursal.model';
@@ -35,6 +36,8 @@ export class PedidoFormComponent implements OnInit {
   @Input() pedido: PedidoInterno | null = null;
   @Input() departamentos: Departamento[] = [];
   @Input() ordenes: OrdenCompra[] = [];
+  @Input() ordenPreseleccionada: number | null = null;
+
   @Output() guardado = new EventEmitter<void>();
   @Output() cancelado = new EventEmitter<void>();
 
@@ -48,6 +51,7 @@ export class PedidoFormComponent implements OnInit {
     private fb: FormBuilder,
     private pedidoService: PedidoInternoService,
     private sucursalService: SucursalService,
+    private authService: AuthService,               // ← NUEVO
     private notificacion: NotificacionService
   ) {
     this.form = this.fb.group({
@@ -56,35 +60,67 @@ export class PedidoFormComponent implements OnInit {
       id_Departamento: ['', [Validators.required]],
       id_OrdenCompra: [null],
       fecha_Solicitada: ['', [Validators.required]],
-      // ⚠️ fecha_Ingreso eliminado (es automática)
-      urgente: [false]                          // ← NUEVO
+      urgente: [false]
     });
   }
 
   ngOnInit(): void {
+    // Cargar sucursales
     this.sucursalService.listar().subscribe({
       next: (data) => { this.sucursales = data; }
     });
 
     if (this.pedido) {
-      // EDICIÓN
+      // ===== EDICIÓN =====
       this.form.patchValue({
         codigo: this.pedido.codigo || '',
         cantidad: this.pedido.cantidad || 1,
         id_Departamento: this.pedido.id_Departamento,
         id_OrdenCompra: this.pedido.id_OrdenCompra,
         fecha_Solicitada: this.pedido.fecha_Solicitada?.substring(0, 10),
-        urgente: this.pedido.urgente || false   // ← NUEVO
+        urgente: this.pedido.urgente || false
       });
       this.actualizarSucursal(this.pedido.id_Departamento);
     } else {
-      // CREACIÓN: auto-generar el código
+      // ===== CREACIÓN =====
       this.generarCodigo();
+
+      // ✅ Preseleccionar orden (si viene desde el modal de órdenes)
+      if (this.ordenPreseleccionada) {
+        this.form.patchValue({ id_OrdenCompra: this.ordenPreseleccionada });
+      }
+
+      // ✅ PRESELECCIONAR DEPARTAMENTO SEGÚN ROL
+      this.preseleccionarDepartamento();
     }
 
+    // Escuchar cambios en el departamento
     this.form.get('id_Departamento')?.valueChanges.subscribe(idDepto => {
       this.actualizarSucursal(idDepto);
     });
+  }
+
+  /** Preselecciona el departamento del usuario logueado según su rol */
+  private preseleccionarDepartamento(): void {
+    const idDeptoUsuario = this.authService.getIdDepartamento();
+
+    // Si el usuario no tiene departamento asignado, no hacer nada
+    if (!idDeptoUsuario) return;
+
+    // Si es Admin, no preseleccionar (puede elegir cualquiera)
+    if (this.authService.esAdmin()) return;
+
+    // Preseleccionar el departamento del usuario
+    this.form.patchValue({ id_Departamento: idDeptoUsuario });
+    this.actualizarSucursal(idDeptoUsuario);
+
+    // Si es Creador de Pedidos → BLOQUEAR el departamento
+    if (this.authService.esCreadorPedidos()) {
+      this.form.get('id_Departamento')?.disable();
+    }
+
+    // Si es Gestor de Compras → Dejar editable (solo preseleccionado)
+    // (no hacemos nada extra)
   }
 
   actualizarSucursal(idDepartamento: number): void {
@@ -119,7 +155,7 @@ export class PedidoFormComponent implements OnInit {
         id_Departamento: datos.id_Departamento,
         id_OrdenCompra: datos.id_OrdenCompra || null,
         fecha_Solicitada: datos.fecha_Solicitada,
-        fecha_Ingreso: this.pedido!.fecha_Ingreso,  // Se mantiene la original
+        fecha_Ingreso: this.pedido!.fecha_Ingreso,
         urgente: datos.urgente
       };
 

@@ -5,11 +5,11 @@ using System.Text;
 namespace Aplicacion.DTO
 {
     public record CreatePedidoInternoDTO(
-        int id,
-    string? codigo,
-    int? cantidad,
-    int id_Departamento,
-    int? id_OrdenCompra,
-    DateTime Fecha_Solicitada
+        string? codigo,
+        int? cantidad,
+        int id_Departamento,
+        int? id_OrdenCompra,
+        DateTime Fecha_Solicitada,
+        bool urgente                   
     );
 }

@@ -1,0 +1,103 @@
+<div class="modal-overlay" (click)="onCerrar()">
+  <div class="modal-pedidos" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2>
+          <mat-icon>receipt_long</mat-icon>
+          Pedidos de la Orden #{{ orden.id }}
+        </h2>
+        <p class="subtitle">{{ orden.descripcion }}</p>
+        <div class="contadores">
+          <mat-chip class="chip-total">{{ orden.totalPedidos }} pedidos</mat-chip>
+          <mat-chip class="chip-adjudicados" *ngIf="orden.pedidosAdjudicados > 0">
+            {{ orden.pedidosAdjudicados }} adjudicados
+          </mat-chip>
+          <mat-chip class="chip-pendientes" *ngIf="orden.pedidosPendientes > 0">
+            {{ orden.pedidosPendientes }} pendientes
+          </mat-chip>
+        </div>
+      </div>
+      <button mat-icon-button (click)="onCerrar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-contenido">
+
+      <div *ngIf="cargando" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando pedidos...</p>
+      </div>
+
+      <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <h3>No hay pedidos en esta orden</h3>
+        <p>Haz clic en "Agregar Pedido" para crear el primero.</p>
+      </div>
+
+      <table mat-table [dataSource]="pedidos" *ngIf="!cargando && pedidos.length > 0">
+        <!-- Columna Urgente -->
+        <ng-container matColumnDef="urgente">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let p">
+            <mat-icon *ngIf="p.urgente" class="icon-urgente" matTooltip="Pedido urgente">
+              priority_high
+            </mat-icon>
+          </td>
+        </ng-container>
+
+        <!-- Columna Código -->
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef>Código</th>
+          <td mat-cell *matCellDef="let p">
+            <mat-chip class="chip-codigo">{{ p.codigo }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Columna Cantidad -->
+        <ng-container matColumnDef="cantidad">
+          <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+          <td mat-cell *matCellDef="let p">{{ p.cantidad }}</td>
+        </ng-container>
+
+        <!-- Columna Estado -->
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let p">
+            <mat-chip [class]="p.adjudicado ? 'chip-adjudicado' : 'chip-pendiente'">
+              <mat-icon class="icon-chip">
+                {{ p.adjudicado ? 'check_circle' : 'schedule' }}
+              </mat-icon>
+              {{ p.adjudicado ? 'Adjudicado' : 'Pendiente' }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Columna Acciones -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let p">
+            <button mat-icon-button color="primary" matTooltip="Ver detalles">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button (click)="onCerrar()">
+        Cerrar
+      </button>
+      <button mat-raised-button color="primary" (click)="onCrearPedido()">
+        <mat-icon>add</mat-icon>
+        Agregar Pedido
+      </button>
+    </div>
+
+  </div>
+</div>

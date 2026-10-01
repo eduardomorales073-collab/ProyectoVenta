@@ -99,3 +99,54 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
+
+/* ===== CHIPS POR ESTADO DE ORDEN ===== */
+.chip-abierta {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-cerrada {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* ===== INFO DE PEDIDOS ===== */
+.pedidos-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.badge-total {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.adjudicados {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pendientes {
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.icon-mini.success {
+  color: #10b981;
+}
+
+.icon-mini.warning {
+  color: #f59e0b;
+}

@@ -12,6 +12,38 @@ export interface OrdenCompra {
   tipo_Orden: number;
 }
 
+export interface OrdenCompraConContadores {
+  id: number;
+  descripcion: string;
+  fecha_Creacion: string;
+  fecha_Limite: string;
+  fecha_limite_ofertas: string | null;
+  tipo_Orden: number;
+  totalPedidos: number;
+  pedidosAdjudicados: number;
+  pedidosPendientes: number;
+  estado: string;  // "Abierta" | "Cerrada"
+}
+
+export interface PedidoDeOrden {
+  id: number;
+  codigo: string;
+  cantidad: number;
+  id_Departamento: number;
+  nombreDepartamento: string | null;
+  id_OrdenCompra: number | null;
+  fecha_Solicitada: string;
+  fecha_Ingreso: string;
+  nombreSucursal: string | null;
+  id_Sucursal: number | null;
+  urgente: boolean;
+  totalOfertas: number;
+  adjudicado: boolean;
+  idProveedorGanador: number | null;
+  nombreProveedorGanador: string | null;
+  precioAdjudicado: number | null;
+}
+
 export interface CreateOrdenCompraDTO {
   descripcion: string;
   fecha_Creacion: string;
@@ -36,6 +68,14 @@ export class OrdenCompraService {
 
   listar(): Observable<OrdenCompra[]> {
     return this.http.get<OrdenCompra[]>(this.url);
+  }
+
+  listarConContadores(): Observable<OrdenCompraConContadores[]> {
+    return this.http.get<OrdenCompraConContadores[]>(`${this.url}/con-contadores`);
+  }
+
+  obtenerPedidosDeOrden(idOrden: number): Observable<PedidoDeOrden[]> {
+    return this.http.get<PedidoDeOrden[]>(`${this.url}/${idOrden}/pedidos`);
   }
 
   obtener(id: number): Observable<OrdenCompra> {

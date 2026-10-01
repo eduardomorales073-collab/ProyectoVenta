@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -12,11 +13,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { PedidoInternoService } from '../../../services/pedido-interno.service';
 import { DepartamentoService } from '../../../services/departamento.service';
-import { OrdenCompraService } from '../../../services/orden-compra.service';
+import { OrdenCompraService, OrdenCompra } from '../../../services/orden-compra.service';
 import { AuthService } from '../../../services/auth.service';
 import { PedidoInterno } from '../../../models/pedido-interno.model';
 import { Departamento } from '../../../models/departamento.model';
-import { OrdenCompra } from '../../../services/orden-compra.service';
 import { PedidoFormComponent } from './pedido-form/pedido-form';
 import { ConfirmService } from '../../../services/confirm';
 import { NotificacionService } from '../../../services/notificacion';
@@ -43,16 +43,15 @@ import { NotificacionService } from '../../../services/notificacion';
 })
 export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
-  // ✅ Columnas QUE COINCIDEN con el HTML (matColumnDef)
   displayedColumns: string[] = [
     'urgente',
     'id',
     'codigo',
     'cantidad',
-    'departamento',       // ← Coincide con el HTML
-    'sucursal',           // ← Coincide con el HTML
-    'orden',   
-    'estado',            
+    'departamento',
+    'sucursal',
+    'orden',
+    'estado',
     'fecha_Solicitada',
     'fecha_Ingreso',
     'acciones'
@@ -66,6 +65,9 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   mostrarFormulario = false;
   pedidoSeleccionado: PedidoInterno | null = null;
 
+  // ⚠️ NUEVO: Orden preseleccionada (cuando vienes desde el modal de órdenes)
+  ordenPreseleccionada: number | null = null;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -74,6 +76,7 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     private departamentoService: DepartamentoService,
     private ordenCompraService: OrdenCompraService,
     private authService: AuthService,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -87,20 +90,35 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
     // ===== FILTRO PERSONALIZADO =====
     this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
-  const estadoStr = this.estadoPedido(pedido).toLowerCase();
-  const dataStr = (
-    pedido.id + ' ' +
-    (pedido.codigo || '') + ' ' +
-    (pedido.cantidad || '') + ' ' +
-    (pedido.nombreDepartamento || '') + ' ' +
-    (pedido.nombreSucursal || '') + ' ' +
-    estadoStr
-  ).toLowerCase();
-  return dataStr.includes(filtro);
-};
+      const estadoStr = this.estadoPedido(pedido).toLowerCase();
+      const dataStr = (
+        pedido.id + ' ' +
+        (pedido.codigo || '') + ' ' +
+        (pedido.cantidad || '') + ' ' +
+        (pedido.nombreDepartamento || '') + ' ' +
+        (pedido.nombreSucursal || '') + ' ' +
+        estadoStr
+      ).toLowerCase();
+      return dataStr.includes(filtro);
+    };
 
     this.cargarCatalogos();
     this.cargar();
+
+    // ===== LEER QUERY PARAM ?ordenId=X =====
+    this.route.queryParams.subscribe(params => {
+      const ordenId = params['ordenId'];
+      if (ordenId) {
+        const id = parseInt(ordenId, 10);
+        if (!isNaN(id)) {
+          this.ordenPreseleccionada = id;
+          // Esperar a que carguen los catálogos y luego abrir el formulario
+          setTimeout(() => {
+            this.abrirFormularioConOrden();
+          }, 600);
+        }
+      }
+    });
   }
 
   aplicarFiltro(event: Event): void {
@@ -136,7 +154,6 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
         }
       });
     } else {
-      // Gestor de Compras y Creador de Pedidos: solo su departamento
       const idDepto = this.authService.getIdDepartamento();
 
       if (idDepto) {
@@ -175,9 +192,18 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  // ⚠️ NUEVO: Abre el formulario con la orden preseleccionada
+  abrirFormularioConOrden(): void {
+    if (!this.ordenPreseleccionada) return;
+    this.pedidoSeleccionado = null;
+    this.mostrarFormulario = true;
+    this.cdr.detectChanges();
+  }
+
   cerrarFormulario(): void {
     this.mostrarFormulario = false;
     this.pedidoSeleccionado = null;
+    this.ordenPreseleccionada = null;
     this.cdr.detectChanges();
   }
 
@@ -216,38 +242,38 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   }
 
   // ===== ESTADO DEL PEDIDO =====
-estadoPedido(pedido: PedidoInterno): string {
-  if (pedido.adjudicado) return 'Adjudicado';
-  if (!pedido.id_OrdenCompra) return 'Sin Orden';
-  if (pedido.totalOfertas > 0) return 'Con Ofertas';
-  return 'Creado';
-}
-
-claseEstado(pedido: PedidoInterno): string {
-  if (pedido.adjudicado) return 'chip-adjudicado';
-  if (!pedido.id_OrdenCompra) return 'chip-sin-orden';
-  if (pedido.totalOfertas > 0) return 'chip-con-ofertas';
-  return 'chip-creado';
-}
-
-iconoEstado(pedido: PedidoInterno): string {
-  if (pedido.adjudicado) return 'check_circle';
-  if (!pedido.id_OrdenCompra) return 'remove_circle_outline';
-  if (pedido.totalOfertas > 0) return 'local_offer';
-  return 'fiber_new';
-}
-
-tooltipEstado(pedido: PedidoInterno): string {
-  if (pedido.adjudicado) {
-    return `Adjudicado a ${pedido.nombreProveedorGanador || 'Proveedor #' + pedido.idProveedorGanador}` +
-           `\nPrecio: Q ${(pedido.precioAdjudicado || 0).toFixed(2)}`;
+  estadoPedido(pedido: PedidoInterno): string {
+    if (pedido.adjudicado) return 'Adjudicado';
+    if (!pedido.id_OrdenCompra) return 'Sin Orden';
+    if (pedido.totalOfertas > 0) return 'Con Ofertas';
+    return 'Creado';
   }
-  if (!pedido.id_OrdenCompra) {
-    return 'Sin orden de compra asignada';
+
+  claseEstado(pedido: PedidoInterno): string {
+    if (pedido.adjudicado) return 'chip-adjudicado';
+    if (!pedido.id_OrdenCompra) return 'chip-sin-orden';
+    if (pedido.totalOfertas > 0) return 'chip-con-ofertas';
+    return 'chip-creado';
   }
-  if (pedido.totalOfertas > 0) {
-    return `${pedido.totalOfertas} oferta(s) recibida(s). Pendiente de adjudicar.`;
+
+  iconoEstado(pedido: PedidoInterno): string {
+    if (pedido.adjudicado) return 'check_circle';
+    if (!pedido.id_OrdenCompra) return 'remove_circle_outline';
+    if (pedido.totalOfertas > 0) return 'local_offer';
+    return 'fiber_new';
   }
-  return 'Sin ofertas aún';
-}
+
+  tooltipEstado(pedido: PedidoInterno): string {
+    if (pedido.adjudicado) {
+      return `Adjudicado a ${pedido.nombreProveedorGanador || 'Proveedor #' + pedido.idProveedorGanador}` +
+             `\nPrecio: Q ${(pedido.precioAdjudicado || 0).toFixed(2)}`;
+    }
+    if (!pedido.id_OrdenCompra) {
+      return 'Sin orden de compra asignada';
+    }
+    if (pedido.totalOfertas > 0) {
+      return `${pedido.totalOfertas} oferta(s) recibida(s). Pendiente de adjudicar.`;
+    }
+    return 'Sin ofertas aún';
+  }
 }

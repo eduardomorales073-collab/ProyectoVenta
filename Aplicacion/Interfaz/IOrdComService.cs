@@ -12,5 +12,9 @@ namespace Aplicacion.Interfaz
         Task AddAsync(CreateOrdenCompraDTO orden);
         Task DeleteAsync(int id);
         Task UpdateAsync(UpdateOrdenCompraDTO orden);
+
+        
+        Task<List<OrdenCompraConContadoresDTO>> GetConContadoresAsync();
+        Task<List<PedidoInternoDTO>> GetPedidosDeOrdenAsync(int idOrden);
     }
 }

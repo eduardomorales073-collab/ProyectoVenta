@@ -38,6 +38,7 @@ import { AuditoriaComponent } from './pages/admin/auditoria/auditoria';
 import { ReporteJasperComponent } from './pages/admin/reportes/reporte-jasper/reporte-jasper';
 import { OrdenesCompraComponent } from './pages/admin/ordenes-compra/ordenes-compra';
 
+
 export const routes: Routes = [
   { path: 'login', component: Login },
 
@@ -126,6 +127,7 @@ export const routes: Routes = [
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'auditoria', component: AuditoriaComponent },
       { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
+      { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
     ]

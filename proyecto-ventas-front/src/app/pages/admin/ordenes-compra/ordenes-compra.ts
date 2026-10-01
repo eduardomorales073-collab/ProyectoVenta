@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -10,10 +11,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
-import { OrdenCompraService, OrdenCompra } from '../../../services/orden-compra.service';
+import { MatBadgeModule } from '@angular/material/badge';
+import { OrdenCompraService, OrdenCompraConContadores } from '../../../services/orden-compra.service';
 import { TipoOrdenService } from '../../../services/tipo-orden.service';
 import { TipoOrden } from '../../../models/tipo-orden.model';
 import { OrdenCompraFormComponent } from './orden-compra-form/orden-compra-form';
+import { PedidosDeOrdenModalComponent } from './pedidos-de-orden-modal/pedidos-de-orden-modal';
 import { ConfirmService } from '../../../services/confirm';
 import { NotificacionService } from '../../../services/notificacion';
 
@@ -24,6 +27,7 @@ import { NotificacionService } from '../../../services/notificacion';
     CommonModule,
     FormsModule,
     OrdenCompraFormComponent,
+    PedidosDeOrdenModalComponent,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -32,19 +36,21 @@ import { NotificacionService } from '../../../services/notificacion';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    MatChipsModule
+    MatChipsModule,
+    MatBadgeModule
   ],
   templateUrl: './ordenes-compra.html',
   styleUrl: './ordenes-compra.scss'
 })
 export class OrdenesCompraComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'descripcion', 'fecha_Creacion', 'fecha_Limite', 'fecha_limite_ofertas', 'tipo_Orden', 'acciones'];
-  dataSource = new MatTableDataSource<OrdenCompra>([]);
+  displayedColumns: string[] = ['id', 'descripcion', 'fecha_Creacion', 'fecha_Limite', 'tipo_Orden', 'pedidos', 'estado', 'acciones'];
+  dataSource = new MatTableDataSource<OrdenCompraConContadores>([]);
 
   cargando = false;
   error = '';
   mostrarFormulario = false;
-  ordenSeleccionada: OrdenCompra | null = null;
+  mostrarPedidos = false;
+  ordenSeleccionada: OrdenCompraConContadores | null = null;
 
   tiposOrden: TipoOrden[] = [];
 
@@ -54,6 +60,7 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
   constructor(
     private ordenService: OrdenCompraService,
     private tipoOrdenService: TipoOrdenService,
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -65,17 +72,17 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
-    this.dataSource.filterPredicate = (orden: OrdenCompra, filtro: string) => {
+    this.dataSource.filterPredicate = (orden: OrdenCompraConContadores, filtro: string) => {
       const tipoStr = this.nombreTipo(orden.tipo_Orden);
       const dataStr = (
         orden.id + ' ' +
         (orden.descripcion || '') + ' ' +
-        tipoStr
+        tipoStr + ' ' +
+        orden.estado
       ).toLowerCase();
       return dataStr.includes(filtro);
     };
 
-    // Cargar tipos de orden primero
     this.tipoOrdenService.listar().subscribe({
       next: (data) => {
         this.tiposOrden = data;
@@ -91,7 +98,7 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
   cargar(): void {
     this.cargando = true;
     this.error = '';
-    this.ordenService.listar().subscribe({
+    this.ordenService.listarConContadores().subscribe({
       next: (data) => {
         this.dataSource.data = data;
         this.cargando = false;
@@ -110,7 +117,7 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = valor.trim().toLowerCase();
   }
 
-  abrirFormulario(orden: OrdenCompra | null): void {
+  abrirFormulario(orden: OrdenCompraConContadores | null): void {
     this.ordenSeleccionada = orden;
     this.mostrarFormulario = true;
     this.cdr.detectChanges();
@@ -127,7 +134,29 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     this.cargar();
   }
 
-  confirmarEliminar(orden: OrdenCompra): void {
+  verPedidos(orden: OrdenCompraConContadores): void {
+    this.ordenSeleccionada = orden;
+    this.mostrarPedidos = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarPedidos(): void {
+    this.mostrarPedidos = false;
+    this.ordenSeleccionada = null;
+    this.cdr.detectChanges();
+  }
+
+  onPedidosActualizados(): void {
+    this.cerrarPedidos();
+    this.cargar();
+  }
+
+  irACrearPedido(idOrden: number): void {
+    this.cerrarPedidos();
+    this.router.navigate(['/admin/pedidos-internos'], { queryParams: { ordenId: idOrden } });
+  }
+
+  confirmarEliminar(orden: OrdenCompraConContadores): void {
     this.confirm.eliminar(`la orden #${orden.id}`).subscribe(confirmado => {
       if (!confirmado) return;
 
@@ -149,17 +178,14 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     if (!tipo) return `Tipo #${idTipo}`;
 
     const partes: string[] = [];
-
     if (tipo.grande) partes.push('Grande');
     if (tipo.urgente) partes.push('Urgente');
-
     return partes.length > 0 ? partes.join(' · ') : 'Normal';
   }
 
   claseTipo(idTipo: number): string {
     const tipo = this.tiposOrden.find(t => t.id === idTipo);
     if (!tipo) return 'chip-tipo';
-
     if (tipo.urgente) return 'chip-tipo-urgente';
     if (tipo.grande) return 'chip-tipo-grande';
     return 'chip-tipo-normal';
@@ -168,9 +194,17 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
   iconoTipo(idTipo: number): string {
     const tipo = this.tiposOrden.find(t => t.id === idTipo);
     if (!tipo) return 'label';
-
     if (tipo.urgente) return 'priority_high';
     if (tipo.grande) return 'unfold_more';
     return 'label';
+  }
+
+  // ===== HELPERS PARA EL ESTADO =====
+  claseEstado(estado: string): string {
+    return estado === 'Cerrada' ? 'chip-cerrada' : 'chip-abierta';
+  }
+
+  iconoEstado(estado: string): string {
+    return estado === 'Cerrada' ? 'check_circle' : 'schedule';
   }
 }

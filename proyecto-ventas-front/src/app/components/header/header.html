@@ -66,19 +66,19 @@
         <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
       </button>
       <mat-menu #menuCompras="matMenu">
-  <button mat-menu-item routerLink="/admin/ordenes-compra">
-    <mat-icon>receipt_long</mat-icon>
-    <span>Órdenes de Compra</span>
-  </button>
-  <button mat-menu-item routerLink="/admin/adjudicaciones">
-    <mat-icon>gavel</mat-icon>
-    <span>Adjudicaciones</span>
-  </button>
-  <button mat-menu-item routerLink="/admin/pedidos-internos">
-    <mat-icon>assignment</mat-icon>
-    <span>Pedidos Internos</span>
-  </button>
-</mat-menu>
+        <button mat-menu-item routerLink="/admin/ordenes-compra">
+          <mat-icon>receipt_long</mat-icon>
+          <span>Órdenes de Compra</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/adjudicaciones">
+          <mat-icon>gavel</mat-icon>
+          <span>Adjudicaciones</span>
+        </button>
+        <button mat-menu-item routerLink="/admin/pedidos-internos">
+          <mat-icon>assignment</mat-icon>
+          <span>Pedidos Internos</span>
+        </button>
+      </mat-menu>
 
       <button mat-button [matMenuTriggerFor]="menuAdmin" class="menu-btn">
         <mat-icon>admin_panel_settings</mat-icon>
@@ -107,6 +107,10 @@
         <mat-icon>assignment</mat-icon>
         Pedidos Internos
       </a>
+      <a mat-button routerLink="/empleado/ordenes-compra" routerLinkActive="active-link">
+        <mat-icon>receipt_long</mat-icon>
+        Órdenes de Compra
+      </a>
       <a mat-button routerLink="/empleado/adjudicaciones" routerLinkActive="active-link">
         <mat-icon>gavel</mat-icon>
         Adjudicaciones
@@ -115,6 +119,7 @@
         <mat-icon>inventory_2</mat-icon>
         Artículos
       </a>
+
       <button mat-button [matMenuTriggerFor]="menuReportesEmpleado" class="menu-btn">
         <mat-icon>analytics</mat-icon>
         Reportes
@@ -129,10 +134,6 @@
           <mat-icon>pending_actions</mat-icon>
           <span>Pedidos Pendientes</span>
         </button>
-        <a mat-button routerLink="/empleado/ordenes-compra" routerLinkActive="active-link">
-  <mat-icon>receipt_long</mat-icon>
-  Órdenes de Compra
-</a>
         <button mat-menu-item routerLink="/empleado/reportes/eficiencia-proceso">
           <mat-icon>speed</mat-icon>
           <span>Eficiencia</span>
