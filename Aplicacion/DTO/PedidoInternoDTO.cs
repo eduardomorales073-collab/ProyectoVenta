@@ -9,11 +9,12 @@ namespace Aplicacion.DTO
     string? codigo,
     int? cantidad,
     int id_Departamento,
-    string? nombreDepartamento,     
+    string? nombreDepartamento,
     int? id_OrdenCompra,
     DateTime Fecha_Solicitada,
     DateTime Fecha_Ingreso,
-    string? nombreSucursal,         
-    int? id_Sucursal               
+    string? nombreSucursal,
+    int? id_Sucursal,
+    bool urgente
 );
 }

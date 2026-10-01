@@ -42,3 +42,40 @@
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
 }
+
+/* ===== CHIPS POR ROL ===== */
+.chip-admin {
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
+  font-weight: 600;
+}
+
+.chip-gestor {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  font-weight: 600;
+}
+
+.chip-proveedor {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  font-weight: 600;
+}
+
+.chip-auditor {
+  background: #e9d5ff !important;
+  color: #6b21a8 !important;
+  font-weight: 600;
+}
+
+.chip-creador {
+  background: #cffafe !important;
+  color: #155e75 !important;
+  font-weight: 600;
+}
+
+.chip-default {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 600;
+}

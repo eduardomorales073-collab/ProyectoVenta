@@ -151,9 +151,20 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
       case 2: return 'Gestor de Compras';
       case 3: return 'Administrador de Proveedor';
       case 4: return 'Auditor / Reportes';
+      case 5: return 'Creador de Pedidos';
       default: return 'Desconocido';
     }
   }
+  claseRol(idRol: number): string {
+  switch (idRol) {
+    case 1: return 'chip-admin';
+    case 2: return 'chip-gestor';
+    case 3: return 'chip-proveedor';
+    case 4: return 'chip-auditor';
+    case 5: return 'chip-creador';
+    default: return 'chip-default';
+  }
+}
 
   verPermisos(usuario: Usuario): void {
     this.usuarioPermisos = usuario;

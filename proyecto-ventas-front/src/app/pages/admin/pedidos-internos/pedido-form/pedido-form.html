@@ -9,13 +9,22 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-      <!-- Código (auto-generado, solo lectura) -->
+      <!-- Código (auto-generado) -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Código</mat-label>
         <input matInput formControlName="codigo" readonly>
         <mat-icon matPrefix>qr_code</mat-icon>
         <mat-hint>Generado automáticamente</mat-hint>
       </mat-form-field>
+
+      <!-- Urgente (checkbox destacado) -->
+      <div class="urgente-checkbox">
+        <mat-checkbox formControlName="urgente" color="warn">
+          <mat-icon class="icon-urgente">priority_high</mat-icon>
+          <strong>Marcar como URGENTE</strong>
+        </mat-checkbox>
+        <span class="hint-urgente">Los pedidos urgentes aparecen primero en la lista</span>
+      </div>
 
       <!-- Cantidad -->
       <mat-form-field appearance="outline" class="full-width">
@@ -24,9 +33,6 @@
         <mat-icon matPrefix>numbers</mat-icon>
         <mat-error *ngIf="form.get('cantidad')?.hasError('required')">
           La cantidad es obligatoria
-        </mat-error>
-        <mat-error *ngIf="form.get('cantidad')?.hasError('min')">
-          La cantidad debe ser mayor a 0
         </mat-error>
       </mat-form-field>
 
@@ -44,15 +50,15 @@
         </mat-error>
       </mat-form-field>
 
-      <!-- Sucursal (auto-detectada, solo lectura) -->
-<mat-form-field appearance="outline" class="full-width" *ngIf="sucursalSeleccionada">
-  <mat-label>Sucursal</mat-label>
-  <input matInput [value]="sucursalSeleccionada" readonly>
-  <mat-icon matPrefix>business</mat-icon>
-  <mat-hint>Asignada automáticamente según el departamento</mat-hint>
-</mat-form-field>
+      <!-- Sucursal (auto-detectada) -->
+      <mat-form-field appearance="outline" class="full-width" *ngIf="sucursalSeleccionada">
+        <mat-label>Sucursal</mat-label>
+        <input matInput [value]="sucursalSeleccionada" readonly>
+        <mat-icon matPrefix>business</mat-icon>
+        <mat-hint>Asignada automáticamente según el departamento</mat-hint>
+      </mat-form-field>
 
-      <!-- Orden de Compra (opcional) -->
+      <!-- Orden de Compra -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Orden de Compra (opcional)</mat-label>
         <mat-select formControlName="id_OrdenCompra">
@@ -64,28 +70,24 @@
           </mat-option>
         </mat-select>
         <mat-icon matPrefix>shopping_cart</mat-icon>
-        <mat-hint>Fecha solicitud ≤ Fecha creación</mat-hint>
       </mat-form-field>
 
-      <!-- Fecha Solicitada -->
+      <!-- Fecha Solicitada (deadline de ofertas) -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Fecha Solicitada</mat-label>
+        <mat-label>Fecha Solicitada (límite de ofertas)</mat-label>
         <input matInput type="date" formControlName="fecha_Solicitada" required>
         <mat-icon matPrefix>event</mat-icon>
+        <mat-hint>Los proveedores solo pueden ofertar hasta esta fecha</mat-hint>
         <mat-error *ngIf="form.get('fecha_Solicitada')?.hasError('required')">
           La fecha es obligatoria
         </mat-error>
       </mat-form-field>
 
-      <!-- Fecha Ingreso -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Fecha Ingreso</mat-label>
-        <input matInput type="date" formControlName="fecha_Ingreso" required>
-        <mat-icon matPrefix>login</mat-icon>
-        <mat-error *ngIf="form.get('fecha_Ingreso')?.hasError('required')">
-          La fecha es obligatoria
-        </mat-error>
-      </mat-form-field>
+      <!-- Info: fecha de ingreso automática -->
+      <div class="info-auto-fecha">
+        <mat-icon>info</mat-icon>
+        <span>La fecha de ingreso se registrará automáticamente al crear el pedido.</span>
+      </div>
 
       <!-- Botones -->
       <div class="modal-actions">

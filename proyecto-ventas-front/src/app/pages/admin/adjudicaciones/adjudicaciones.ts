@@ -11,8 +11,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { AdjudicacionService } from '../../../services/adjudicacion.service';
+import { PedidoInternoService } from '../../../services/pedido-interno.service';
+import { OfertaProveedorService } from '../../../services/oferta-proveedor.service';
 import { Adjudicacion } from '../../../models/adjudicacion.model';
 import { AdjudicacionFormComponent } from './adjudicacion-form/adjudicacion-form';
+import { DetalleAdjudicacionModalComponent } from './detalle-adjudicacion-modal/detalle-adjudicacion-modal';
+import { AdjudicarPedidosModalComponent } from './adjudicar-pedidos-modal/adjudicar-pedidos-modal';
 import { ConfirmService } from '../../../services/confirm';
 import { NotificacionService } from '../../../services/notificacion';
 
@@ -23,6 +27,8 @@ import { NotificacionService } from '../../../services/notificacion';
     CommonModule,
     FormsModule,
     AdjudicacionFormComponent,
+    DetalleAdjudicacionModalComponent,
+    AdjudicarPedidosModalComponent,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -37,30 +43,42 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './adjudicaciones.scss'
 })
 export class AdjudicacionesComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'fecha_Resolucion', 'orden_Compra', 'estado', 'acciones'];
+  displayedColumns: string[] = ['id', 'fecha_Resolucion', 'orden_Compra', 'estado', 'detalles', 'acciones'];
   dataSource = new MatTableDataSource<Adjudicacion>([]);
   cargando = false;
   error = '';
   mostrarFormulario = false;
   adjudicacionSeleccionada: Adjudicacion | null = null;
 
+  // Modal de Detalle
+  mostrarDetalle = false;
+  adjudicacionDetalle: Adjudicacion | null = null;
+
+  // Modal de Adjudicar Pedidos (NUEVO)
+  mostrarAdjudicar = false;
+  sinPedidosPendientes = true;  // ← AQUÍ ESTÁ LA PROPIEDAD QUE FALTABA
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private adjudicacionService: AdjudicacionService,
+    private pedidoService: PedidoInternoService,
+    private ofertaService: OfertaProveedorService,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
   ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.verificarPedidosPendientes();
+  }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    this.dataSource.filterPredicate = (adj: Adjudicacion, filtro: string) => {
-      const dataStr = (adj.id + ' ' + adj.estado + ' ' + adj.orden_Compra).toLowerCase();
+    this.dataSource.filterPredicate = (adjudicacion: Adjudicacion, filtro: string) => {
+      const dataStr = (adjudicacion.id + ' ' + adjudicacion.fecha_Resolucion + ' ' + adjudicacion.orden_Compra + ' ' + adjudicacion.estado).toLowerCase();
       return dataStr.includes(filtro);
     };
     this.cargar();
@@ -73,11 +91,30 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
       next: (data) => {
         this.dataSource.data = data;
         this.cargando = false;
+        this.verificarPedidosPendientes();
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.error = `Error: ${err.status} ${err.statusText}`;
         this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ===== VERIFICAR SI HAY PEDIDOS PENDIENTES DE ADJUDICAR =====
+  verificarPedidosPendientes(): void {
+    this.pedidoService.listar().subscribe({
+      next: (pedidos) => {
+        // Un pedido está pendiente si tiene ofertas registradas (para adjudicar)
+        // Como validación simple: cualquier pedido sirve
+        // El modal filtrará los que realmente tienen ofertas
+        this.sinPedidosPendientes = pedidos.length === 0;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Error al verificar pedidos pendientes:', err);
+        this.sinPedidosPendientes = true;
         this.cdr.detectChanges();
       }
     });
@@ -106,7 +143,7 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
   }
 
   confirmarEliminar(adjudicacion: Adjudicacion): void {
-    this.confirm.eliminar(`Adjudicación #${adjudicacion.id}`).subscribe((confirmado: boolean) => {
+    this.confirm.eliminar(`la adjudicación #${adjudicacion.id}`).subscribe(confirmado => {
       if (!confirmado) return;
       this.adjudicacionService.eliminar(adjudicacion.id).subscribe({
         next: () => {
@@ -114,18 +151,54 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
           this.cargar();
         },
         error: (err: any) => {
-          this.notificacion.error(`Error al eliminar: ${err.error?.mensaje || err.status + ' ' + err.statusText}`);
+          this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);
         }
       });
     });
   }
 
+  // ===== HELPER: Color del chip según el estado =====
   colorEstado(estado: string): string {
     switch (estado?.toLowerCase()) {
-      case 'activa': return 'chip-activa';
-      case 'cerrada': return 'chip-cerrada';
-      case 'cancelada': return 'chip-cancelada';
-      default: return 'chip-default';
+      case 'activa':
+        return 'chip-activa';
+      case 'cancelada':
+        return 'chip-cancelada';
+      case 'cerrada':
+        return 'chip-cerrada';
+      case 'pendiente':
+        return 'chip-pendiente';
+      default:
+        return 'chip-default';
     }
+  }
+
+  // ===== MODAL DE DETALLES =====
+  verDetalle(adjudicacion: Adjudicacion): void {
+    this.adjudicacionDetalle = adjudicacion;
+    this.mostrarDetalle = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalle(): void {
+    this.mostrarDetalle = false;
+    this.adjudicacionDetalle = null;
+    this.cdr.detectChanges();
+  }
+
+  // ===== MODAL DE ADJUDICAR PEDIDOS =====
+  abrirAdjudicar(): void {
+    this.mostrarAdjudicar = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarAdjudicar(): void {
+    this.mostrarAdjudicar = false;
+    this.cdr.detectChanges();
+  }
+
+  onAdjudicado(): void {
+    this.cerrarAdjudicar();
+    this.cargar();
   }
 }

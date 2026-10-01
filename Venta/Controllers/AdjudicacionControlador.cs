@@ -38,5 +38,12 @@ namespace Venta.Controllers
             await _adjudicacionService.DeleteAsync(id);
             return Ok();
         }
+
+        [HttpPost("adjudicar")]
+        public async Task<IActionResult> AdjudicarPedidos(AdjudicarPedidosDTO dto)
+        {
+            await _adjudicacionService.AdjudicarPedidosAsync(dto);
+            return Ok(new { mensaje = "Pedidos adjudicados correctamente." });
+        }
     }
 }

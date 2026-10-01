@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Adjudicacion, CreateAdjudicacionDTO, UpdateAdjudicacionDTO } from '../models/adjudicacion.model';
+import { AdjudicarPedidosDTO } from '../models/adjudicar-pedidos.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdjudicacionService {
@@ -29,4 +30,9 @@ export class AdjudicacionService {
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
+
+  /** Adjudicar múltiples pedidos en un solo paso */
+adjudicarPedidos(dto: AdjudicarPedidosDTO): Observable<any> {
+  return this.http.post<any>(`${this.url}/adjudicar`, dto);
+}
 }

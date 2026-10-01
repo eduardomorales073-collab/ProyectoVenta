@@ -1,0 +1,162 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-adjudicar {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 1rem;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+    color: #1e293b;
+
+    mat-icon {
+      color: #8b5cf6;
+    }
+  }
+
+  .subtitle {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+  color: #64748b;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.pedidos-lista {
+  padding: 0 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+
+  h3 {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    margin: 1rem 0 0.75rem;
+  }
+}
+
+.pedido-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  .unidades {
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: normal;
+    margin-left: 0.5rem;
+  }
+}
+
+.chip-ofertas {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.ganador {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+
+  .resumen {
+    color: #475569;
+    font-size: 0.875rem;
+
+    strong {
+      color: #1e293b;
+    }
+  }
+
+  .acciones {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  color: #94a3b8;
+  text-align: center;
+
+  mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: #64748b;
+  }
+}

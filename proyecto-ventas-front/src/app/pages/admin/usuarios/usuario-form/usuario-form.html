@@ -71,8 +71,47 @@
             <mat-icon>analytics</mat-icon>
             Auditor / Reportes
           </mat-option>
+          <mat-option [value]="5">
+            <mat-icon>assignment</mat-icon>
+            Creador de Pedidos
+          </mat-option>
         </mat-select>
         <mat-icon matPrefix>assignment_ind</mat-icon>
+      </mat-form-field>
+
+      <!-- ⚠️ SELECTOR DINÁMICO: PROVEEDOR (solo para AdministradorProveedor) -->
+      <mat-form-field appearance="outline" class="full-width campo-dinamico"
+                      *ngIf="mostrarSelectorProveedor()">
+        <mat-label>Proveedor</mat-label>
+        <mat-select formControlName="id_Proveedor" required>
+          <mat-option *ngFor="let p of proveedores" [value]="p.id">
+            {{ p.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>business</mat-icon>
+        <mat-hint>El usuario podrá ofertar en nombre de este proveedor</mat-hint>
+        <mat-error *ngIf="form.get('id_Proveedor')?.hasError('required')">
+          Debes seleccionar un proveedor
+        </mat-error>
+      </mat-form-field>
+
+      <!-- ⚠️ SELECTOR DINÁMICO: DEPARTAMENTO (GestorCompras o CreadorPedidos) -->
+      <mat-form-field appearance="outline" class="full-width campo-dinamico"
+                      *ngIf="mostrarSelectorDepartamento()">
+        <mat-label>Departamento</mat-label>
+        <mat-select formControlName="id_Departamento">
+          <mat-option [value]="null">
+            <em>Sin departamento asignado</em>
+          </mat-option>
+          <mat-option *ngFor="let d of departamentos" [value]="d.id">
+            {{ d.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>business_center</mat-icon>
+        <mat-hint>Filtra los pedidos que puede ver este usuario</mat-hint>
+        <mat-error *ngIf="form.get('id_Departamento')?.hasError('required')">
+          Debes seleccionar un departamento
+        </mat-error>
       </mat-form-field>
 
       <!-- Activo -->

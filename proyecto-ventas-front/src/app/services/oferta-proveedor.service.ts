@@ -10,9 +10,19 @@ export class OfertaProveedorService {
 
   constructor(private http: HttpClient) { }
 
+  /** Obtener TODAS las ofertas (para admin/gestor) */
+  getAll(): Observable<OfertaProveedor[]> {
+    return this.http.get<OfertaProveedor[]>(this.url);
+  }
+
   /** Obtener las ofertas del proveedor logueado */
   misOfertas(): Observable<OfertaProveedor[]> {
     return this.http.get<OfertaProveedor[]>(`${this.url}/mis-ofertas`);
+  }
+
+  /** Obtener ofertas por proveedor */
+  getByProveedor(idProveedor: number): Observable<OfertaProveedor[]> {
+    return this.http.get<OfertaProveedor[]>(`${this.url}/proveedor/${idProveedor}`);
   }
 
   /** Crear una nueva oferta */

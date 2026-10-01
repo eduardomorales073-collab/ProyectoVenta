@@ -42,7 +42,21 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './pedidos-internos.scss'
 })
 export class PedidosInternosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'codigo', 'cantidad', 'departamento', 'sucursal', 'orden', 'fecha_Solicitada', 'fecha_Ingreso', 'acciones'];
+
+  // ✅ Columnas QUE COINCIDEN con el HTML (matColumnDef)
+  displayedColumns: string[] = [
+    'urgente',
+    'id',
+    'codigo',
+    'cantidad',
+    'departamento',       // ← Coincide con el HTML
+    'sucursal',           // ← Coincide con el HTML
+    'orden',              // ← Coincide con el HTML
+    'fecha_Solicitada',
+    'fecha_Ingreso',
+    'acciones'
+  ];
+
   dataSource = new MatTableDataSource<PedidoInterno>([]);
   departamentos: Departamento[] = [];
   ordenes: OrdenCompra[] = [];
@@ -136,7 +150,6 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
           }
         });
       } else {
-        // Sin departamento asignado → lista vacía
         this.dataSource.data = [];
         this.cargando = false;
         this.cdr.detectChanges();

@@ -11,6 +11,7 @@ namespace Aplicacion.DTO
         int id_Departamento,
         int? id_OrdenCompra,
         DateTime Fecha_Solicitada,
-        DateTime Fecha_Ingreso
+        DateTime Fecha_Ingreso,
+        bool urgente
     );
 }

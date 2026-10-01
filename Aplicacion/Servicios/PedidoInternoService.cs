@@ -51,11 +51,11 @@ namespace Aplicacion.Servicios
                     );
                 }
 
-                if (pedido.Fecha_Solicitada > orden.Fecha_Creacion)
+                if (pedido.Fecha_Solicitada < orden.Fecha_Creacion)
                 {
                     throw new InvalidOperationException(
-                        $"La fecha de solicitud del pedido ({pedido.Fecha_Solicitada:dd/MM/yyyy}) " +
-                        $"no puede ser posterior a la fecha de creación de la orden " +
+                        $"La fecha límite de ofertas ({pedido.Fecha_Solicitada:dd/MM/yyyy}) " +
+                        $"no puede ser anterior a la fecha de creación de la orden " +
                         $"#{orden.id} ({orden.Fecha_Creacion:dd/MM/yyyy})."
                     );
                 }
@@ -75,6 +75,11 @@ namespace Aplicacion.Servicios
             {
                 nuevoPedido.cantidad = 1;
             }
+
+            // ✅ FECHA INGRESO AUTOMÁTICA
+            nuevoPedido.Fecha_Ingreso = DateTime.Now;
+
+            // ✅ El campo "urgente" se mapea automáticamente desde el DTO
 
             await _pedidoInternoRepositorio.AddAsync(nuevoPedido);
 
@@ -111,26 +116,30 @@ namespace Aplicacion.Servicios
             var departamentos = await _departamentoRepositorio.GetAllasync();
             var sucursales = await _sucursalRepositorio.GetAllasync();
 
-            return pedidos.Select(p =>
-            {
-                var depto = departamentos.FirstOrDefault(d => d.id == p.id_Departamento);
-                var sucursal = depto != null
-                    ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
-                    : null;
+            return pedidos
+                .OrderByDescending(p => p.urgente)   // ✅ URGENTES PRIMERO
+                .ThenByDescending(p => p.id)
+                .Select(p =>
+                {
+                    var depto = departamentos.FirstOrDefault(d => d.id == p.id_Departamento);
+                    var sucursal = depto != null
+                        ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
+                        : null;
 
-                return new PedidoInternoDTO(
-                    p.id,
-                    p.codigo,
-                    p.cantidad,
-                    p.id_Departamento,
-                    depto?.Nombre,
-                    p.id_OrdenCompra,
-                    p.Fecha_Solicitada,
-                    p.Fecha_Ingreso,
-                    sucursal?.Nombre,
-                    sucursal?.id
-                );
-            }).ToList();
+                    return new PedidoInternoDTO(
+                        p.id,
+                        p.codigo,
+                        p.cantidad,
+                        p.id_Departamento,
+                        depto?.Nombre,
+                        p.id_OrdenCompra,
+                        p.Fecha_Solicitada,
+                        p.Fecha_Ingreso,
+                        sucursal?.Nombre,
+                        sucursal?.id,
+                        p.urgente                          
+                    );
+                }).ToList();
         }
 
         public async Task<PedidoInternoDTO> GetByIdAsync(int id)
@@ -156,14 +165,13 @@ namespace Aplicacion.Servicios
                 pedido.Fecha_Solicitada,
                 pedido.Fecha_Ingreso,
                 sucursal?.Nombre,
-                sucursal?.id
+                sucursal?.id,
+                pedido.urgente                             // ✅ NUEVO
             );
         }
 
-        // ===== MÉTODO CORREGIDO: UpdateAsync =====
         public async Task UpdateAsync(UpdatePedidoInternoDTO pedido)
         {
-            // ===== OBTENER LA ENTIDAD YA RASTREADA =====
             var pedidoExistente = await _pedidoInternoRepositorio.GetAsync(pedido.id);
             if (pedidoExistente == null)
             {
@@ -203,13 +211,14 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== ACTUALIZAR LA ENTIDAD YA RASTREADA (NO mapear) =====
+            // ===== ACTUALIZAR LA ENTIDAD YA RASTREADA =====
             pedidoExistente.codigo = pedido.codigo;
             pedidoExistente.cantidad = pedido.cantidad ?? 1;
             pedidoExistente.id_Departamento = pedido.id_Departamento;
             pedidoExistente.id_OrdenCompra = pedido.id_OrdenCompra;
             pedidoExistente.Fecha_Solicitada = pedido.Fecha_Solicitada;
-            pedidoExistente.Fecha_Ingreso = pedido.Fecha_Ingreso;
+            pedidoExistente.urgente = pedido.urgente;     
+            // ⚠️ NO tocar Fecha_Ingreso (se mantiene la original)
 
             await _pedidoInternoRepositorio.UpdateAsync(pedidoExistente);
 

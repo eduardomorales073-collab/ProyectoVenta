@@ -59,22 +59,23 @@ export class PedidosDisponiblesComponent implements OnInit {
     });
   }
 
+  
   cargar(): void {
-    this.cargando = true;
-    this.pedidoService.listar().subscribe({
-      next: (data) => {
-        // Filtrar solo los pedidos SIN orden asignada (disponibles para ofertar)
-        this.pedidos = data.filter(p => !p.id_OrdenCompra);
-        this.cargando = false;
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        this.notificacion.error(`Error: ${err.status} ${err.statusText}`);
-        this.cargando = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+  this.cargando = true;
+  this.pedidoService.listar().subscribe({
+    next: (data) => {
+      // ✅ Mostrar TODOS los pedidos (los ya ofertados aparecen con "Ya ofertaste")
+      this.pedidos = data;
+      this.cargando = false;
+      this.cdr.detectChanges();
+    },
+    error: (err: any) => {
+      this.notificacion.error(`Error: ${err.status} ${err.statusText}`);
+      this.cargando = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   nombreDepartamento(id: number): string {
     return this.departamentos.find(d => d.id === id)?.nombre || `Depto #${id}`;

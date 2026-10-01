@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { PedidoInternoService } from '../../../../services/pedido-interno.service';
 import { SucursalService } from '../../../../services/sucursal.service';
 import { PedidoInterno, CreatePedidoInternoDTO } from '../../../../models/pedido-interno.model';
@@ -24,7 +25,8 @@ import { NotificacionService } from '../../../../services/notificacion';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatCheckboxModule
   ],
   templateUrl: './pedido-form.html',
   styleUrl: './pedido-form.scss'
@@ -39,7 +41,6 @@ export class PedidoFormComponent implements OnInit {
   form: FormGroup;
   guardando = false;
 
-  // ← NUEVO: Para la sucursal auto-detectada
   sucursalSeleccionada = '';
   sucursales: Sucursal[] = [];
 
@@ -55,12 +56,12 @@ export class PedidoFormComponent implements OnInit {
       id_Departamento: ['', [Validators.required]],
       id_OrdenCompra: [null],
       fecha_Solicitada: ['', [Validators.required]],
-      fecha_Ingreso: ['', [Validators.required]]
+      // ⚠️ fecha_Ingreso eliminado (es automática)
+      urgente: [false]                          // ← NUEVO
     });
   }
 
   ngOnInit(): void {
-    // Cargar sucursales
     this.sucursalService.listar().subscribe({
       next: (data) => { this.sucursales = data; }
     });
@@ -73,28 +74,24 @@ export class PedidoFormComponent implements OnInit {
         id_Departamento: this.pedido.id_Departamento,
         id_OrdenCompra: this.pedido.id_OrdenCompra,
         fecha_Solicitada: this.pedido.fecha_Solicitada?.substring(0, 10),
-        fecha_Ingreso: this.pedido.fecha_Ingreso?.substring(0, 10)
+        urgente: this.pedido.urgente || false   // ← NUEVO
       });
-      // Calcular sucursal inicial
       this.actualizarSucursal(this.pedido.id_Departamento);
     } else {
       // CREACIÓN: auto-generar el código
       this.generarCodigo();
     }
 
-    // Escuchar cambios en el departamento
     this.form.get('id_Departamento')?.valueChanges.subscribe(idDepto => {
       this.actualizarSucursal(idDepto);
     });
   }
 
-  /** Calcula la sucursal basándose en el departamento seleccionado */
   actualizarSucursal(idDepartamento: number): void {
     if (!idDepartamento) {
       this.sucursalSeleccionada = '';
       return;
     }
-
     const depto = this.departamentos.find(d => d.id === idDepartamento);
     if (depto && depto.id_Sucursal) {
       const sucursal = this.sucursales.find(s => s.id === depto.id_Sucursal);
@@ -122,7 +119,8 @@ export class PedidoFormComponent implements OnInit {
         id_Departamento: datos.id_Departamento,
         id_OrdenCompra: datos.id_OrdenCompra || null,
         fecha_Solicitada: datos.fecha_Solicitada,
-        fecha_Ingreso: datos.fecha_Ingreso
+        fecha_Ingreso: this.pedido!.fecha_Ingreso,  // Se mantiene la original
+        urgente: datos.urgente
       };
 
       this.pedidoService.actualizar(dto).subscribe({
@@ -143,7 +141,7 @@ export class PedidoFormComponent implements OnInit {
         id_Departamento: datos.id_Departamento,
         id_OrdenCompra: datos.id_OrdenCompra || null,
         fecha_Solicitada: datos.fecha_Solicitada,
-        fecha_Ingreso: datos.fecha_Ingreso
+        urgente: datos.urgente
       };
 
       this.pedidoService.crear(dto).subscribe({

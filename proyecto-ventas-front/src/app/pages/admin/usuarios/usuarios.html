@@ -37,13 +37,13 @@
       </ng-container>
 
       <ng-container matColumnDef="rol">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Rol</th>
-        <td mat-cell *matCellDef="let u">
-          <mat-chip [highlighted]="u.id_Rol === 1">
-            {{ nombreRol(u.id_Rol) }}
-          </mat-chip>
-        </td>
-      </ng-container>
+  <th mat-header-cell *matHeaderCellDef mat-sort-header>Rol</th>
+  <td mat-cell *matCellDef="let u">
+    <mat-chip [class]="claseRol(u.id_Rol)">
+      {{ nombreRol(u.id_Rol) }}
+    </mat-chip>
+  </td>
+</ng-container>
 
       <ng-container matColumnDef="activo">
         <th mat-header-cell *matHeaderCellDef>Activo</th>

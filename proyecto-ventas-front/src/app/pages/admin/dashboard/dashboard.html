@@ -13,22 +13,8 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- Tarjetas de estadísticas -->
+  <!-- Tarjetas de estadísticas (SIN Artículos) -->
   <div class="stats-grid">
-
-    <mat-card class="stat-card articulos">
-      <mat-card-content>
-        <div class="stat-content">
-          <div class="stat-icon-wrapper">
-            <mat-icon>inventory_2</mat-icon>
-          </div>
-          <div class="stat-info">
-            <h3>{{ totalArticulos }}</h3>
-            <p>Artículos</p>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
 
     <mat-card class="stat-card usuarios">
       <mat-card-content>
@@ -73,53 +59,10 @@
     </mat-card>
   </div>
 
-  <!-- Gráficos -->
+  <!-- Gráficos (SIN Artículos Recientes) -->
   <div class="charts-grid">
 
-    <!-- Artículos recientes -->
-    <div class="charts-grid">
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>bar_chart</mat-icon>
-            Artículos Recientes
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="chart-container">
-            <canvas #graficoArticulos></canvas>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>inventory_2</mat-icon>
-            Últimos Artículos
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="recientes-list">
-            <div class="reciente-item" *ngFor="let a of articulosRecientes">
-              <div class="reciente-icon">
-                <mat-icon>inventory_2</mat-icon>
-              </div>
-              <div class="reciente-info">
-                <div class="reciente-nombre">{{ a.nombre }}</div>
-                <div class="reciente-desc">{{ a.descripcion }}</div>
-              </div>
-              <div class="reciente-id">#{{ a.id }}</div>
-            </div>
-            <p *ngIf="articulosRecientes.length === 0" class="empty">
-              No hay artículos
-            </p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <!-- Gráfico de usuarios por rol -->
+    <!-- Usuarios por rol (gráfico donut) -->
     <mat-card class="chart-card">
       <mat-card-header>
         <mat-card-title>
@@ -134,7 +77,7 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Gráfico de usuarios activos -->
+    <!-- Estado de usuarios (gráfico) -->
     <mat-card class="chart-card">
       <mat-card-header>
         <mat-card-title>
@@ -149,7 +92,7 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Resumen -->
+    <!-- Resumen de usuarios -->
     <mat-card class="chart-card">
       <mat-card-header>
         <mat-card-title>
@@ -161,63 +104,32 @@
         <div class="resumen-list">
           <div class="resumen-item admin">
             <mat-icon>admin_panel_settings</mat-icon>
-            <span class="resumen-label">Administradores</span>
+            <span class="resumen-label">Administrador del Sistema</span>
             <span class="resumen-value">{{ usuariosAdmin }}</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Gestor de Compras</span>
-            <span class="stat-value">{{ usuariosGestorCompras }}</span>
+          <div class="resumen-item empleado">
+            <mat-icon>shopping_cart</mat-icon>
+            <span class="resumen-label">Gestor de Compras</span>
+            <span class="resumen-value">{{ usuariosGestorCompras }}</span>
           </div>
           <div class="resumen-item proveedor">
             <mat-icon>business</mat-icon>
-            <span class="resumen-label">Proveedores</span>
-            <div class="resumen-list">
-              <div class="resumen-item admin">
-                <mat-icon>admin_panel_settings</mat-icon>
-                <span class="resumen-label">Administrador del Sistema</span>
-                <span class="resumen-value">{{ usuariosAdmin }}</span>
-              </div>
-              <div class="resumen-item empleado">
-                <mat-icon>shopping_cart</mat-icon>
-                <span class="resumen-label">Gestor de Compras</span>
-                <span class="resumen-value">{{ usuariosGestorCompras }}</span>
-              </div>
-              <div class="resumen-item proveedor">
-                <mat-icon>business</mat-icon>
-                <span class="resumen-label">Administrador de Proveedor</span>
-                <span class="resumen-value">{{ usuariosAdminProveedor }}</span>
-              </div>
-              <div class="resumen-item auditor">
-                <mat-icon>analytics</mat-icon>
-                <span class="resumen-label">Auditor / Reportes</span>
-                <span class="resumen-value">{{ usuariosAuditor }}</span>
-              </div>
-            </div>
+            <span class="resumen-label">Administrador de Proveedor</span>
+            <span class="resumen-value">{{ usuariosAdminProveedor }}</span>
+          </div>
+          <div class="resumen-item auditor">
+            <mat-icon>analytics</mat-icon>
+            <span class="resumen-label">Auditor / Reportes</span>
+            <span class="resumen-value">{{ usuariosAuditor }}</span>
           </div>
         </div>
       </mat-card-content>
     </mat-card>
   </div>
 
-  <!-- Acciones rápidas -->
+  <!-- Acciones rápidas (SIN Gestionar Artículos) -->
   <h2 class="section-title">Acciones Rápidas</h2>
   <div class="actions-grid">
-
-    <mat-card class="action-card" routerLink="/admin/articulos">
-      <mat-card-content>
-        <div class="action-content">
-          <div class="action-icon-wrapper articulos">
-            <mat-icon>inventory_2</mat-icon>
-          </div>
-          <h3>Gestionar Artículos</h3>
-          <p>Crear, editar y eliminar artículos</p>
-          <button mat-raised-button color="primary">
-            <mat-icon>arrow_forward</mat-icon>
-            Ir
-          </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
 
     <mat-card class="action-card" routerLink="/admin/usuarios">
       <mat-card-content>
@@ -235,7 +147,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="action-card">
+    <mat-card class="action-card" routerLink="/admin/reportes">
       <mat-card-content>
         <div class="action-content">
           <div class="action-icon-wrapper reportes">

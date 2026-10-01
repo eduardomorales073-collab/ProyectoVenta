@@ -4,6 +4,8 @@ export interface Usuario {
   email: string;
   activo: boolean;
   id_Rol: number;
+  id_Proveedor?: number;       
+  id_Departamento?: number;    
 }
 
 export interface CreateUsuarioDTO {
@@ -12,13 +14,17 @@ export interface CreateUsuarioDTO {
   contrasena: string;
   activo: boolean;
   id_Rol: number;
+  id_Proveedor?: number;      
+  id_Departamento?: number;   
 }
 
 export interface UpdateUsuarioDTO {
   id: number;
   nombre: string;
   email: string;
-  contrasena?: string;   // opcional: solo si se cambia
+  contrasena?: string;
   activo: boolean;
   id_Rol: number;
+  id_Proveedor?: number;       
+  id_Departamento?: number;   
 }

@@ -81,3 +81,24 @@
   font-weight: 600;
   font-size: 0.75rem;
 }
+
+/* ===== ÍCONO DE URGENTE (parpadeante) ===== */
+.icon-urgente {
+  color: #dc2626;
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  animation: pulse-urgente 1.5s infinite;
+  vertical-align: middle;
+}
+
+@keyframes pulse-urgente {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.5; 
+    transform: scale(1.15);
+  }
+}

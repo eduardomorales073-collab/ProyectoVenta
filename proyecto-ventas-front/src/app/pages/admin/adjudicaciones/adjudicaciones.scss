@@ -74,3 +74,41 @@
   color: #ef4444;
   padding: 1rem;
 }
+
+/* ===== CHIPS POR ESTADO ===== */
+.chip-activa {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  font-weight: 600;
+}
+
+.chip-cancelada {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  font-weight: 600;
+}
+
+.chip-cerrada {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+  font-weight: 600;
+}
+
+.chip-pendiente {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  font-weight: 600;
+}
+
+.chip-default {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 600;
+}
+
+.chip-orden {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
