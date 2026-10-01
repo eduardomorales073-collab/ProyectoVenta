@@ -3,6 +3,7 @@ export interface Departamento {
   nombre: string;
   descripcion: string;
   id_Sucursal: number;
+  nombreSucursal?: string;
 }
 
 export interface CreateDepartamentoDTO {

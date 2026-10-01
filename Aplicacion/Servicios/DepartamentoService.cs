@@ -13,23 +13,24 @@ namespace Aplicacion.Servicios
     public class DepartamentoService : IDepartaentoService
     {
         private readonly DepartaRepositorio _departaRepositorio;
+        private readonly SucursalRepositorio _sucursalRepositorio;
         private readonly IMapper _mapper;
-        public DepartamentoService(DepartaRepositorio departaRepository, IMapper mapper)
+
+        public DepartamentoService(
+            DepartaRepositorio departaRepository,
+            SucursalRepositorio sucursalRepositorio,
+            IMapper mapper)
         {
             _mapper = mapper;
             _departaRepositorio = departaRepository;
-
+            _sucursalRepositorio = sucursalRepositorio;
         }
+
         public async Task AddAsync(CreateDepartamentoDTO departamento)
         {
-            // 1. Mapear el DTO a la entidad
             var nuevoDepartamento = _mapper.Map<Departamento>(departamento);
-
-            // 2. Calcular el siguiente id
             var todos = await _departaRepositorio.GetAllasync();
             nuevoDepartamento.id = todos.Any() ? todos.Max(d => d.id) + 1 : 1;
-
-            // 3. Guardar
             await _departaRepositorio.AddAsync(nuevoDepartamento);
         }
 
@@ -40,12 +41,37 @@ namespace Aplicacion.Servicios
 
         public async Task<List<DepartamentoDTO>> GetAllsync()
         {
-            return _mapper.Map<List<DepartamentoDTO>>(await _departaRepositorio.GetAllasync());
+            var departamentos = await _departaRepositorio.GetAllasync();
+            var sucursales = await _sucursalRepositorio.GetAllasync();
+
+            return departamentos.Select(d =>
+            {
+                var sucursal = sucursales.FirstOrDefault(s => s.id == d.id_Sucursal);
+                return new DepartamentoDTO(
+                    d.id,
+                    d.Nombre,           
+                    d.Descripcion,      
+                    d.id_Sucursal,
+                    sucursal?.Nombre    
+                );
+            }).ToList();
         }
 
         public async Task<DepartamentoDTO> GetByIdAsync(int id)
         {
-            return _mapper.Map<DepartamentoDTO>(await _departaRepositorio.GetAsync(id));
+            var departamento = await _departaRepositorio.GetAsync(id);
+            if (departamento == null) return null;
+
+            var sucursales = await _sucursalRepositorio.GetAllasync();
+            var sucursal = sucursales.FirstOrDefault(s => s.id == departamento.id_Sucursal);
+
+            return new DepartamentoDTO(
+                departamento.id,
+                departamento.Nombre,           
+                departamento.Descripcion,      
+                departamento.id_Sucursal,
+                sucursal?.Nombre               
+            );
         }
 
         public async Task UpdateAsync(UpdateDepartamentoDTO departamento)

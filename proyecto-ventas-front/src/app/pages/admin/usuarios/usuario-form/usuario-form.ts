@@ -196,4 +196,17 @@ export class UsuarioFormComponent implements OnInit {
   onCancelar(): void {
     this.cancelado.emit();
   }
+
+  // Helper para obtener la sucursal de un departamento
+nombreSucursalDeDepartamento(idDepartamento: number): string {
+  const depto = this.departamentos.find(d => d.id === idDepartamento);
+  return depto?.nombreSucursal || '';
+}
+
+// Helper para obtener un departamento formateado
+nombreDepartamentoCompleto(d: any): string {
+  return d.nombreSucursal 
+    ? `${d.nombre} — ${d.nombreSucursal}`
+    : d.nombre;
+}
 }

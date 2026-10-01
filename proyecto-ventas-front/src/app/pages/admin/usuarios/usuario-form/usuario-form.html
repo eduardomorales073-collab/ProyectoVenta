@@ -95,24 +95,29 @@
         </mat-error>
       </mat-form-field>
 
-      <!-- ⚠️ SELECTOR DINÁMICO: DEPARTAMENTO (GestorCompras o CreadorPedidos) -->
-      <mat-form-field appearance="outline" class="full-width campo-dinamico"
-                      *ngIf="mostrarSelectorDepartamento()">
-        <mat-label>Departamento</mat-label>
-        <mat-select formControlName="id_Departamento">
-          <mat-option [value]="null">
-            <em>Sin departamento asignado</em>
-          </mat-option>
-          <mat-option *ngFor="let d of departamentos" [value]="d.id">
-            {{ d.nombre }}
-          </mat-option>
-        </mat-select>
-        <mat-icon matPrefix>business_center</mat-icon>
-        <mat-hint>Filtra los pedidos que puede ver este usuario</mat-hint>
-        <mat-error *ngIf="form.get('id_Departamento')?.hasError('required')">
-          Debes seleccionar un departamento
-        </mat-error>
-      </mat-form-field>
+      <!-- SELECTOR DINÁMICO: DEPARTAMENTO -->
+<mat-form-field appearance="outline" class="full-width campo-dinamico"
+                *ngIf="mostrarSelectorDepartamento()">
+  <mat-label>Departamento</mat-label>
+  <mat-select formControlName="id_Departamento">
+    <mat-option [value]="null">
+      <em>Sin departamento asignado</em>
+    </mat-option>
+    <mat-option *ngFor="let d of departamentos" [value]="d.id">
+      {{ d.nombre }}
+      <span *ngIf="d.nombreSucursal" class="sucursal-inline">
+        — {{ d.nombreSucursal }}
+      </span>
+    </mat-option>
+  </mat-select>
+  <mat-icon matPrefix>business_center</mat-icon>
+  <mat-hint *ngIf="form.get('id_Departamento')?.value">
+    <strong>Sucursal:</strong> {{ nombreSucursalDeDepartamento(form.get('id_Departamento')?.value) }}
+  </mat-hint>
+  <mat-error *ngIf="form.get('id_Departamento')?.hasError('required')">
+    Debes seleccionar un departamento
+  </mat-error>
+</mat-form-field>
 
       <!-- Activo -->
       <div class="checkbox-container">

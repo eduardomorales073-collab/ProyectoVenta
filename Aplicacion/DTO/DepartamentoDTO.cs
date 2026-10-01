@@ -4,5 +4,11 @@ using System.Text;
 
 namespace Aplicacion.DTO
 {
-    public record DepartamentoDTO(int id, string nombre, string descripcion,int id_Sucursal);
+    public record DepartamentoDTO(
+        int id,
+        string nombre,
+        string descripcion,
+        int id_Sucursal,
+        string? nombreSucursal    
+    );
 }
