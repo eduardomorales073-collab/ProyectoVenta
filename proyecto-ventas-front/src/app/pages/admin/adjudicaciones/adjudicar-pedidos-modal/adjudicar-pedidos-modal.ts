@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Output, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,11 +16,13 @@ import { AdjudicacionService } from '../../../../services/adjudicacion.service';
 import { PedidoInternoService } from '../../../../services/pedido-interno.service';
 import { OfertaProveedorService } from '../../../../services/oferta-proveedor.service';
 import { ProveedorService } from '../../../../services/proveedor.service';
+import { OrdenCompraService, OrdenCompraConContadores } from '../../../../services/orden-compra.service';
 import { NotificacionService } from '../../../../services/notificacion';
 
 import { PedidoInterno } from '../../../../models/pedido-interno.model';
 import { Proveedor } from '../../../../models/proveedor.model';
 import { OfertaProveedor } from '../../../../models/oferta-proveedor.model';
+
 
 interface PedidoConOfertas {
   pedido: PedidoInterno;
@@ -47,10 +50,10 @@ interface PedidoConOfertas {
   styleUrl: './adjudicar-pedidos-modal.scss'
 })
 export class AdjudicarPedidosModalComponent implements OnInit {
+  @Input() ordenIdPreseleccionada: number | null = null; 
   @Output() cerrar = new EventEmitter<void>();
   @Output() adjudicado = new EventEmitter<void>();
 
-  // Datos
   ordenesConPedidos: number[] = [];
   ordenSeleccionada: number | null = null;
   pedidosConOfertas: PedidoConOfertas[] = [];
@@ -58,6 +61,7 @@ export class AdjudicarPedidosModalComponent implements OnInit {
   pedidos: PedidoInterno[] = [];
   proveedores: Proveedor[] = [];
   ofertas: OfertaProveedor[] = [];
+  ordenes: OrdenCompraConContadores[] = [];
 
   cargando = false;
   guardando = false;
@@ -67,6 +71,8 @@ export class AdjudicarPedidosModalComponent implements OnInit {
     private pedidoService: PedidoInternoService,
     private ofertaService: OfertaProveedorService,
     private proveedorService: ProveedorService,
+    private ordenService: OrdenCompraService,
+    private route: ActivatedRoute,
     private notificacion: NotificacionService,
     private cdr: ChangeDetectorRef
   ) { }
@@ -76,43 +82,74 @@ export class AdjudicarPedidosModalComponent implements OnInit {
   }
 
   cargarTodo(): void {
-    this.cargando = true;
+  this.cargando = true;
 
-    forkJoin({
-      pedidos: this.pedidoService.listar(),
-      ofertas: this.ofertaService.getAll(),
-      proveedores: this.proveedorService.listar()
-    }).subscribe({
-      next: (result) => {
-        this.pedidos = result.pedidos;
-        this.ofertas = result.ofertas;
-        this.proveedores = result.proveedores;
+  forkJoin({
+    pedidos: this.pedidoService.listar(),
+    ofertas: this.ofertaService.getAll(),
+    proveedores: this.proveedorService.listar(),
+    ordenes: this.ordenService.listarConContadores()
+  }).subscribe({
+    next: (result) => {
+      this.pedidos = result.pedidos;
+      this.ofertas = result.ofertas;
+      this.proveedores = result.proveedores;
+      this.ordenes = result.ordenes;
 
-        // Obtener las órdenes que tienen pedidos pendientes (sin adjudicar)
-        // ⚠️ Aquí filtramos pedidos que tienen ofertas y no están adjudicados
-        // Para simplificar, mostramos todos los pedidos que tengan ofertas
-        const pedidosConOfertas = this.pedidos.filter(p =>
-          this.ofertas.some(o => o.id_Pedido_Interno === p.id)
-        );
+      // ✅ Obtener pedidos CON OFERTAS pero SIN ADJUDICAR
+      const pedidosDisponibles = this.pedidos.filter(p =>
+        p.totalOfertas > 0 && !p.adjudicado && p.id_OrdenCompra
+      );
 
-        // Extraer las órdenes únicas
-        const ordenes = [...new Set(
-          pedidosConOfertas
-            .filter(p => p.id_OrdenCompra)
-            .map(p => p.id_OrdenCompra!)
-        )];
+      const ordenesUnicas = [...new Set(
+        pedidosDisponibles.map(p => p.id_OrdenCompra!)
+      )];
 
-        this.ordenesConPedidos = ordenes;
-        this.cargando = false;
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        this.notificacion.error(`Error al cargar datos: ${err.status}`);
-        this.cargando = false;
-        this.cdr.detectChanges();
+      this.ordenesConPedidos = ordenesUnicas.filter(idOrden => {
+        const orden = this.ordenes.find(o => o.id === idOrden);
+        if (!orden || orden.estado === 'Adjudicada' || orden.estado === 'Cancelada') {
+          return false;
+        }
+        const pedidosDeLaOrden = this.pedidos.filter(p => p.id_OrdenCompra === idOrden);
+        return pedidosDeLaOrden.some(p => !p.adjudicado && p.totalOfertas > 0);
+      });
+
+      this.cargando = false;
+      this.cdr.detectChanges();
+
+      // ✅ Preseleccionar: primero el @Input, luego el query param
+      const ordenIdQuery = this.ordenIdPreseleccionada;
+
+      if (ordenIdQuery && this.ordenesConPedidos.includes(ordenIdQuery)) {
+        setTimeout(() => {
+          this.ordenSeleccionada = ordenIdQuery;
+          this.onOrdenSeleccionada();
+          this.cdr.detectChanges();
+        }, 300);
+      } else {
+        // Fallback: leer query param
+        this.route.queryParams.subscribe(params => {
+          const ordenId = params['ordenId'];
+          if (ordenId) {
+            const id = parseInt(ordenId, 10);
+            if (!isNaN(id) && this.ordenesConPedidos.includes(id)) {
+              setTimeout(() => {
+                this.ordenSeleccionada = id;
+                this.onOrdenSeleccionada();
+                this.cdr.detectChanges();
+              }, 300);
+            }
+          }
+        });
       }
-    });
-  }
+    },
+    error: (err: any) => {
+      this.notificacion.error(`Error al cargar datos: ${err.status}`);
+      this.cargando = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   onOrdenSeleccionada(): void {
     if (!this.ordenSeleccionada) {
@@ -120,7 +157,6 @@ export class AdjudicarPedidosModalComponent implements OnInit {
       return;
     }
 
-    // Filtrar pedidos de esta orden que tengan ofertas
     const pedidosDeLaOrden = this.pedidos.filter(
       p => p.id_OrdenCompra === this.ordenSeleccionada
     );
@@ -131,20 +167,21 @@ export class AdjudicarPedidosModalComponent implements OnInit {
           o => o.id_Pedido_Interno === pedido.id
         );
 
-        // Ordenar ofertas por precio (menor primero)
+        // Ordenar por precio (menor primero)
         ofertasDelPedido.sort((a, b) => a.precio - b.precio);
 
-        // Auto-seleccionar la mejor oferta (menor precio)
         const mejorOferta = ofertasDelPedido[0];
 
         return {
           pedido,
           ofertas: ofertasDelPedido,
-          seleccionado: !!mejorOferta,          // Solo si tiene ofertas
+          // ❌ NO marcar como seleccionado si ya está adjudicado
+          seleccionado: !!mejorOferta && !pedido.adjudicado,
           id_ProveedorSeleccionado: mejorOferta ? mejorOferta.id_Proveedor : null
         };
       })
-      .filter(p => p.ofertas.length > 0);  // Solo pedidos con ofertas
+      // ✅ Excluir pedidos sin ofertas Y pedidos ya adjudicados
+      .filter(p => p.ofertas.length > 0 && !p.pedido.adjudicado);
 
     this.cdr.detectChanges();
   }

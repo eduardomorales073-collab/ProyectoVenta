@@ -1,17 +1,34 @@
 <div class="container">
   <div class="header-actions">
     <h2>Lista de Órdenes de Compra</h2>
-    <button mat-raised-button color="primary" (click)="abrirFormulario(null)">
+    <button mat-raised-button color="primary" (click)="abrirFormulario(null)" *ngIf="puedeCrearOrden()">
       <mat-icon>add</mat-icon>
       Nueva Orden
     </button>
   </div>
 
-  <mat-form-field appearance="outline" class="filtro">
-    <mat-label>Buscar orden</mat-label>
-    <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, descripción, tipo, estado...">
-    <mat-icon matPrefix>search</mat-icon>
-  </mat-form-field>
+  <div class="filtros-container">
+    <!-- Búsqueda -->
+    <mat-form-field appearance="outline" class="filtro-busqueda">
+      <mat-label>Buscar orden</mat-label>
+      <input matInput (keyup)="aplicarFiltro($event)" placeholder="ID, descripción, tipo...">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <!-- Filtro por estado -->
+    <mat-form-field appearance="outline" class="filtro-estado">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="estadoFiltro" (selectionChange)="aplicarFiltroEstado()">
+        <mat-option *ngFor="let estado of estadosDisponibles" [value]="estado">
+          <div class="opcion-estado">
+            <span>{{ estado }}</span>
+            <span class="contador">({{ contarPorEstado(estado) }})</span>
+          </div>
+        </mat-option>
+      </mat-select>
+      <mat-icon matPrefix>filter_alt</mat-icon>
+    </mat-form-field>
+  </div>
 
   <p *ngIf="cargando">Cargando...</p>
   <p *ngIf="error" class="error">{{ error }}</p>
@@ -19,19 +36,47 @@
   <div class="tabla-container">
     <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
 
-      <!-- Columna ID -->
+      <!-- ID -->
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
         <td mat-cell *matCellDef="let o">{{ o.id }}</td>
       </ng-container>
 
-      <!-- Columna Descripción -->
+      <!-- Descripción -->
       <ng-container matColumnDef="descripcion">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción</th>
         <td mat-cell *matCellDef="let o">{{ o.descripcion }}</td>
       </ng-container>
 
-      <!-- Columna Fecha Creación -->
+      <!-- Sucursal -->
+      <ng-container matColumnDef="sucursal">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Sucursal</th>
+        <td mat-cell *matCellDef="let o">
+          <mat-chip class="chip-sucursal" *ngIf="o.nombreSucursal; else sinSucursal">
+            <mat-icon class="icon-chip">business</mat-icon>
+            {{ o.nombreSucursal }}
+          </mat-chip>
+          <ng-template #sinSucursal>
+            <span class="sin-dato">—</span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Departamento -->
+      <ng-container matColumnDef="departamento">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Departamento</th>
+        <td mat-cell *matCellDef="let o">
+          <mat-chip class="chip-departamento" *ngIf="o.nombreDepartamento; else sinDepto">
+            <mat-icon class="icon-chip">business_center</mat-icon>
+            {{ o.nombreDepartamento }}
+          </mat-chip>
+          <ng-template #sinDepto>
+            <span class="sin-dato">—</span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Fecha Creación -->
       <ng-container matColumnDef="fecha_Creacion">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Creación</th>
         <td mat-cell *matCellDef="let o">
@@ -40,7 +85,7 @@
         </td>
       </ng-container>
 
-      <!-- Columna Fecha Límite -->
+      <!-- Fecha Límite -->
       <ng-container matColumnDef="fecha_Limite">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Límite</th>
         <td mat-cell *matCellDef="let o">
@@ -50,7 +95,7 @@
         </td>
       </ng-container>
 
-      <!-- Columna Tipo de Orden -->
+      <!-- Tipo de Orden -->
       <ng-container matColumnDef="tipo_Orden">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
         <td mat-cell *matCellDef="let o">
@@ -61,33 +106,23 @@
         </td>
       </ng-container>
 
-      <!-- Columna Pedidos -->
+      <!-- Pedidos -->
       <ng-container matColumnDef="pedidos">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Pedidos</th>
         <td mat-cell *matCellDef="let o">
           <div class="pedidos-info">
-            <span class="badge-total" matTooltip="Total de pedidos">
-              {{ o.totalPedidos }}
-            </span>
+            <span class="badge-total" matTooltip="Total de pedidos">{{ o.totalPedidos }}</span>
             <mat-icon class="icon-mini success" *ngIf="o.pedidosAdjudicados > 0"
-                      matTooltip="Adjudicados: {{ o.pedidosAdjudicados }}">
-              check_circle
-            </mat-icon>
-            <span class="adjudicados" *ngIf="o.pedidosAdjudicados > 0">
-              {{ o.pedidosAdjudicados }}
-            </span>
+                      matTooltip="Adjudicados: {{ o.pedidosAdjudicados }}">check_circle</mat-icon>
+            <span class="adjudicados" *ngIf="o.pedidosAdjudicados > 0">{{ o.pedidosAdjudicados }}</span>
             <mat-icon class="icon-mini warning" *ngIf="o.pedidosPendientes > 0"
-                      matTooltip="Pendientes: {{ o.pedidosPendientes }}">
-              pending
-            </mat-icon>
-            <span class="pendientes" *ngIf="o.pedidosPendientes > 0">
-              {{ o.pedidosPendientes }}
-            </span>
+                      matTooltip="Pendientes: {{ o.pedidosPendientes }}">pending</mat-icon>
+            <span class="pendientes" *ngIf="o.pedidosPendientes > 0">{{ o.pedidosPendientes }}</span>
           </div>
         </td>
       </ng-container>
 
-      <!-- Columna Estado -->
+      <!-- Estado -->
       <ng-container matColumnDef="estado">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
         <td mat-cell *matCellDef="let o">
@@ -98,17 +133,46 @@
         </td>
       </ng-container>
 
-      <!-- Columna Acciones -->
+      <!-- Acciones -->
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let o">
-          <button mat-icon-button color="primary" (click)="verPedidos(o)" matTooltip="Ver pedidos">
+          <!-- Ver pedidos (solo Admin y Gestor) -->
+          <button mat-icon-button color="primary"
+                  *ngIf="puedeVerPedidos()"
+                  (click)="verPedidos(o)"
+                  matTooltip="Ver pedidos">
             <mat-icon>visibility</mat-icon>
           </button>
-          <button mat-icon-button color="accent" (click)="abrirFormulario(o)" matTooltip="Editar">
+
+          <!-- Aprobar (Borrador → Aprobada) -->
+          <button mat-icon-button color="accent" *ngIf="puedeAprobar(o)"
+                  (click)="aprobarOrden(o)" matTooltip="Aprobar orden">
+            <mat-icon>verified</mat-icon>
+          </button>
+
+          <!-- Cerrar (Publicada → Adjudicada) -->
+          <button mat-icon-button color="primary" *ngIf="puedeCerrar(o)"
+                  (click)="cerrarOrden(o)"
+                  matTooltip="Cerrar orden (todos los pedidos adjudicados)">
+            <mat-icon>done_all</mat-icon>
+          </button>
+
+          <!-- Editar -->
+          <button mat-icon-button color="accent" (click)="abrirFormulario(o)"
+                  *ngIf="puedeEditarOrden(o)" matTooltip="Editar">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="confirmarEliminar(o)" matTooltip="Eliminar">
+
+          <!-- Cancelar -->
+          <button mat-icon-button color="warn" *ngIf="puedeCancelar(o)"
+                  (click)="cancelarOrden(o)" matTooltip="Cancelar orden">
+            <mat-icon>cancel</mat-icon>
+          </button>
+
+          <!-- Eliminar -->
+          <button mat-icon-button color="warn" (click)="confirmarEliminar(o)"
+                  *ngIf="puedeEliminarOrden()" matTooltip="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>
         </td>
@@ -123,14 +187,15 @@
   </div>
 </div>
 
+<!-- Modal de formulario -->
 <app-orden-compra-form *ngIf="mostrarFormulario"
                        [orden]="ordenSeleccionada"
                        (guardado)="onGuardado()"
                        (cancelado)="cerrarFormulario()">
 </app-orden-compra-form>
 
-<app-pedidos-de-orden-modal
-  *ngIf="mostrarPedidos && ordenSeleccionada"
+<!-- Modal de pedidos -->
+<app-pedidos-de-orden-modal *ngIf="mostrarPedidos && ordenSeleccionada"
   [orden]="ordenSeleccionada"
   (cerrar)="cerrarPedidos()"
   (pedidosActualizados)="onPedidosActualizados()"

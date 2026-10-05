@@ -106,6 +106,7 @@
 <!-- Modal de ADJUDICAR PEDIDOS (nuevo flujo) -->
 <app-adjudicar-pedidos-modal
   *ngIf="mostrarAdjudicar"
+  [ordenIdPreseleccionada]="ordenIdPreseleccionada"
   (cerrar)="cerrarAdjudicar()"
   (adjudicado)="onAdjudicado()">
 </app-adjudicar-pedidos-modal>

@@ -93,11 +93,16 @@
       <button mat-button (click)="onCerrar()">
         Cerrar
       </button>
-      <button mat-raised-button color="primary" (click)="onCrearPedido()">
-        <mat-icon>add</mat-icon>
-        Agregar Pedido
-      </button>
+      <button mat-raised-button color="primary" 
+        *ngIf="puedeAgregarPedidos()"
+        (click)="onCrearPedido()">
+  <mat-icon>add</mat-icon>
+  Agregar Pedido
+</button>
     </div>
+    <span *ngIf="!puedeAgregarPedidos()" class="sin-permiso">
+  Solo el Gestor de Compras puede agregar pedidos.
+</span>
 
   </div>
 </div>

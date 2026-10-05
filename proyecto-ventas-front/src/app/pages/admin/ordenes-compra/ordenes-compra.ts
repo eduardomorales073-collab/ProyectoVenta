@@ -11,10 +11,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatBadgeModule } from '@angular/material/badge';
+import { MatSelectModule } from '@angular/material/select';
 import { OrdenCompraService, OrdenCompraConContadores } from '../../../services/orden-compra.service';
 import { TipoOrdenService } from '../../../services/tipo-orden.service';
 import { TipoOrden } from '../../../models/tipo-orden.model';
+import { AuthService } from '../../../services/auth.service';
 import { OrdenCompraFormComponent } from './orden-compra-form/orden-compra-form';
 import { PedidosDeOrdenModalComponent } from './pedidos-de-orden-modal/pedidos-de-orden-modal';
 import { ConfirmService } from '../../../services/confirm';
@@ -26,6 +27,7 @@ import { NotificacionService } from '../../../services/notificacion';
   imports: [
     CommonModule,
     FormsModule,
+    MatSelectModule,
     OrdenCompraFormComponent,
     PedidosDeOrdenModalComponent,
     MatTableModule,
@@ -36,15 +38,33 @@ import { NotificacionService } from '../../../services/notificacion';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    MatChipsModule,
-    MatBadgeModule
+    MatChipsModule
   ],
   templateUrl: './ordenes-compra.html',
   styleUrl: './ordenes-compra.scss'
 })
 export class OrdenesCompraComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'descripcion', 'fecha_Creacion', 'fecha_Limite', 'tipo_Orden', 'pedidos', 'estado', 'acciones'];
+  // ✅ Filtro por estado
+  estadoFiltro: string = 'Todas';
+  estadosDisponibles: string[] = ['Todas', 'Borrador', 'Aprobada', 'Publicada', 'Adjudicada', 'Cancelada'];
+
+  displayedColumns: string[] = [
+    'id',
+    'descripcion',
+    'fecha_Creacion',
+    'fecha_Limite',
+    'tipo_Orden',
+    'pedidos',
+    'estado',
+    'departamento',
+    'sucursal',
+    'acciones'
+  ];
+
   dataSource = new MatTableDataSource<OrdenCompraConContadores>([]);
+
+  // ✅ Guardar todas las órdenes sin filtrar (para el filtro de estado)
+  todasLasOrdenes: OrdenCompraConContadores[] = [];
 
   cargando = false;
   error = '';
@@ -60,6 +80,7 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
   constructor(
     private ordenService: OrdenCompraService,
     private tipoOrdenService: TipoOrdenService,
+    private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
@@ -100,7 +121,10 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     this.error = '';
     this.ordenService.listarConContadores().subscribe({
       next: (data) => {
-        this.dataSource.data = data;
+        // ✅ Guardar todas las órdenes sin filtrar
+        this.todasLasOrdenes = data;
+        // ✅ Aplicar el filtro de estado actual
+        this.aplicarFiltroEstado();
         this.cargando = false;
         this.cdr.detectChanges();
       },
@@ -110,6 +134,26 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // ✅ Aplicar filtro por estado
+  aplicarFiltroEstado(): void {
+    if (this.estadoFiltro === 'Todas') {
+      this.dataSource.data = this.todasLasOrdenes;
+    } else {
+      this.dataSource.data = this.todasLasOrdenes.filter(
+        (o: OrdenCompraConContadores) => o.estado === this.estadoFiltro
+      );
+    }
+    this.cdr.detectChanges();
+  }
+
+  // ✅ Contar órdenes por estado
+  contarPorEstado(estado: string): number {
+    if (estado === 'Todas') return this.todasLasOrdenes.length;
+    return this.todasLasOrdenes.filter(
+      (o: OrdenCompraConContadores) => o.estado === estado
+    ).length;
   }
 
   aplicarFiltro(event: Event): void {
@@ -153,7 +197,11 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
 
   irACrearPedido(idOrden: number): void {
     this.cerrarPedidos();
-    this.router.navigate(['/admin/pedidos-internos'], { queryParams: { ordenId: idOrden } });
+    if (this.authService.esAdmin()) {
+      this.router.navigate(['/admin/pedidos-internos'], { queryParams: { ordenId: idOrden } });
+    } else {
+      this.router.navigate(['/empleado/pedidos'], { queryParams: { ordenId: idOrden } });
+    }
   }
 
   confirmarEliminar(orden: OrdenCompraConContadores): void {
@@ -172,11 +220,112 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ===== HELPERS PARA EL TIPO DE ORDEN =====
+  // ==================== ACCIONES DE ESTADO ====================
+  aprobarOrden(orden: OrdenCompraConContadores): void {
+    this.confirm.aceptar(
+      'Aprobar orden',
+      `¿Aprobar la orden #${orden.id}? Después podrás agregar pedidos y publicarla.`
+    ).subscribe((confirmado: boolean) => {
+      if (!confirmado) return;
+
+      this.ordenService.aprobar(orden.id).subscribe({
+        next: () => {
+          this.notificacion.exito(`Orden #${orden.id} aprobada correctamente`);
+          this.cargar();
+        },
+        error: (err: any) => {
+          this.notificacion.error(`Error: ${err.error?.mensaje || err.status} ${err.statusText}`);
+        }
+      });
+    });
+  }
+
+  
+
+  cerrarOrden(orden: OrdenCompraConContadores): void {
+    this.confirm.aceptar(
+      'Cerrar orden',
+      `¿Cerrar la orden #${orden.id}? Ya no se podrán agregar pedidos.`
+    ).subscribe((confirmado: boolean) => {
+      if (!confirmado) return;
+
+      this.ordenService.cerrar(orden.id).subscribe({
+        next: () => {
+          this.notificacion.exito(`Orden #${orden.id} cerrada correctamente`);
+          this.cargar();
+        },
+        error: (err: any) => {
+          this.notificacion.error(`Error: ${err.error?.mensaje || err.status} ${err.statusText}`);
+        }
+      });
+    });
+  }
+
+  cancelarOrden(orden: OrdenCompraConContadores): void {
+    this.confirm.aceptar(
+      'Cancelar orden',
+      `¿Cancelar la orden #${orden.id}? Esta acción no se puede deshacer.`
+    ).subscribe((confirmado: boolean) => {
+      if (!confirmado) return;
+
+      this.ordenService.cancelar(orden.id).subscribe({
+        next: () => {
+          this.notificacion.exito(`Orden #${orden.id} cancelada correctamente`);
+          this.cargar();
+        },
+        error: (err: any) => {
+          this.notificacion.error(`Error: ${err.error?.mensaje || err.status} ${err.statusText}`);
+        }
+      });
+    });
+  }
+
+  // ==================== PERMISOS ====================
+  puedeCrearOrden(): boolean {
+    return this.authService.esAdmin()
+        || this.authService.esGestorCompras()
+        || this.authService.esCreadorPedidos();
+  }
+
+  puedeEditarOrden(orden: OrdenCompraConContadores): boolean {
+    if (this.authService.esAdmin()) return true;
+    if (this.authService.esGestorCompras() && orden.estado !== 'Adjudicada' && orden.estado !== 'Cancelada') return true;
+    if (this.authService.esCreadorPedidos() && orden.estado === 'Borrador') return true;
+    return false;
+  }
+
+  puedeEliminarOrden(): boolean {
+    return this.authService.esAdmin();
+  }
+
+  puedeVerPedidos(): boolean {
+    return this.authService.esAdmin() || this.authService.esGestorCompras();
+  }
+
+  puedeAprobar(orden: OrdenCompraConContadores): boolean {
+    return (this.authService.esAdmin() || this.authService.esGestorCompras())
+           && orden.estado === 'Borrador';
+  }
+
+  
+
+  puedeCerrar(orden: OrdenCompraConContadores): boolean {
+    return (this.authService.esAdmin() || this.authService.esGestorCompras())
+           && orden.estado === 'Publicada'
+           && orden.pedidosPendientes === 0
+           && orden.totalPedidos > 0;
+  }
+
+  puedeCancelar(orden: OrdenCompraConContadores): boolean {
+    return this.authService.esAdmin()
+           && orden.estado !== 'Cancelada'
+           && orden.estado !== 'Adjudicada';
+  }
+
+  // ==================== HELPERS PARA EL TIPO DE ORDEN ====================
   nombreTipo(idTipo: number): string {
     const tipo = this.tiposOrden.find(t => t.id === idTipo);
     if (!tipo) return `Tipo #${idTipo}`;
-
     const partes: string[] = [];
     if (tipo.grande) partes.push('Grande');
     if (tipo.urgente) partes.push('Urgente');
@@ -199,12 +348,26 @@ export class OrdenesCompraComponent implements OnInit, AfterViewInit {
     return 'label';
   }
 
-  // ===== HELPERS PARA EL ESTADO =====
+  // ==================== HELPERS PARA EL ESTADO ====================
   claseEstado(estado: string): string {
-    return estado === 'Cerrada' ? 'chip-cerrada' : 'chip-abierta';
+    switch (estado) {
+      case 'Borrador': return 'chip-borrador';
+      case 'Aprobada': return 'chip-aprobada';
+      case 'Publicada': return 'chip-publicada';
+      case 'Adjudicada': return 'chip-adjudicada';
+      case 'Cancelada': return 'chip-cancelada';
+      default: return 'chip-default';
+    }
   }
 
   iconoEstado(estado: string): string {
-    return estado === 'Cerrada' ? 'check_circle' : 'schedule';
+    switch (estado) {
+      case 'Borrador': return 'edit_note';
+      case 'Aprobada': return 'verified';
+      case 'Publicada': return 'public';
+      case 'Adjudicada': return 'check_circle';
+      case 'Cancelada': return 'cancel';
+      default: return 'label';
+    }
   }
 }

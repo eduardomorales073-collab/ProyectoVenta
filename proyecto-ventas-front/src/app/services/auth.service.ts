@@ -137,7 +137,7 @@ export class AuthService {
 
   // --- PEDIDOS ---
   puedeCrearPedidos(): boolean {
-    return this.esAdmin() || this.esGestorCompras() || this.esCreadorPedidos();
+    return this.esAdmin() || this.esGestorCompras();
   }
 
   puedeEditarPedidos(): boolean {

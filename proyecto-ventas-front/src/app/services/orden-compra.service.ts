@@ -10,6 +10,8 @@ export interface OrdenCompra {
   fecha_Limite: string;
   fecha_limite_ofertas: string | null;
   tipo_Orden: number;
+  estado: string;
+  id_UsuarioCreador: number | null;
 }
 
 export interface OrdenCompraConContadores {
@@ -22,7 +24,10 @@ export interface OrdenCompraConContadores {
   totalPedidos: number;
   pedidosAdjudicados: number;
   pedidosPendientes: number;
-  estado: string;  // "Abierta" | "Cerrada"
+  estado: string;
+  id_UsuarioCreador: number | null;
+  nombreSucursal: string | null;         
+  nombreDepartamento: string | null;
 }
 
 export interface PedidoDeOrden {
@@ -93,4 +98,21 @@ export class OrdenCompraService {
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
+
+  // ===== NUEVOS MÉTODOS =====
+  publicar(id: number): Observable<any> {
+    return this.http.put<any>(`${this.url}/${id}/publicar`, {});
+  }
+
+  cerrar(id: number): Observable<any> {
+    return this.http.put<any>(`${this.url}/${id}/cerrar`, {});
+  }
+
+  cancelar(id: number): Observable<any> {
+    return this.http.put<any>(`${this.url}/${id}/cancelar`, {});
+  }
+
+  aprobar(id: number): Observable<any> {
+  return this.http.put<any>(`${this.url}/${id}/aprobar`, {});
+}
 }

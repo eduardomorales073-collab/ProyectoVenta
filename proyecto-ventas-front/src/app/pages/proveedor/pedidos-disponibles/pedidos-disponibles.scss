@@ -111,3 +111,242 @@ th {
     margin-right: 0.25rem;
   }
 }
+
+/* ===== ARTÍCULOS ===== */
+.articulos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+}
+
+.articulo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+
+  .icon-mini {
+    color: #8b5cf6;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  .cantidad-badge-sm {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-weight: 700;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .articulo-nombre {
+    color: #1e293b;
+    line-height: 1.2;
+  }
+}
+
+/* ===== OBSERVACIONES ===== */
+.observaciones-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #475569;
+  font-size: 0.85rem;
+  font-style: italic;
+  cursor: help;
+  max-width: 200px;
+}
+
+.sin-dato {
+  color: #cbd5e1;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* ===== COMPETENCIA ===== */
+.competencia-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .chip-competencia {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    font-weight: 600;
+    font-size: 0.75rem;
+    width: fit-content;
+  }
+
+  .precio-min {
+    font-size: 0.75rem;
+    color: #059669;
+    font-weight: 700;
+  }
+}
+
+.sin-competencia {
+  color: #10b981;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* ===== ARTÍCULOS ===== */
+.articulos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+}
+
+.articulo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+
+  .icon-mini {
+    color: #8b5cf6;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  .cantidad-badge-sm {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-weight: 700;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .articulo-nombre {
+    color: #1e293b;
+    line-height: 1.2;
+  }
+}
+
+/* ===== OBSERVACIONES ===== */
+.observaciones-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #475569;
+  font-size: 0.85rem;
+  font-style: italic;
+  cursor: help;
+  max-width: 200px;
+}
+
+.sin-dato {
+  color: #cbd5e1;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.chip-ya-oferto {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  font-weight: 600;
+}
+
+/* ===== MI OFERTA ===== */
+.mi-oferta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .precio-propio {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.95rem;
+  }
+
+  .chip-ganando {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+    font-weight: 600;
+    font-size: 0.7rem;
+    width: fit-content;
+  }
+
+  .chip-perdiendo {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    font-weight: 600;
+    font-size: 0.7rem;
+    width: fit-content;
+  }
+}
+
+/* ===== ALERTA PROVEEDOR RELACIONADO ===== */
+.alert-relacionado {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+
+  .icon-relacionado {
+    color: #d97706;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .relacionados-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    strong {
+      color: #92400e;
+      font-size: 0.75rem;
+    }
+  }
+
+  .relacionado-item {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.7rem;
+
+    .nombre-rel {
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .tipo-rel {
+      background: #fde68a;
+      color: #78350f;
+      padding: 0.05rem 0.3rem;
+      border-radius: 0.2rem;
+      font-size: 0.65rem;
+      font-style: italic;
+    }
+
+    .precio-rel {
+      color: #dc2626;
+      font-weight: 700;
+      margin-left: auto;
+    }
+  }
+}

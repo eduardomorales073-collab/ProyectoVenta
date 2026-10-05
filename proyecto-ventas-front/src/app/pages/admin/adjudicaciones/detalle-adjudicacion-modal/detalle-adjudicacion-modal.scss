@@ -159,3 +159,87 @@
     color: #64748b;
   }
 }
+
+/* ===== CELDA DE PROVEEDOR CON RELACIONES ===== */
+.proveedor-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.relaciones-list {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.5rem 0.75rem;
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  max-width: 300px;
+
+  .icon-rel {
+    color: #d97706;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .relaciones-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .rel-label {
+      color: #92400e;
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .rel-item {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      flex-wrap: wrap;
+
+      .rel-nombre {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.75rem;
+      }
+
+      .rel-tipo {
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        font-style: italic;
+      }
+
+      .rel-socio {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .rel-distribuidor {
+        background: #fde68a;
+        color: #92400e;
+      }
+
+      .rel-colaborador {
+        background: #e9d5ff;
+        color: #6b21a8;
+      }
+
+      .rel-default {
+        background: #f1f5f9;
+        color: #475569;
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@
     <mat-card 
       *ngFor="let r of reportes" 
       class="reporte-card" 
-      (click)="navegar('/admin/reportes/jasper/' + r.id)">
+      (click)="navegar(r)">
       <mat-card-content>
         <div class="card-icon" [class]="r.color">
           <mat-icon>{{ r.icono }}</mat-icon>
@@ -22,7 +22,7 @@
           mat-button 
           color="primary" 
           class="card-action" 
-          (click)="navegar('/admin/reportes/jasper/' + r.id); $event.stopPropagation()">
+          (click)="navegar(r); $event.stopPropagation()">
           Ver reporte
           <mat-icon>arrow_forward</mat-icon>
         </button>

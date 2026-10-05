@@ -150,6 +150,10 @@
           <mat-icon>compare_arrows</mat-icon>
           <span>Ofertas por Orden</span>
         </button>
+        <button mat-menu-item routerLink="/empleado/reportes">
+  <mat-icon>assessment</mat-icon>
+  <span>Reportes Jasper</span>
+</button>
         <button mat-menu-item routerLink="/empleado/reportes/gasto-departamental">
           <mat-icon>account_balance</mat-icon>
           <span>Gasto Departamental</span>
@@ -166,12 +170,16 @@
     </ng-container>
 
     <!-- ===== CREADOR DE PEDIDOS ===== -->
-    <ng-container *ngIf="esCreadorPedidos">
-      <a mat-button routerLink="/creador/pedidos" routerLinkActive="active-link">
-        <mat-icon>assignment</mat-icon>
-        Mis Pedidos
-      </a>
-    </ng-container>
+<ng-container *ngIf="esCreadorPedidos">
+  <a mat-button routerLink="/creador/ordenes-compra" routerLinkActive="active-link">
+    <mat-icon>receipt_long</mat-icon>
+    Mis Órdenes de Compra
+  </a>
+  <a mat-button routerLink="/creador/pedidos" routerLinkActive="active-link">
+    <mat-icon>assignment</mat-icon>
+    Mis Pedidos
+  </a>
+</ng-container>
 
     <!-- ===== PROVEEDOR (Admin de Proveedor) ===== -->
     <ng-container *ngIf="esProveedor">
@@ -191,15 +199,15 @@
 
     <!-- ===== AUDITOR ===== -->
     <ng-container *ngIf="esAuditor">
-      <a mat-button routerLink="/auditor/reportes" routerLinkActive="active-link">
-        <mat-icon>analytics</mat-icon>
-        Reportes
-      </a>
-      <a mat-button routerLink="/auditor/auditoria" routerLinkActive="active-link">
-        <mat-icon>history</mat-icon>
-        Auditoría
-      </a>
-    </ng-container>
+  <a mat-button routerLink="/auditor/reportes" routerLinkActive="active-link">
+    <mat-icon>analytics</mat-icon>
+    Reportes
+  </a>
+  <a mat-button routerLink="/auditor/auditoria" routerLinkActive="active-link">
+    <mat-icon>history</mat-icon>
+    Auditoría
+  </a>
+</ng-container>
 
   </nav>
 

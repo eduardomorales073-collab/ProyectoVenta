@@ -18,11 +18,15 @@ namespace Aplicacion.Servicios
         private readonly OrdComRepositorio _ordenCompraRepositorio;
         private readonly DepartaRepositorio _departamentoRepositorio;
         private readonly SucursalRepositorio _sucursalRepositorio;
-        private readonly IPublishEndpoint _publishEndpoint;
-
-        private readonly OferProvRepositorio _ofertaRepositorio;         
-        private readonly DetaAdjRepositorio _detalleAdjRepositorio;      
+        private readonly OferProvRepositorio _ofertaRepositorio;
+        private readonly DetaAdjRepositorio _detalleAdjRepositorio;
         private readonly ProveedorRepositorio _proveedorRepositorio;
+        private readonly DetaPedRepositorio _detallePedidoRepositorio;
+        private readonly ArticuRepositorio _articuloRepositorio;
+        private readonly ProveArtRepositorio _proveArtRepositorio;
+        private readonly ProveRubRepositorio _proveRubRepositorio;
+        private readonly RelacionRepositorio _relacionRepositorio;
+        private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
         public PedidoInternoService(
@@ -30,9 +34,14 @@ namespace Aplicacion.Servicios
             OrdComRepositorio ordenCompraRepositorio,
             DepartaRepositorio departamentoRepositorio,
             SucursalRepositorio sucursalRepositorio,
-            OferProvRepositorio ofertaRepositorio,                        
+            OferProvRepositorio ofertaRepositorio,
             DetaAdjRepositorio detalleAdjRepositorio,
             ProveedorRepositorio proveedorRepositorio,
+            DetaPedRepositorio detallePedidoRepositorio,
+            ArticuRepositorio articuloRepositorio,
+            ProveArtRepositorio proveArtRepositorio,
+            ProveRubRepositorio proveRubRepositorio,
+            RelacionRepositorio relacionRepositorio,
             IPublishEndpoint publishEndpoint,
             IMapper mapper)
         {
@@ -41,12 +50,18 @@ namespace Aplicacion.Servicios
             _ordenCompraRepositorio = ordenCompraRepositorio;
             _departamentoRepositorio = departamentoRepositorio;
             _sucursalRepositorio = sucursalRepositorio;
-            _ofertaRepositorio = ofertaRepositorio;                       
-            _detalleAdjRepositorio = detalleAdjRepositorio;                
+            _ofertaRepositorio = ofertaRepositorio;
+            _detalleAdjRepositorio = detalleAdjRepositorio;
             _proveedorRepositorio = proveedorRepositorio;
+            _detallePedidoRepositorio = detallePedidoRepositorio;
+            _articuloRepositorio = articuloRepositorio;
+            _proveArtRepositorio = proveArtRepositorio;
+            _proveRubRepositorio = proveRubRepositorio;
+            _relacionRepositorio = relacionRepositorio;
             _publishEndpoint = publishEndpoint;
         }
 
+        // ==================== ADD (CREATE) ====================
         public async Task AddAsync(CreatePedidoInternoDTO pedido)
         {
             // ===== REGLA DE NEGOCIO 1 =====
@@ -74,6 +89,7 @@ namespace Aplicacion.Servicios
             var todos = await _pedidoInternoRepositorio.GetAllasync();
             var nuevoPedido = _mapper.Map<Pedido_Interno>(pedido);
             nuevoPedido.id = todos.Any() ? todos.Max(p => p.id) + 1 : 1;
+            nuevoPedido.Observaciones = pedido.Observaciones;
 
             if (string.IsNullOrEmpty(nuevoPedido.codigo))
             {
@@ -86,12 +102,35 @@ namespace Aplicacion.Servicios
                 nuevoPedido.cantidad = 1;
             }
 
-            // ✅ FECHA INGRESO AUTOMÁTICA
             nuevoPedido.Fecha_Ingreso = DateTime.Now;
 
-            // ✅ El campo "urgente" se mapea automáticamente desde el DTO
-
             await _pedidoInternoRepositorio.AddAsync(nuevoPedido);
+
+            // ✅ GUARDAR LOS ARTÍCULOS DEL PEDIDO
+            if (pedido.Articulos != null && pedido.Articulos.Any())
+            {
+                foreach (var art in pedido.Articulos)
+                {
+                    var detalle = new Detalle_Pedido
+                    {
+                        id_Pedido = nuevoPedido.id,
+                        id_Articulo = art.id_Articulo,
+                        Cantidad = art.Cantidad
+                    };
+                    await _detallePedidoRepositorio.AddAsync(detalle);
+                }
+            }
+
+            // ✅ PUBLICAR AUTOMÁTICAMENTE LA ORDEN (Aprobada → Publicada)
+            if (pedido.id_OrdenCompra.HasValue)
+            {
+                var ordenActualizar = await _ordenCompraRepositorio.GetAsync(pedido.id_OrdenCompra.Value);
+                if (ordenActualizar != null && ordenActualizar.Estado == "Aprobada")
+                {
+                    ordenActualizar.Estado = "Publicada";
+                    await _ordenCompraRepositorio.UpdateAsync(ordenActualizar);
+                }
+            }
 
             await _publishEndpoint.Publish(new PedidoCreado(
                 PedidoId: nuevoPedido.id,
@@ -103,6 +142,7 @@ namespace Aplicacion.Servicios
             ));
         }
 
+        // ==================== DELETE ====================
         public async Task DeleteAsync(int id)
         {
             var pedido = await _pedidoInternoRepositorio.GetAsync(id);
@@ -120,14 +160,17 @@ namespace Aplicacion.Servicios
             }
         }
 
+        // ==================== GET ALL ====================
         public async Task<List<PedidoInternoDTO>> GetAllsync()
         {
             var pedidos = await _pedidoInternoRepositorio.GetAllasync();
             var departamentos = await _departamentoRepositorio.GetAllasync();
             var sucursales = await _sucursalRepositorio.GetAllasync();
-            var ofertas = await _ofertaRepositorio.GetAllasync();                // ← NUEVO
-            var detallesAdj = await _detalleAdjRepositorio.GetAllasync();        // ← NUEVO
-            var proveedores = await _proveedorRepositorio.GetAllasync();         // ← NUEVO
+            var ofertas = await _ofertaRepositorio.GetAllasync();
+            var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
+            var proveedores = await _proveedorRepositorio.GetAllasync();
+            var detallesPedido = await _detallePedidoRepositorio.GetAllasync();
+            var articulos = await _articuloRepositorio.GetAllasync();
 
             return pedidos
                 .OrderByDescending(p => p.urgente)
@@ -139,16 +182,12 @@ namespace Aplicacion.Servicios
                         ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
                         : null;
 
-                    // ===== CÁLCULO DEL ESTADO =====
-                    // 1. ¿Cuántas ofertas tiene este pedido?
                     var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == p.id).ToList();
                     var totalOfertas = ofertasDelPedido.Count;
 
-                    // 2. ¿Está adjudicado?
                     var detalleAdj = detallesAdj.FirstOrDefault(d => d.id_Pedido == p.id);
                     var adjudicado = detalleAdj != null;
 
-                    // 3. ¿Quién es el proveedor ganador?
                     int? idProveedorGanador = null;
                     string? nombreProveedorGanador = null;
                     decimal? precioAdjudicado = null;
@@ -160,6 +199,21 @@ namespace Aplicacion.Servicios
                         var proveedor = proveedores.FirstOrDefault(pr => pr.id == detalleAdj.id_Proveedor);
                         nombreProveedorGanador = proveedor?.Nombre;
                     }
+
+                    var articulosDelPedido = detallesPedido
+                        .Where(dp => dp.id_Pedido == p.id)
+                        .Select(dp =>
+                        {
+                            var art = articulos.FirstOrDefault(a => a.id == dp.id_Articulo);
+                            return new ArticuloDePedidoDTO(
+                                dp.id_Articulo,
+                                art?.codigo ?? "",
+                                art?.Nombre ?? $"Artículo #{dp.id_Articulo}",
+                                dp.Cantidad,
+                                null
+                            );
+                        })
+                        .ToList();
 
                     return new PedidoInternoDTO(
                         p.id,
@@ -173,15 +227,18 @@ namespace Aplicacion.Servicios
                         sucursal?.Nombre,
                         sucursal?.id,
                         p.urgente,
-                        totalOfertas,                 // ← NUEVO
-                        adjudicado,                    // ← NUEVO
-                        idProveedorGanador,            // ← NUEVO
-                        nombreProveedorGanador,        // ← NUEVO
-                        precioAdjudicado               // ← NUEVO
+                        totalOfertas,
+                        adjudicado,
+                        idProveedorGanador,
+                        nombreProveedorGanador,
+                        precioAdjudicado,
+                        p.Observaciones,
+                        articulosDelPedido
                     );
                 }).ToList();
         }
 
+        // ==================== GET BY ID ====================
         public async Task<PedidoInternoDTO> GetByIdAsync(int id)
         {
             var pedido = await _pedidoInternoRepositorio.GetAsync(id);
@@ -192,13 +249,14 @@ namespace Aplicacion.Servicios
             var ofertas = await _ofertaRepositorio.GetAllasync();
             var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
             var proveedores = await _proveedorRepositorio.GetAllasync();
+            var detallesPedido = await _detallePedidoRepositorio.GetAllasync();
+            var articulos = await _articuloRepositorio.GetAllasync();
 
             var depto = departamentos.FirstOrDefault(d => d.id == pedido.id_Departamento);
             var sucursal = depto != null
                 ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
                 : null;
 
-            // ===== CÁLCULO DEL ESTADO =====
             var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == pedido.id).ToList();
             var totalOfertas = ofertasDelPedido.Count;
 
@@ -217,6 +275,21 @@ namespace Aplicacion.Servicios
                 nombreProveedorGanador = proveedor?.Nombre;
             }
 
+            var articulosDelPedido = detallesPedido
+                .Where(dp => dp.id_Pedido == pedido.id)
+                .Select(dp =>
+                {
+                    var art = articulos.FirstOrDefault(a => a.id == dp.id_Articulo);
+                    return new ArticuloDePedidoDTO(
+                        dp.id_Articulo,
+                        art?.codigo ?? "",
+                        art?.Nombre ?? $"Artículo #{dp.id_Articulo}",
+                        dp.Cantidad,
+                        null
+                    );
+                })
+                .ToList();
+
             return new PedidoInternoDTO(
                 pedido.id,
                 pedido.codigo,
@@ -233,10 +306,13 @@ namespace Aplicacion.Servicios
                 adjudicado,
                 idProveedorGanador,
                 nombreProveedorGanador,
-                precioAdjudicado
+                precioAdjudicado,
+                pedido.Observaciones,
+                articulosDelPedido
             );
         }
 
+        // ==================== UPDATE ====================
         public async Task UpdateAsync(UpdatePedidoInternoDTO pedido)
         {
             var pedidoExistente = await _pedidoInternoRepositorio.GetAsync(pedido.id);
@@ -268,11 +344,11 @@ namespace Aplicacion.Servicios
                     );
                 }
 
-                if (pedido.Fecha_Solicitada > orden.Fecha_Creacion)
+                if (pedido.Fecha_Solicitada < orden.Fecha_Creacion)
                 {
                     throw new InvalidOperationException(
-                        $"La fecha de solicitud del pedido ({pedido.Fecha_Solicitada:dd/MM/yyyy}) " +
-                        $"no puede ser posterior a la fecha de creación de la orden " +
+                        $"La fecha límite de ofertas ({pedido.Fecha_Solicitada:dd/MM/yyyy}) " +
+                        $"no puede ser anterior a la fecha de creación de la orden " +
                         $"#{orden.id} ({orden.Fecha_Creacion:dd/MM/yyyy})."
                     );
                 }
@@ -284,10 +360,33 @@ namespace Aplicacion.Servicios
             pedidoExistente.id_Departamento = pedido.id_Departamento;
             pedidoExistente.id_OrdenCompra = pedido.id_OrdenCompra;
             pedidoExistente.Fecha_Solicitada = pedido.Fecha_Solicitada;
-            pedidoExistente.urgente = pedido.urgente;     
-            // ⚠️ NO tocar Fecha_Ingreso (se mantiene la original)
+            pedidoExistente.urgente = pedido.urgente;
+            pedidoExistente.Observaciones = pedido.Observaciones;
 
             await _pedidoInternoRepositorio.UpdateAsync(pedidoExistente);
+
+            // ===== ACTUALIZAR LOS ARTÍCULOS (BORRAR + RECREAR) =====
+            if (pedido.Articulos != null)
+            {
+                var detallesExistentes = await _detallePedidoRepositorio.GetAllasync();
+                var detallesDelPedido = detallesExistentes.Where(d => d.id_Pedido == pedido.id).ToList();
+
+                foreach (var det in detallesDelPedido)
+                {
+                    await _detallePedidoRepositorio.DeletAsync(det.id_Pedido, det.id_Articulo);
+                }
+
+                foreach (var art in pedido.Articulos)
+                {
+                    var nuevoDetalle = new Detalle_Pedido
+                    {
+                        id_Pedido = pedido.id,
+                        id_Articulo = art.id_Articulo,
+                        Cantidad = art.Cantidad
+                    };
+                    await _detallePedidoRepositorio.AddAsync(nuevoDetalle);
+                }
+            }
 
             // ===== EVENTO: PedidoActualizado =====
             await _publishEndpoint.Publish(new PedidoActualizado(
@@ -300,10 +399,148 @@ namespace Aplicacion.Servicios
             ));
         }
 
+        // ==================== GET BY DEPARTAMENTO ====================
         public async Task<List<PedidoInternoDTO>> GetByDepartamentoAsync(int idDepartamento)
         {
             var todos = await GetAllsync();
             return todos.Where(p => p.id_Departamento == idDepartamento).ToList();
+        }
+
+        // ==================== GET DISPONIBLES PARA PROVEEDOR ====================
+        public async Task<List<PedidoDisponibleProveedorDTO>> GetDisponiblesParaProveedorAsync(int idProveedor)
+        {
+            // 1. Obtener los artículos que provee este proveedor
+            var proveedorArticulos = await _proveArtRepositorio.GetAllasync();
+            var misArticulos = proveedorArticulos
+                .Where(pa => pa.id_Proveedor == idProveedor)
+                .Select(pa => pa.id_Articulo)
+                .ToHashSet();
+
+            if (!misArticulos.Any())
+                return new List<PedidoDisponibleProveedorDTO>();
+
+            // 2. Obtener los rubros del proveedor
+            var proveedorRubros = await _proveRubRepositorio.GetAllasync();
+            var misRubros = proveedorRubros
+                .Where(pr => pr.id_Proveedor == idProveedor)
+                .Select(pr => pr.id_Rubro)
+                .ToHashSet();
+
+            // 3. Obtener TODOS los datos necesarios
+            var pedidos = await _pedidoInternoRepositorio.GetAllasync();
+            var detallesPedido = await _detallePedidoRepositorio.GetAllasync();
+            var ofertas = await _ofertaRepositorio.GetAllasync();
+            var articulos = await _articuloRepositorio.GetAllasync();
+            var departamentos = await _departamentoRepositorio.GetAllasync();
+            var sucursales = await _sucursalRepositorio.GetAllasync();
+            var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
+            var relaciones = await _relacionRepositorio.GetAllasync();
+            var proveedores = await _proveedorRepositorio.GetAllasync();
+
+            // ✅ Obtener IDs de proveedores relacionados (relación bidireccional)
+            var idsRelacionados = relaciones
+                .Where(r => r.Proveedor1 == idProveedor || r.Proveedor2 == idProveedor)
+                .Select(r => r.Proveedor1 == idProveedor ? r.Proveedor2 : r.Proveedor1)
+                .ToHashSet();
+
+            // 4. Filtrar pedidos con artículos que el proveedor maneja
+            var pedidosFiltrados = pedidos
+                .Where(p =>
+                {
+                    var articulosDelPedidoIds = detallesPedido
+                        .Where(dp => dp.id_Pedido == p.id)
+                        .Select(dp => dp.id_Articulo)
+                        .ToList();
+
+                    return articulosDelPedidoIds.Any(a => misArticulos.Contains(a));
+                })
+                .ToList();
+
+            // 5. Para cada pedido, calcular competencia y construir el DTO
+            return pedidosFiltrados.Select(p =>
+            {
+                var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == p.id).ToList();
+                var miOferta = ofertasDelPedido.FirstOrDefault(o => o.id_Proveedor == idProveedor);
+
+                var idsProveedoresDelMismoRubro = proveedorRubros
+                    .Where(pr => misRubros.Contains(pr.id_Rubro) && pr.id_Proveedor != idProveedor)
+                    .Select(pr => pr.id_Proveedor)
+                    .ToHashSet();
+
+                var ofertasDelRubro = ofertasDelPedido
+                    .Where(o => idsProveedoresDelMismoRubro.Contains(o.id_Proveedor))
+                    .ToList();
+
+                decimal? precioMin = ofertasDelRubro.Any()
+                    ? ofertasDelRubro.Min(o => o.Precio)
+                    : null;
+
+                // ✅ Proveedores relacionados que ofertaron
+                var ofertasRelacionados = ofertasDelPedido
+                    .Where(o => idsRelacionados.Contains(o.id_Proveedor))
+                    .ToList();
+
+                var proveedoresRelacionados = ofertasRelacionados.Select(o =>
+                {
+                    var prov = proveedores.FirstOrDefault(pr => pr.id == o.id_Proveedor);
+                    var relacion = relaciones.FirstOrDefault(r =>
+                        (r.Proveedor1 == idProveedor && r.Proveedor2 == o.id_Proveedor) ||
+                        (r.Proveedor2 == idProveedor && r.Proveedor1 == o.id_Proveedor)
+                    );
+
+                    return new ProveedorRelacionadoDTO(
+                        o.id_Proveedor,
+                        prov?.Nombre ?? $"Proveedor #{o.id_Proveedor}",
+                        relacion?.TipoRelacion ?? "Relacionado",
+                        o.Precio
+                    );
+                }).ToList();
+
+                // Artículos del pedido
+                var articulosDelPedido = detallesPedido
+                    .Where(dp => dp.id_Pedido == p.id)
+                    .Select(dp =>
+                    {
+                        var art = articulos.FirstOrDefault(a => a.id == dp.id_Articulo);
+                        return new ArticuloDePedidoDTO(
+                            dp.id_Articulo,
+                            art?.codigo ?? "",
+                            art?.Nombre ?? $"Artículo #{dp.id_Articulo}",
+                            dp.Cantidad,
+                            art?.unidad_medida
+                        );
+                    })
+                    .ToList();
+
+                var depto = departamentos.FirstOrDefault(d => d.id == p.id_Departamento);
+                var sucursal = depto != null
+                    ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
+                    : null;
+                var estaAdjudicado = detallesAdj.Any(d => d.id_Pedido == p.id);
+
+                return new PedidoDisponibleProveedorDTO(
+                    p.id,
+                    p.codigo,
+                    p.cantidad,
+                    p.id_Departamento,
+                    depto?.Nombre,
+                    p.id_OrdenCompra,
+                    p.Fecha_Solicitada,
+                    p.Fecha_Ingreso,
+                    sucursal?.Nombre,
+                    sucursal?.id,
+                    p.urgente,
+                    p.Observaciones,
+                    ofertasDelPedido.Count,
+                    estaAdjudicado,
+                    articulosDelPedido,
+                    ofertasDelRubro.Count,
+                    precioMin,
+                    miOferta != null,
+                    miOferta?.Precio,
+                    proveedoresRelacionados
+                );
+            }).ToList();
         }
     }
 }

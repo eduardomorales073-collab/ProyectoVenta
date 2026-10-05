@@ -84,7 +84,9 @@ export const routes: Routes = [
     path: 'creador',
     canActivate: [creadorGuard],
     children: [
+      { path: 'ordenes-compra', component: OrdenesCompraComponent }, 
       { path: 'pedidos', component: PedidosInternosComponent },
+      { path: '', redirectTo: 'ordenes-compra', pathMatch: 'full' }, 
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
     ]
   },
@@ -104,6 +106,7 @@ export const routes: Routes = [
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'auditoria', component: AuditoriaComponent },
+      { path: 'reportes', component: ReportesComponent }, 
       { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: '', redirectTo: 'reportes', pathMatch: 'full' }
     ]
@@ -126,6 +129,7 @@ export const routes: Routes = [
       { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
       { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
       { path: 'auditoria', component: AuditoriaComponent },
+      { path: 'reportes', component: ReportesComponent }, 
       { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: 'ordenes-compra', component: OrdenesCompraComponent },

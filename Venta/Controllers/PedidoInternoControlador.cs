@@ -56,5 +56,19 @@ namespace Venta.Controllers
             var pedidos = await _pedIntService.GetByDepartamentoAsync(idDepartamento);
             return Ok(pedidos);
         }
+
+        [HttpGet("disponibles-para-proveedor")]
+        [Authorize(Roles = "AdministradorProveedor")]
+        public async Task<IActionResult> GetDisponiblesParaProveedor()
+        {
+            var idProveedorClaim = User.FindFirst("IdProveedor")?.Value;
+            if (string.IsNullOrEmpty(idProveedorClaim))
+                return Unauthorized(new { mensaje = "No tienes un proveedor asignado." });
+
+            var idProveedor = int.Parse(idProveedorClaim);
+            var pedidos = await _pedIntService.GetDisponiblesParaProveedorAsync(idProveedor);
+            return Ok(pedidos);
+        }
+
     }
 }

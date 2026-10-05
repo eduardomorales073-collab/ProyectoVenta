@@ -12,6 +12,11 @@ namespace Aplicacion.DTO
         int? id_OrdenCompra,
         DateTime Fecha_Solicitada,
         DateTime Fecha_Ingreso,
-        bool urgente
+        bool urgente,
+        string? Observaciones,                    
+        List<CreateDetallePedidoDTO>? Articulos
     );
+
+
+
 }

@@ -14,28 +14,29 @@ namespace Aplicacion.Servicios
     public class DetalleAdjudicacionService : IDetAdjuService
     {
         private readonly DetaAdjRepositorio _detaAdjRepositorio;
-        private readonly OferProvRepositorio _ofertaRepositorio;   // ← NUEVO (Regla 4 y 7)
+        private readonly OferProvRepositorio _ofertaRepositorio;
+        private readonly ProveedorRepositorio _proveedorRepositorio;  // ← NUEVO
+        private readonly RelacionRepositorio _relacionRepositorio;    // ← NUEVO
         private readonly IMapper _mapper;
 
         public DetalleAdjudicacionService(
             DetaAdjRepositorio detaAdjRepository,
-            OferProvRepositorio ofertaRepositorio,                  // ← NUEVO
+            OferProvRepositorio ofertaRepositorio,
+            ProveedorRepositorio proveedorRepositorio,               // ← NUEVO
+            RelacionRepositorio relacionRepositorio,                 // ← NUEVO
             IMapper mapper)
         {
             _mapper = mapper;
             _detaAdjRepositorio = detaAdjRepository;
-            _ofertaRepositorio = ofertaRepositorio;                 // ← NUEVO
+            _ofertaRepositorio = ofertaRepositorio;
+            _proveedorRepositorio = proveedorRepositorio;            // ← NUEVO
+            _relacionRepositorio = relacionRepositorio;              // ← NUEVO
         }
 
         public async Task AddAsync(CreateDetalleAdjudicacionDTO detalle)
         {
-            // ===== REGLA 5: Un pedido solo puede tener 1 adjudicación =====
             await ValidarUnicaAdjudicacionAsync(detalle.id_Pedido);
-
-            // ===== REGLA 7: No adjudicar sin ofertas =====
             await ValidarExistenOfertasAsync(detalle.id_Pedido);
-
-            // ===== REGLA 4: Adjudicación al proveedor con menor precio =====
             await ValidarMenorPrecioAsync(detalle.id_Pedido, detalle.id_Proveedor, detalle.Precio);
 
             await _detaAdjRepositorio.AddAsync(_mapper.Map<Detalle_Adjudicacion>(detalle));
@@ -46,29 +47,95 @@ namespace Aplicacion.Servicios
             await _detaAdjRepositorio.DeletAsync(idAdjudicacion, idPedido, idProveedor);
         }
 
+        // ✅ MODIFICADO: Enriquece los detalles con nombre y relaciones del proveedor
         public async Task<List<DetalleAdjudicacionDTO>> GetAllsync()
         {
-            return _mapper.Map<List<DetalleAdjudicacionDTO>>(await _detaAdjRepositorio.GetAllasync());
+            var detalles = await _detaAdjRepositorio.GetAllasync();
+            var proveedores = await _proveedorRepositorio.GetAllasync();
+            var relaciones = await _relacionRepositorio.GetAllasync();
+
+            return detalles.Select(d =>
+            {
+                var proveedor = proveedores.FirstOrDefault(p => p.id == d.id_Proveedor);
+
+                // Relaciones bidireccionales del proveedor
+                var relacionesProveedor = relaciones
+                    .Where(r => r.Proveedor1 == d.id_Proveedor || r.Proveedor2 == d.id_Proveedor)
+                    .Select(r =>
+                    {
+                        var idOtroProveedor = r.Proveedor1 == d.id_Proveedor
+                            ? r.Proveedor2
+                            : r.Proveedor1;
+
+                        var otroProveedor = proveedores.FirstOrDefault(p => p.id == idOtroProveedor);
+
+                        return new ProveedorRelacionInfoDTO(
+                            idOtroProveedor,
+                            otroProveedor?.Nombre ?? $"Proveedor #{idOtroProveedor}",
+                            r.TipoRelacion ?? "Relacionado"
+                        );
+                    })
+                    .ToList();
+
+                return new DetalleAdjudicacionDTO(
+                    d.id_adjudicacion,
+                    d.id_Pedido,
+                    d.id_Proveedor,
+                    d.Precio,
+                    d.Cantidad,
+                    proveedor?.Nombre,
+                    relacionesProveedor
+                );
+            }).ToList();
         }
 
         public async Task<DetalleAdjudicacionDTO> GetByIdAsync(int idAdjudicacion, int idPedido, int idProveedor)
         {
-            return _mapper.Map<DetalleAdjudicacionDTO>(
-                await _detaAdjRepositorio.GetAsync(idAdjudicacion, idPedido, idProveedor));
+            var detalle = await _detaAdjRepositorio.GetAsync(idAdjudicacion, idPedido, idProveedor);
+            if (detalle == null) return null;
+
+            var proveedores = await _proveedorRepositorio.GetAllasync();
+            var relaciones = await _relacionRepositorio.GetAllasync();
+
+            var proveedor = proveedores.FirstOrDefault(p => p.id == detalle.id_Proveedor);
+
+            var relacionesProveedor = relaciones
+                .Where(r => r.Proveedor1 == detalle.id_Proveedor || r.Proveedor2 == detalle.id_Proveedor)
+                .Select(r =>
+                {
+                    var idOtroProveedor = r.Proveedor1 == detalle.id_Proveedor
+                        ? r.Proveedor2
+                        : r.Proveedor1;
+                    var otroProveedor = proveedores.FirstOrDefault(p => p.id == idOtroProveedor);
+
+                    return new ProveedorRelacionInfoDTO(
+                        idOtroProveedor,
+                        otroProveedor?.Nombre ?? $"Proveedor #{idOtroProveedor}",
+                        r.TipoRelacion ?? "Relacionado"
+                    );
+                })
+                .ToList();
+
+            return new DetalleAdjudicacionDTO(
+                detalle.id_adjudicacion,
+                detalle.id_Pedido,
+                detalle.id_Proveedor,
+                detalle.Precio,
+                detalle.Cantidad,
+                proveedor?.Nombre,
+                relacionesProveedor
+            );
         }
 
         public async Task UpdateAsync(UpdateDetalleAdjudicacionDTO detalle)
         {
-            // ===== REGLA 7: No adjudicar sin ofertas =====
             await ValidarExistenOfertasAsync(detalle.id_Pedido);
-
-            // ===== REGLA 4: Adjudicación al proveedor con menor precio =====
             await ValidarMenorPrecioAsync(detalle.id_Pedido, detalle.id_Proveedor, detalle.Precio);
 
             await _detaAdjRepositorio.UpdateAsync(_mapper.Map<Detalle_Adjudicacion>(detalle));
         }
 
-        // ===== REGLA 5: Un pedido solo puede tener 1 adjudicación =====
+        // ===== VALIDACIONES EXISTENTES =====
         private async Task ValidarUnicaAdjudicacionAsync(int idPedido)
         {
             var todosLosDetalles = await _detaAdjRepositorio.GetAllasync();
@@ -83,7 +150,6 @@ namespace Aplicacion.Servicios
             }
         }
 
-        // ===== REGLA 7: No adjudicar sin ofertas =====
         private async Task ValidarExistenOfertasAsync(int idPedido)
         {
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
@@ -99,7 +165,6 @@ namespace Aplicacion.Servicios
             }
         }
 
-        // ===== REGLA 4: Adjudicación al proveedor con menor precio =====
         private async Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado)
         {
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
@@ -107,35 +172,28 @@ namespace Aplicacion.Servicios
                 .Where(o => o.id_Pedido_Interno == idPedido)
                 .ToList();
 
-            // Encontrar el menor precio
             var menorPrecio = ofertasDelPedido.Min(o => o.Precio);
-
-            // Verificar si el proveedor seleccionado tiene el menor precio (permite empates)
             var proveedorEsGanador = ofertasDelPedido
                 .Any(o => o.id_Proveedor == idProveedor && o.Precio == menorPrecio);
 
             if (!proveedorEsGanador)
             {
-                // Obtener TODOS los proveedores que tienen el menor precio
                 var proveedoresMenor = string.Join(", ",
                     ofertasDelPedido
                         .Where(o => o.Precio == menorPrecio)
                         .Select(o => $"#{o.id_Proveedor}"));
 
-                // Buscar si el proveedor seleccionado participó (con otro precio)
                 var ofertaDelProveedor = ofertasDelPedido
                     .FirstOrDefault(o => o.id_Proveedor == idProveedor);
 
                 string mensaje;
                 if (ofertaDelProveedor == null)
                 {
-                    // Escenario A: Proveedor NO participó
                     mensaje = $"El proveedor #{idProveedor} no tiene una oferta registrada para el pedido #{idPedido}. " +
                               $"La adjudicación debe ir al proveedor con menor precio (Q {menorPrecio:N2} de los proveedores {proveedoresMenor}).";
                 }
                 else
                 {
-                    // Escenario B: Proveedor participó pero con mayor precio
                     mensaje = $"La adjudicación del pedido #{idPedido} debe ir al proveedor con menor precio " +
                               $"(Q {menorPrecio:N2} de los proveedores {proveedoresMenor}). " +
                               $"El proveedor seleccionado (#{idProveedor}) ofertó Q {ofertaDelProveedor.Precio:N2}.";
@@ -143,8 +201,6 @@ namespace Aplicacion.Servicios
 
                 throw new InvalidOperationException(mensaje);
             }
-
-            // Escenario C: El proveedor tiene el menor precio (o está en empate) → ✅ Permitir
         }
     }
 }

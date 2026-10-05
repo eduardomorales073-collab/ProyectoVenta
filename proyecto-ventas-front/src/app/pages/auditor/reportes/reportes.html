@@ -4,18 +4,25 @@
       <mat-icon>analytics</mat-icon>
       Reportes y Análisis
     </h1>
-    <p>Panel de Auditoría - Selecciona el reporte a visualizar</p>
+    <p>Selecciona el reporte que deseas visualizar</p>
   </div>
 
   <div class="reportes-grid">
-    <mat-card *ngFor="let r of reportes" class="reporte-card" [routerLink]="r.ruta">
+    <mat-card 
+      *ngFor="let r of reportes" 
+      class="reporte-card" 
+      (click)="navegar(r)">
       <mat-card-content>
         <div class="card-icon" [class]="r.color">
           <mat-icon>{{ r.icono }}</mat-icon>
         </div>
         <h3>{{ r.titulo }}</h3>
         <p>{{ r.descripcion }}</p>
-        <button mat-button color="primary" class="card-action">
+        <button 
+          mat-button 
+          color="primary" 
+          class="card-action" 
+          (click)="navegar(r); $event.stopPropagation()">
           Ver reporte
           <mat-icon>arrow_forward</mat-icon>
         </button>

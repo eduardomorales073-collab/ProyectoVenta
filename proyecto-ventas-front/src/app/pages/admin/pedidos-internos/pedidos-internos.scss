@@ -147,3 +147,30 @@
   white-space: pre-line !important;
   font-size: 0.8rem !important;
 }
+
+/* ===== FIX DE OVERFLOW HORIZONTAL ===== */
+.container {
+  padding: 1.5rem;
+  max-width: 100%;
+  overflow-x: hidden;   // ← Evita que empuje el layout
+  box-sizing: border-box;
+}
+
+.tabla-container {
+  width: 100%;
+  overflow-x: auto;      // ← El scroll se queda DENTRO de la tabla
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-mat {
+  width: 100%;
+  min-width: 1200px;     // ← Ancho mínimo para que la tabla no se aplaste
+}
+
+/* Hacer que las columnas de texto sean más compactas */
+td.mat-mdc-cell, th.mat-mdc-header-cell {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.85rem;
+}

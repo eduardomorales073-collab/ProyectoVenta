@@ -35,7 +35,7 @@ export class JasperService {
       titulo: 'Órdenes Activas',
       descripcion: 'Órdenes de compra abiertas a recibir ofertas.',
       icono: 'play_circle',
-      rutaJasper: '/datasources/RepoteOrdenesActivas',
+      rutaJasper: '/datasources/RepoteOrdenesActivas',      
       color: 'gradient-cyan'
     },
     {

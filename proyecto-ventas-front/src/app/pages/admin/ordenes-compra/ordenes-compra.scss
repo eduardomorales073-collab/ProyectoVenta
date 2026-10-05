@@ -150,3 +150,89 @@
 .icon-mini.warning {
   color: #f59e0b;
 }
+
+/* ===== CHIPS POR ESTADO ===== */
+.chip-borrador {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-publicada {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-adjudicada {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-cancelada {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-default {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 600;
+}
+
+/* ===== CHIPS DE SUCURSAL Y DEPARTAMENTO ===== */
+.chip-sucursal {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.chip-departamento {
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.sin-dato {
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+/* ===== FILTROS ===== */
+.filtros-container {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filtro-busqueda {
+  flex: 1;
+  min-width: 300px;
+}
+
+.filtro-estado {
+  min-width: 200px;
+}
+
+.opcion-estado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  .contador {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+  }
+}

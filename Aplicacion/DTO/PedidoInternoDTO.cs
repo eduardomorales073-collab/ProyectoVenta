@@ -20,6 +20,15 @@ namespace Aplicacion.DTO
     bool adjudicado,           
     int? idProveedorGanador,   
     string? nombreProveedorGanador,  
-    decimal? precioAdjudicado  
+    decimal? precioAdjudicado,
+    string? Observaciones,
+    List<ArticuloDePedidoDTO> Articulos
+);
+    public record ArticuloDePedidoDTO(
+    int id_Articulo,
+    string codigo,
+    string nombre,
+    int cantidad,
+    string? unidadMedida
 );
 }

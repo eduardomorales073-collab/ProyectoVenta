@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OrdenCompraService, OrdenCompraConContadores, PedidoDeOrden } from '../../../../services/orden-compra.service';
 import { NotificacionService } from '../../../../services/notificacion';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-pedidos-de-orden-modal',
@@ -40,6 +41,7 @@ export class PedidosDeOrdenModalComponent implements OnInit {
   constructor(
     private ordenService: OrdenCompraService,
     private notificacion: NotificacionService,
+     private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -70,4 +72,10 @@ export class PedidosDeOrdenModalComponent implements OnInit {
   onCerrar(): void {
     this.cerrar.emit();
   }
+
+  // ===== PERMISOS =====
+puedeAgregarPedidos(): boolean {
+  // Solo Admin y Gestor pueden agregar pedidos
+  return this.authService.esAdmin() || this.authService.esGestorCompras();
+}
 }

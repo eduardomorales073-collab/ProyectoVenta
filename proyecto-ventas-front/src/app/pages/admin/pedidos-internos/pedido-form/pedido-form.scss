@@ -101,3 +101,96 @@
     height: 1.1rem;
   }
 }
+/* ===== SECCIÓN DE ARTÍCULOS ===== */
+.articulos-section {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border-left: 3px solid #8b5cf6;
+}
+
+.articulos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  label {
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+  }
+}
+
+.articulos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.articulo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .articulo-field {
+    flex: 2;
+  }
+
+  .cantidad-field {
+    flex: 1;
+  }
+}
+
+/* ===== URGENTE CHECKBOX ===== */
+.urgente-checkbox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: #fef3c7;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #f59e0b;
+
+  mat-checkbox {
+    font-weight: 600;
+    color: #92400e;
+  }
+
+  .icon-urgente {
+    color: #dc2626;
+    font-size: 1.2rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+  }
+
+  .hint-urgente {
+    color: #92400e;
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-left: 1.75rem;
+  }
+}
+
+/* ===== INFO AUTO FECHA ===== */
+.info-auto-fecha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}

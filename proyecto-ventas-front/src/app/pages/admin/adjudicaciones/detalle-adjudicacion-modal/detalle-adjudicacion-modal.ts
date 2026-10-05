@@ -13,7 +13,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 
-
 import { DetalleAdjudicacionService } from '../../../../services/detalle-adjudicacion.service';
 import { PedidoInternoService } from '../../../../services/pedido-interno.service';
 import { OfertaProveedorService } from '../../../../services/oferta-proveedor.service';
@@ -32,17 +31,17 @@ import { OfertaProveedor } from '../../../../models/oferta-proveedor.model';
   standalone: true,
   imports: [
     CommonModule,
-  ReactiveFormsModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatSelectModule,
-  MatButtonModule,
-  MatIconModule,
-  MatTableModule,
-  MatChipsModule,
-  MatCardModule,
-  MatProgressSpinnerModule,
-  MatTooltipModule
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatChipsModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './detalle-adjudicacion-modal.html',
   styleUrl: './detalle-adjudicacion-modal.scss'
@@ -104,26 +103,26 @@ export class DetalleAdjudicacionModalComponent implements OnInit {
       proveedores: this.proveedorService.listar()
     }).subscribe({
       next: (result) => {
-  // Detalles de ESTA adjudicación (para mostrar en la tabla)
-  this.detalles = result.detalles.filter(
-    (d: DetalleAdjudicacion) => d.id_Adjudicacion === this.adjudicacion.id
-  );
+        // Detalles de ESTA adjudicación (para mostrar en la tabla)
+        this.detalles = result.detalles.filter(
+          (d: DetalleAdjudicacion) => d.id_Adjudicacion === this.adjudicacion.id
+        );
 
-  // ⚠️ CAMBIO: Excluir TODOS los pedidos adjudicados (en cualquier adjudicación)
-  const idsPedidosYaAdjudicados = result.detalles.map(
-    (d: DetalleAdjudicacion) => d.id_Pedido
-  );
+        // Excluir TODOS los pedidos adjudicados (en cualquier adjudicación)
+        const idsPedidosYaAdjudicados = result.detalles.map(
+          (d: DetalleAdjudicacion) => d.id_Pedido
+        );
 
-  this.pedidosDisponibles = result.pedidos.filter(
-    (p: PedidoInterno) => p.id_OrdenCompra === this.adjudicacion.orden_Compra
-      && !idsPedidosYaAdjudicados.includes(p.id)
-  );
+        this.pedidosDisponibles = result.pedidos.filter(
+          (p: PedidoInterno) => p.id_OrdenCompra === this.adjudicacion.orden_Compra
+            && !idsPedidosYaAdjudicados.includes(p.id)
+        );
 
-  this.pedidos = result.pedidos;
-  this.proveedores = result.proveedores;
-  this.cargando = false;
-  this.cdr.detectChanges();
-},
+        this.pedidos = result.pedidos;
+        this.proveedores = result.proveedores;
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
       error: (err: any) => {
         this.notificacion.error(`Error: ${err.status} ${err.statusText}`);
         this.cargando = false;
@@ -196,6 +195,16 @@ export class DetalleAdjudicacionModalComponent implements OnInit {
       (o: OfertaProveedor) => o.id_Proveedor === idProveedor
     );
     return oferta?.precio || 0;
+  }
+
+  // ✅ NUEVO: Color del chip según el tipo de relación
+  claseTipoRelacion(tipo: string): string {
+    switch (tipo?.toLowerCase()) {
+      case 'socio comercial': return 'rel-socio';
+      case 'distribuidor':    return 'rel-distribuidor';
+      case 'colaborador':     return 'rel-colaborador';
+      default:                return 'rel-default';
+    }
   }
 
   // ===== FORMULARIO =====

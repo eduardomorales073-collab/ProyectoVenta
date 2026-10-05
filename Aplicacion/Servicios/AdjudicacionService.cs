@@ -17,8 +17,8 @@ namespace Aplicacion.Servicios
         private readonly AdjuRepositorio _adjuRepositorio;
         private readonly OrdComRepositorio _ordenCompraRepositorio;
         private readonly OferProvRepositorio _ofertaRepositorio;
-        private readonly DetaAdjRepositorio _detaAdjRepositorio;      // ← NUEVO
-        private readonly PedIntRepositorio _pedidoRepositorio;         // ← NUEVO
+        private readonly DetaAdjRepositorio _detaAdjRepositorio;
+        private readonly PedIntRepositorio _pedidoRepositorio;
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
@@ -26,8 +26,8 @@ namespace Aplicacion.Servicios
             AdjuRepositorio adjuRepository,
             OrdComRepositorio ordenCompraRepositorio,
             OferProvRepositorio ofertaRepositorio,
-            DetaAdjRepositorio detaAdjRepositorio,                     // ← NUEVO
-            PedIntRepositorio pedidoRepositorio,                       // ← NUEVO
+            DetaAdjRepositorio detaAdjRepositorio,
+            PedIntRepositorio pedidoRepositorio,
             IPublishEndpoint publishEndpoint,
             IMapper mapper)
         {
@@ -35,15 +35,14 @@ namespace Aplicacion.Servicios
             _adjuRepositorio = adjuRepository;
             _ordenCompraRepositorio = ordenCompraRepositorio;
             _ofertaRepositorio = ofertaRepositorio;
-            _detaAdjRepositorio = detaAdjRepositorio;                  // ← NUEVO
-            _pedidoRepositorio = pedidoRepositorio;                    // ← NUEVO
+            _detaAdjRepositorio = detaAdjRepositorio;
+            _pedidoRepositorio = pedidoRepositorio;
             _publishEndpoint = publishEndpoint;
         }
 
         // ==================== ADD (CREATE) ====================
         public async Task AddAsync(CreateAdjudicacionDTO adjudicacion)
         {
-            // ===== REGLA DE NEGOCIO 2 =====
             var orden = await _ordenCompraRepositorio.GetAsync(adjudicacion.Orden_Compra);
 
             if (orden == null)
@@ -62,14 +61,12 @@ namespace Aplicacion.Servicios
                 );
             }
 
-            // Calcular el id manualmente
             var todas = await _adjuRepositorio.GetAllasync();
             var nuevaAdjudicacion = _mapper.Map<Adjudicacion>(adjudicacion);
             nuevaAdjudicacion.id = todas.Any() ? todas.Max(a => a.id) + 1 : 1;
 
             await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
 
-            // ===== EVENTO EXISTENTE: CompraRegistrada =====
             await _publishEndpoint.Publish(new CompraRegistrada(
                 OrdenId: Guid.NewGuid(),
                 Detalle: $"Adjudicación de la orden #{adjudicacion.Orden_Compra}",
@@ -78,7 +75,6 @@ namespace Aplicacion.Servicios
                 Proveedor: "Por definir"
             ));
 
-            // ===== EVENTO NUEVO: AdjudicacionCreada =====
             await _publishEndpoint.Publish(new AdjudicacionCreada(
                 AdjudicacionId: nuevaAdjudicacion.id,
                 OrdenCompra: nuevaAdjudicacion.Orden_Compra,
@@ -89,10 +85,9 @@ namespace Aplicacion.Servicios
             ));
         }
 
-        // ==================== ADJUDICAR MÚLTIPLES PEDIDOS (ENFOQUE B) ====================
+        // ==================== ADJUDICAR MÚLTIPLES PEDIDOS ====================
         public async Task AdjudicarPedidosAsync(AdjudicarPedidosDTO dto)
         {
-            // ===== VALIDACIÓN 1: Al menos un pedido =====
             if (dto.Pedidos == null || !dto.Pedidos.Any())
             {
                 throw new InvalidOperationException(
@@ -100,7 +95,6 @@ namespace Aplicacion.Servicios
                 );
             }
 
-            // ===== VALIDACIÓN 2: La orden existe =====
             var orden = await _ordenCompraRepositorio.GetAsync(dto.Orden_Compra);
             if (orden == null)
             {
@@ -109,14 +103,12 @@ namespace Aplicacion.Servicios
                 );
             }
 
-            // ===== VALIDACIÓN 3: Todas las ofertas (para validar reglas 4, 5, 6) =====
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
             var todosLosDetalles = await _detaAdjRepositorio.GetAllasync();
 
-            // Validar CADA pedido ANTES de crear nada (transacción atómica)
+            // Validar CADA pedido ANTES de crear nada
             foreach (var pedido in dto.Pedidos)
             {
-                // ----- REGLA 5: Un pedido solo puede tener 1 adjudicación -----
                 var detalleExistente = todosLosDetalles.FirstOrDefault(d => d.id_Pedido == pedido.id_Pedido);
                 if (detalleExistente != null)
                 {
@@ -126,7 +118,6 @@ namespace Aplicacion.Servicios
                     );
                 }
 
-                // ----- REGLA 6: No adjudicar sin ofertas -----
                 var ofertasDelPedido = todasLasOfertas
                     .Where(o => o.id_Pedido_Interno == pedido.id_Pedido)
                     .ToList();
@@ -138,7 +129,6 @@ namespace Aplicacion.Servicios
                     );
                 }
 
-                // ----- REGLA 4: Adjudicación al proveedor con MENOR precio (permite empates) -----
                 var menorPrecio = ofertasDelPedido.Min(o => o.Precio);
                 var proveedorEsGanador = ofertasDelPedido
                     .Any(o => o.id_Proveedor == pedido.id_Proveedor && o.Precio == menorPrecio);
@@ -156,7 +146,6 @@ namespace Aplicacion.Servicios
                     );
                 }
 
-                // ----- VALIDACIÓN EXTRA: El pedido existe -----
                 var pedidoInterno = await _pedidoRepositorio.GetAsync(pedido.id_Pedido);
                 if (pedidoInterno == null)
                 {
@@ -167,30 +156,23 @@ namespace Aplicacion.Servicios
             }
 
             // ===== CREAR LA ADJUDICACIÓN (CABECERA) CON FECHA Y ESTADO AUTOMÁTICOS =====
-            // Verificar si TODOS los pedidos de la orden quedarán adjudicados después de esta operación
             var pedidosDeLaOrden = await _pedidoRepositorio.GetAllasync();
             var pedidosDeLaOrdenFiltrados = pedidosDeLaOrden
                 .Where(p => p.id_OrdenCompra == dto.Orden_Compra)
                 .ToList();
 
-            // Pedidos que ya estaban adjudicados antes de esta operación
             var pedidosYaAdjudicados = todosLosDetalles
                 .Select(d => d.id_Pedido)
                 .ToHashSet();
 
-            // Pedidos que se adjudicarán en esta operación
             var pedidosNuevos = dto.Pedidos
                 .Select(p => p.id_Pedido)
                 .ToHashSet();
 
-            // Un pedido está adjudicado si:
-            // - ya lo estaba antes, O
-            // - se va a adjudicar ahora
             var todosAdjudicados = pedidosDeLaOrdenFiltrados.All(p =>
                 pedidosYaAdjudicados.Contains(p.id) || pedidosNuevos.Contains(p.id)
             );
 
-            // Determinar el estado
             string estadoFinal;
             if (todosAdjudicados && pedidosDeLaOrdenFiltrados.Any())
             {
@@ -202,27 +184,36 @@ namespace Aplicacion.Servicios
             }
 
             var todasLasAdjudicaciones = await _adjuRepositorio.GetAllasync();
+
+            // ✅ Calcular el siguiente ID disponible de forma segura
+            int nuevoIdAdjudicacion = 1;
+            if (todasLasAdjudicaciones.Any())
+            {
+                nuevoIdAdjudicacion = todasLasAdjudicaciones.Max(a => a.id) + 1;
+                var idsExistentes = todasLasAdjudicaciones.Select(a => a.id).ToHashSet();
+                while (idsExistentes.Contains(nuevoIdAdjudicacion))
+                {
+                    nuevoIdAdjudicacion++;
+                }
+            }
+
             var nuevaAdjudicacion = new Adjudicacion
             {
-                id = todasLasAdjudicaciones.Any() ? todasLasAdjudicaciones.Max(a => a.id) + 1 : 1,
+                id = nuevoIdAdjudicacion,
                 Fecha_Resolucion = DateTime.Now,
                 Orden_Compra = dto.Orden_Compra,
-                Estado = estadoFinal          // ← Ahora es dinámico
+                Estado = estadoFinal
             };
 
-            await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
-
-            await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
+            await _adjuRepositorio.AddAsync(nuevaAdjudicacion); // ← Solo UNA vez
 
             // ===== CREAR LOS DETALLES (UNO POR CADA PEDIDO) =====
             foreach (var pedido in dto.Pedidos)
             {
-                // Obtener la oferta ganadora (ya validamos que existe)
                 var ofertaGanadora = todasLasOfertas
                     .First(o => o.id_Pedido_Interno == pedido.id_Pedido
                              && o.id_Proveedor == pedido.id_Proveedor);
 
-                // Obtener el pedido para saber la cantidad
                 var pedidoInterno = await _pedidoRepositorio.GetAsync(pedido.id_Pedido);
 
                 var detalle = new Detalle_Adjudicacion
@@ -230,11 +221,31 @@ namespace Aplicacion.Servicios
                     id_adjudicacion = nuevaAdjudicacion.id,
                     id_Pedido = pedido.id_Pedido,
                     id_Proveedor = pedido.id_Proveedor,
-                    Precio = ofertaGanadora.Precio,                // ✅ Precio de la oferta ganadora
-                    Cantidad = pedidoInterno.cantidad ?? 1          // ✅ Cantidad del pedido
+                    Precio = ofertaGanadora.Precio,
+                    Cantidad = pedidoInterno.cantidad ?? 1
                 };
 
                 await _detaAdjRepositorio.AddAsync(detalle);
+            }
+
+            // ===== ✅ ACTUALIZAR ESTADO DE LA ORDEN SI TODOS LOS PEDIDOS ESTÁN ADJUDICADOS =====
+            var todosLosDetallesFinal = await _detaAdjRepositorio.GetAllasync();
+            var idsPedidosAdjudicadosFinal = todosLosDetallesFinal.Select(d => d.id_Pedido).ToHashSet();
+            var pedidosDeLaOrdenFinal = (await _pedidoRepositorio.GetAllasync())
+                .Where(p => p.id_OrdenCompra == dto.Orden_Compra)
+                .ToList();
+
+            var todosAdjudicadosFinal = pedidosDeLaOrdenFinal.Any()
+                && pedidosDeLaOrdenFinal.All(p => idsPedidosAdjudicadosFinal.Contains(p.id));
+
+            if (todosAdjudicadosFinal)
+            {
+                var ordenActualizar = await _ordenCompraRepositorio.GetAsync(dto.Orden_Compra);
+                if (ordenActualizar != null && ordenActualizar.Estado != "Adjudicada")
+                {
+                    ordenActualizar.Estado = "Adjudicada";
+                    await _ordenCompraRepositorio.UpdateAsync(ordenActualizar);
+                }
             }
 
             // ===== PUBLICAR EVENTOS =====
@@ -256,28 +267,23 @@ namespace Aplicacion.Servicios
             ));
         }
 
-        // ==================== DELETE ====================
         public async Task DeleteAsync(int id)
         {
             await _adjuRepositorio.DeletAsync(id);
         }
 
-        // ==================== GET ALL ====================
         public async Task<List<AdjudicacionDTO>> GetAllsync()
         {
             return _mapper.Map<List<AdjudicacionDTO>>(await _adjuRepositorio.GetAllasync());
         }
 
-        // ==================== GET BY ID ====================
         public async Task<AdjudicacionDTO> GetByIdAsync(int id)
         {
             return _mapper.Map<AdjudicacionDTO>(await _adjuRepositorio.GetAsync(id));
         }
 
-        // ==================== UPDATE ====================
         public async Task UpdateAsync(UpdateAdjudicacionDTO adjudicacion)
         {
-            // ===== REGLA DE NEGOCIO 2 (también al actualizar) =====
             var orden = await _ordenCompraRepositorio.GetAsync(adjudicacion.Orden_Compra);
 
             if (orden == null)
@@ -299,7 +305,6 @@ namespace Aplicacion.Servicios
             await _adjuRepositorio.UpdateAsync(_mapper.Map<Adjudicacion>(adjudicacion));
         }
 
-        // ===== REGLA DE NEGOCIO 4 (método público existente) =====
         public async Task ValidarMenorPrecioAsync(int idPedido, int idProveedor, decimal precioAdjudicado)
         {
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();

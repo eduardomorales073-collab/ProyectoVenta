@@ -15,5 +15,7 @@ namespace Aplicacion.Interfaz
         Task UpdateAsync(UpdatePedidoInternoDTO pedido);
 
         Task<List<PedidoInternoDTO>> GetByDepartamentoAsync(int idDepartamento);
+
+        Task<List<PedidoDisponibleProveedorDTO>> GetDisponiblesParaProveedorAsync(int idProveedor);
     }
 }

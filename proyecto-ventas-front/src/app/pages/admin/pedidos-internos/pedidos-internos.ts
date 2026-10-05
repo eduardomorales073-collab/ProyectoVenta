@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';  // ← Router añadido
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -13,7 +13,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { PedidoInternoService } from '../../../services/pedido-interno.service';
 import { DepartamentoService } from '../../../services/departamento.service';
-import { OrdenCompraService, OrdenCompra } from '../../../services/orden-compra.service';
+import { OrdenCompraService, OrdenCompraConContadores } from '../../../services/orden-compra.service';
 import { AuthService } from '../../../services/auth.service';
 import { PedidoInterno } from '../../../models/pedido-interno.model';
 import { Departamento } from '../../../models/departamento.model';
@@ -42,30 +42,19 @@ import { NotificacionService } from '../../../services/notificacion';
   styleUrl: './pedidos-internos.scss'
 })
 export class PedidosInternosComponent implements OnInit, AfterViewInit {
-
   displayedColumns: string[] = [
-    'urgente',
-    'id',
-    'codigo',
-    'cantidad',
-    'departamento',
-    'sucursal',
-    'orden',
-    'estado',
-    'fecha_Solicitada',
-    'fecha_Ingreso',
-    'acciones'
+    'urgente', 'id', 'codigo', 'cantidad', 'departamento',
+    'sucursal', 'orden', 'estado', 'fecha_Solicitada',
+    'fecha_Ingreso', 'acciones'
   ];
 
   dataSource = new MatTableDataSource<PedidoInterno>([]);
   departamentos: Departamento[] = [];
-  ordenes: OrdenCompra[] = [];
+  ordenes: OrdenCompraConContadores[] = [];
   cargando = false;
   error = '';
   mostrarFormulario = false;
   pedidoSeleccionado: PedidoInterno | null = null;
-
-  // ⚠️ NUEVO: Orden preseleccionada (cuando vienes desde el modal de órdenes)
   ordenPreseleccionada: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -77,6 +66,7 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     private ordenCompraService: OrdenCompraService,
     private authService: AuthService,
     private route: ActivatedRoute,
+    private router: Router,  // ← NUEVO
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -87,8 +77,6 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-
-    // ===== FILTRO PERSONALIZADO =====
     this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
       const estadoStr = this.estadoPedido(pedido).toLowerCase();
       const dataStr = (
@@ -105,21 +93,50 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     this.cargarCatalogos();
     this.cargar();
 
-    // ===== LEER QUERY PARAM ?ordenId=X =====
     this.route.queryParams.subscribe(params => {
       const ordenId = params['ordenId'];
       if (ordenId) {
         const id = parseInt(ordenId, 10);
         if (!isNaN(id)) {
           this.ordenPreseleccionada = id;
-          // Esperar a que carguen los catálogos y luego abrir el formulario
-          setTimeout(() => {
-            this.abrirFormularioConOrden();
-          }, 600);
+          this.esperarYAbirFormulario(id);
         }
       }
     });
   }
+
+  // ✅ Espera a que las órdenes estén cargadas antes de abrir el formulario
+  esperarYAbirFormulario(ordenId: number): void {
+  // Si ya están cargadas, verificar que la orden exista
+  if (this.ordenes.length > 0) {
+    const ordenExiste = this.ordenes.find(o => o.id === ordenId);
+    if (ordenExiste) {
+      this.abrirFormularioConOrden();
+    } else {
+      this.notificacion.error(`La orden #${ordenId} no está disponible para agregar pedidos (debe estar en estado Borrador o Aprobada sin pedidos).`);
+    }
+    return;
+  }
+
+  // Esperar a que carguen
+  let intentos = 0;
+  const intervalo = setInterval(() => {
+    intentos++;
+    if (this.ordenes.length > 0 || intentos > 25) {
+      clearInterval(intervalo);
+      if (this.ordenes.length > 0) {
+        const ordenExiste = this.ordenes.find(o => o.id === ordenId);
+        if (ordenExiste) {
+          this.abrirFormularioConOrden();
+        } else {
+          this.notificacion.error(`La orden #${ordenId} no está disponible para agregar pedidos.`);
+        }
+      } else {
+        this.notificacion.error('No se pudieron cargar las órdenes disponibles.');
+      }
+    }
+  }, 200);
+}
 
   aplicarFiltro(event: Event): void {
     const valor = (event.target as HTMLInputElement).value;
@@ -130,16 +147,24 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     this.departamentoService.listar().subscribe({
       next: (data) => { this.departamentos = data; this.cdr.detectChanges(); }
     });
-    this.ordenCompraService.listar().subscribe({
-      next: (data: OrdenCompra[]) => { this.ordenes = data; this.cdr.detectChanges(); }
+
+    this.ordenCompraService.listarConContadores().subscribe({
+      next: (data) => {
+        this.ordenes = data.filter(o =>
+          (o.estado === 'Borrador' || o.estado === 'Aprobada')
+          && o.totalPedidos === 0
+        );
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cargar órdenes:', err);
+      }
     });
   }
 
   cargar(): void {
     this.cargando = true;
     this.error = '';
-
-    // Admin y Auditor ven TODOS los pedidos
     if (this.authService.esAdmin() || this.authService.esAuditor()) {
       this.pedidoService.listar().subscribe({
         next: (data) => {
@@ -155,7 +180,6 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
       });
     } else {
       const idDepto = this.authService.getIdDepartamento();
-
       if (idDepto) {
         this.pedidoService.listarPorDepartamento(idDepto).subscribe({
           next: (data) => {
@@ -192,7 +216,6 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  // ⚠️ NUEVO: Abre el formulario con la orden preseleccionada
   abrirFormularioConOrden(): void {
     if (!this.ordenPreseleccionada) return;
     this.pedidoSeleccionado = null;
@@ -215,7 +238,6 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   confirmarEliminar(pedido: PedidoInterno): void {
     this.confirm.eliminar(`Pedido #${pedido.id}`).subscribe((confirmado: boolean) => {
       if (!confirmado) return;
-
       this.pedidoService.eliminar(pedido.id).subscribe({
         next: () => {
           this.notificacion.exito(`Pedido #${pedido.id} eliminado correctamente`);
@@ -228,6 +250,24 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // ===== IR A ADJUDICAR =====
+  irAAdjudicar(pedido: PedidoInterno): void {
+    if (!pedido.id_OrdenCompra) {
+      this.notificacion.error('Este pedido no tiene una orden asignada.');
+      return;
+    }
+
+    if (this.authService.esAdmin()) {
+      this.router.navigate(['/admin/adjudicaciones'], {
+        queryParams: { ordenId: pedido.id_OrdenCompra }
+      });
+    } else {
+      this.router.navigate(['/empleado/adjudicaciones'], {
+        queryParams: { ordenId: pedido.id_OrdenCompra }
+      });
+    }
+  }
+
   // ===== PERMISOS =====
   puedeCrearPedidos(): boolean {
     return this.authService.puedeCrearPedidos();
@@ -238,7 +278,14 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   }
 
   puedeEliminarPedidos(): boolean {
-    return this.authService.esAdmin();
+    // ✅ Admin y Gestor pueden eliminar
+    return this.authService.esAdmin() || this.authService.esGestorCompras();
+  }
+
+  puedeEliminarEstePedido(pedido: PedidoInterno): boolean {
+    // ❌ No se puede eliminar un pedido ya adjudicado
+    if (pedido.adjudicado) return false;
+    return this.puedeEliminarPedidos();
   }
 
   // ===== ESTADO DEL PEDIDO =====
@@ -265,15 +312,10 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
   tooltipEstado(pedido: PedidoInterno): string {
     if (pedido.adjudicado) {
-      return `Adjudicado a ${pedido.nombreProveedorGanador || 'Proveedor #' + pedido.idProveedorGanador}` +
-             `\nPrecio: Q ${(pedido.precioAdjudicado || 0).toFixed(2)}`;
+      return `Adjudicado a ${pedido.nombreProveedorGanador || 'Proveedor #' + pedido.idProveedorGanador}\nPrecio: Q ${(pedido.precioAdjudicado || 0).toFixed(2)}`;
     }
-    if (!pedido.id_OrdenCompra) {
-      return 'Sin orden de compra asignada';
-    }
-    if (pedido.totalOfertas > 0) {
-      return `${pedido.totalOfertas} oferta(s) recibida(s). Pendiente de adjudicar.`;
-    }
+    if (!pedido.id_OrdenCompra) return 'Sin orden de compra asignada';
+    if (pedido.totalOfertas > 0) return `${pedido.totalOfertas} oferta(s) recibida(s). Pendiente de adjudicar.`;
     return 'Sin ofertas aún';
   }
 }

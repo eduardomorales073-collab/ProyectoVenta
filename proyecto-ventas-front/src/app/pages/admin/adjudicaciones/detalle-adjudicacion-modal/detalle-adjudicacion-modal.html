@@ -110,10 +110,29 @@
           </td>
         </ng-container>
 
+        <!-- ✅ COLUMNA PROVEEDOR CON RELACIONES -->
         <ng-container matColumnDef="proveedor">
           <th mat-header-cell *matHeaderCellDef>Proveedor</th>
           <td mat-cell *matCellDef="let d">
-            <mat-chip class="chip-proveedor">{{ nombreProveedor(d.id_Proveedor) }}</mat-chip>
+            <div class="proveedor-cell">
+              <mat-chip class="chip-proveedor">
+                {{ d.nombreProveedor || nombreProveedor(d.id_Proveedor) }}
+              </mat-chip>
+
+              <!-- Relaciones del proveedor -->
+              <div *ngIf="d.relacionesProveedor?.length > 0" class="relaciones-list">
+                <mat-icon class="icon-rel">link</mat-icon>
+                <div class="relaciones-info">
+                  <span class="rel-label">Relacionado con:</span>
+                  <div *ngFor="let rel of d.relacionesProveedor" class="rel-item">
+                    <span class="rel-nombre">{{ rel.nombre }}</span>
+                    <span class="rel-tipo" [ngClass]="claseTipoRelacion(rel.tipoRelacion)">
+                      {{ rel.tipoRelacion }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </td>
         </ng-container>
 

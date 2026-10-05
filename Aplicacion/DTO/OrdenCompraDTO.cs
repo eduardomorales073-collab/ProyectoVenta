@@ -10,6 +10,8 @@ namespace Aplicacion.DTO
         DateTime Fecha_Creacion,
         DateTime Fecha_Limite,
         DateTime? fecha_limite_ofertas,
-        int Tipo_Orden
+        int Tipo_Orden,
+        string Estado,
+        int? id_UsuarioCreador 
     );
 }

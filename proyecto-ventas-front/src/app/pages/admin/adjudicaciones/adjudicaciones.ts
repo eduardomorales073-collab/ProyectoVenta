@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';  // ← NUEVO
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -54,9 +55,10 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
   mostrarDetalle = false;
   adjudicacionDetalle: Adjudicacion | null = null;
 
-  // Modal de Adjudicar Pedidos (NUEVO)
+  // Modal de Adjudicar Pedidos
   mostrarAdjudicar = false;
-  sinPedidosPendientes = true;  // ← AQUÍ ESTÁ LA PROPIEDAD QUE FALTABA
+  sinPedidosPendientes = true;
+  ordenIdPreseleccionada: number | null = null;  // ← NUEVO
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -65,6 +67,7 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
     private adjudicacionService: AdjudicacionService,
     private pedidoService: PedidoInternoService,
     private ofertaService: OfertaProveedorService,
+    private route: ActivatedRoute,  // ← NUEVO
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -72,6 +75,22 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.verificarPedidosPendientes();
+
+    // ✅ Leer query param ?ordenId=X para abrir el modal automáticamente
+    this.route.queryParams.subscribe(params => {
+      const ordenId = params['ordenId'];
+      if (ordenId) {
+        const id = parseInt(ordenId, 10);
+        if (!isNaN(id)) {
+          this.ordenIdPreseleccionada = id;
+          // Abrir el modal después de cargar datos
+          setTimeout(() => {
+            this.mostrarAdjudicar = true;
+            this.cdr.detectChanges();
+          }, 500);
+        }
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -107,8 +126,6 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
     this.pedidoService.listar().subscribe({
       next: (pedidos) => {
         // Un pedido está pendiente si tiene ofertas registradas (para adjudicar)
-        // Como validación simple: cualquier pedido sirve
-        // El modal filtrará los que realmente tienen ofertas
         this.sinPedidosPendientes = pedidos.length === 0;
         this.cdr.detectChanges();
       },
@@ -164,13 +181,13 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
         return 'chip-activa';
       case 'cancelada':
         return 'chip-cancelada';
-        case 'completada':  
+      case 'completada':
         return 'chip-cerrada';
       case 'cerrada':
         return 'chip-cerrada';
       case 'pendiente':
         return 'chip-pendiente';
-      case 'aprobada':                      
+      case 'aprobada':
         return 'chip-aprobada';
       default:
         return 'chip-default';
@@ -198,6 +215,7 @@ export class AdjudicacionesComponent implements OnInit, AfterViewInit {
 
   cerrarAdjudicar(): void {
     this.mostrarAdjudicar = false;
+    this.ordenIdPreseleccionada = null;  // ← Limpiar
     this.cdr.detectChanges();
   }
 

@@ -13,6 +13,8 @@ namespace Aplicacion.modelos
         public int? id_OrdenCompra { get; set; }
         public DateTime Fecha_Solicitada { get; set; }
         public DateTime Fecha_Ingreso { get; set; }
-        public bool urgente { get; set; }      
+        public bool urgente { get; set; }
+
+        public string? Observaciones { get; set; }
     }
 }

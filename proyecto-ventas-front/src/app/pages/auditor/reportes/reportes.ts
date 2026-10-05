@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../../services/auth.service';
 
 interface ReporteCard {
+  id: string;
   titulo: string;
   descripcion: string;
   icono: string;
@@ -18,7 +20,6 @@ interface ReporteCard {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     MatCardModule,
     MatIconModule,
     MatButtonModule
@@ -26,63 +27,29 @@ interface ReporteCard {
   templateUrl: './reportes.html',
   styleUrl: './reportes.scss'
 })
-export class AuditorReportesComponent {
-  reportes: ReporteCard[] = [
-    {
-      titulo: 'Historial por Artículo',
-      descripcion: 'Compras de un artículo con proveedor y precio de adjudicación.',
-      icono: 'history',
-      ruta: '/auditor/reportes/historial-articulo',
-      color: 'gradient-blue'
-    },
-    {
-      titulo: 'Ranking de Proveedores',
-      descripcion: 'Top 5 proveedores con mayores montos adjudicados.',
-      icono: 'leaderboard',
-      ruta: '/auditor/reportes/ranking-proveedores',
-      color: 'gradient-green'
-    },
-    {
-      titulo: 'Ofertas por Orden',
-      descripcion: 'Comparativa de ofertas recibidas, resaltando al ganador.',
-      icono: 'compare_arrows',
-      ruta: '/auditor/reportes/ofertas-orden',
-      color: 'gradient-orange'
-    },
-    {
-      titulo: 'Pedidos Pendientes',
-      descripcion: 'Pedidos internos sin asignar a una orden de compra.',
-      icono: 'pending_actions',
-      ruta: '/auditor/reportes/pedidos-pendientes',
-      color: 'gradient-purple'
-    },
-    {
-      titulo: 'Órdenes Activas',
-      descripcion: 'Órdenes de compra abiertas a recibir ofertas.',
-      icono: 'play_circle',
-      ruta: '/auditor/reportes/ordenes-activas',
-      color: 'gradient-cyan'
-    },
-    {
-      titulo: 'Gasto Departamental',
-      descripcion: 'Monto total gastado por departamento en una sucursal y año.',
-      icono: 'account_balance',
-      ruta: '/auditor/reportes/gasto-departamental',
-      color: 'gradient-red'
-    },
-    {
-      titulo: 'Eficiencia del Proceso',
-      descripcion: 'Tiempo promedio (días) desde la orden hasta la adjudicación.',
-      icono: 'speed',
-      ruta: '/auditor/reportes/eficiencia-proceso',
-      color: 'gradient-teal'
-    },
-    {
-      titulo: 'Variación de Precios',
-      descripcion: 'Evolución de precios de oferta por artículo y proveedor.',
-      icono: 'trending_up',
-      ruta: '/auditor/reportes/variacion-precios',
-      color: 'gradient-pink'
-    }
-  ];
+export class AuditorReportesComponent implements OnInit {
+  reportes: ReporteCard[] = [];
+  rutaBase: string = '/auditor/reportes/jasper/';
+
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) { }
+
+  ngOnInit(): void {
+    this.reportes = [
+      { id: 'ranking-proveedores', titulo: 'Ranking de Proveedores', descripcion: 'Top proveedores con mayores montos adjudicados.', icono: 'leaderboard', ruta: '', color: 'gradient-green' },
+      { id: 'gasto-departamental', titulo: 'Gasto Departamental', descripcion: 'Monto total gastado por departamento y sucursal.', icono: 'account_balance', ruta: '', color: 'gradient-red' },
+      { id: 'ordenes-activas', titulo: 'Órdenes Activas', descripcion: 'Órdenes de compra abiertas a recibir ofertas.', icono: 'play_circle', ruta: '', color: 'gradient-cyan' },
+      { id: 'pedidos-pendientes', titulo: 'Pedidos Pendientes', descripcion: 'Pedidos internos sin asignar a una orden.', icono: 'pending_actions', ruta: '', color: 'gradient-purple' },
+      { id: 'historial-articulo', titulo: 'Historial por Artículo', descripcion: 'Compras de un artículo con proveedor y precio.', icono: 'history', ruta: '', color: 'gradient-blue' },
+      { id: 'ofertas-orden', titulo: 'Ofertas por Orden', descripcion: 'Comparativa de ofertas recibidas por orden.', icono: 'compare_arrows', ruta: '', color: 'gradient-orange' },
+      { id: 'eficiencia-proceso', titulo: 'Eficiencia del Proceso', descripcion: 'Tiempo promedio desde orden hasta adjudicación.', icono: 'speed', ruta: '', color: 'gradient-teal' },
+      { id: 'variacion-precios', titulo: 'Variación de Precios', descripcion: 'Evolución de precios por artículo y proveedor.', icono: 'trending_up', ruta: '', color: 'gradient-pink' }
+    ];
+  }
+
+  navegar(reporte: ReporteCard): void {
+    this.router.navigate([this.rutaBase + reporte.id]);
+  }
 }

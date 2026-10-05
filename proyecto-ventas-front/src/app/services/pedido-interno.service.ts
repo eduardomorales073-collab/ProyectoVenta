@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { PedidoInterno, CreatePedidoInternoDTO, UpdatePedidoInternoDTO } from '../models/pedido-interno.model';
+import { PedidoDisponibleProveedor } from '../models/pedido-interno.model';
 
 @Injectable({ providedIn: 'root' })
 export class PedidoInternoService {
@@ -33,4 +34,9 @@ export class PedidoInternoService {
   listarPorDepartamento(idDepartamento: number): Observable<PedidoInterno[]> {
   return this.http.get<PedidoInterno[]>(`${this.url}/por-departamento/${idDepartamento}`);
 }
+
+listarDisponiblesParaProveedor(): Observable<PedidoDisponibleProveedor[]> {
+  return this.http.get<PedidoDisponibleProveedor[]>(`${this.url}/disponibles-para-proveedor`);
+}
+
 }
