@@ -1,15 +1,17 @@
-import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';   // ← AÑADIR
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth-interceptor';
+import { bdInterceptor } from './interceptors/bd.interceptor';
 
-export const appConfig: ApplicationConfig = {
+export const appConfig: ApplicationConfig = {   // ← minúscula (a)
   providers: [
-    provideZonelessChangeDetection(),
-    provideAnimations(),                                                      // ← AÑADIR
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor]))
+    provideHttpClient(withInterceptors([authInterceptor, bdInterceptor])),
+    provideAnimationsAsync()
   ]
 };

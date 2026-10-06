@@ -1,0 +1,68 @@
+<div class="seleccion-container">
+  <mat-card class="seleccion-card">
+    <mat-card-content>
+      <!-- Logo -->
+      <div class="logo-section">
+        <mat-icon class="logo-icon">inventory_2</mat-icon>
+        <h1>SistemaVentas</h1>
+        <p class="subtitle">Selecciona la base de datos</p>
+      </div>
+
+      <!-- Opciones -->
+      <div class="opciones">
+        <!-- SQL Server Local -->
+        <mat-card 
+          class="opcion-card" 
+          [class.seleccionada]="tipoBdSeleccionado === 'local'"
+          (click)="seleccionar('local')">
+          <mat-card-content>
+            <div class="opcion-header">
+              <mat-icon class="icon-bd">storage</mat-icon>
+              <div>
+                <h3>SQL Server Local</h3>
+                <p>Base de datos en tu PC</p>
+              </div>
+            </div>
+            <mat-chip class="chip-local">Sin internet · Rápido</mat-chip>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Azure SQL -->
+        <mat-card 
+          class="opcion-card" 
+          [class.seleccionada]="tipoBdSeleccionado === 'azure'"
+          [class.disabled]="!azureConfigurado"
+          (click)="seleccionar('azure')">
+          <mat-card-content>
+            <div class="opcion-header">
+              <mat-icon class="icon-bd">cloud</mat-icon>
+              <div>
+                <h3>Azure SQL</h3>
+                <p>Base de datos en la nube</p>
+              </div>
+            </div>
+            <mat-chip class="chip-azure" *ngIf="azureConfigurado">Requiere internet</mat-chip>
+            <mat-chip class="chip-proximamente" *ngIf="!azureConfigurado">Próximamente</mat-chip>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Recordar selección -->
+      <div class="recordar-section">
+        <mat-checkbox [(ngModel)]="recordarSeleccion" color="primary">
+          Recordar mi selección
+        </mat-checkbox>
+      </div>
+
+      <!-- Botón continuar -->
+      <button 
+        mat-raised-button 
+        color="primary" 
+        class="btn-continuar"
+        (click)="continuar()">
+        <mat-icon>arrow_forward</mat-icon>
+        Continuar
+      </button>
+    </mat-card-content>
+  </mat-card>
+</div>

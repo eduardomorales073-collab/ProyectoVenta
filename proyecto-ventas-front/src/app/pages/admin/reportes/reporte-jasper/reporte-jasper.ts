@@ -28,9 +28,11 @@ export class ReporteJasperComponent implements OnInit {
   reporte!: ReporteJasper;
   urlSegura!: SafeResourceUrl;
   cargando = true;
-
-  // ✅ Inicializamos con un valor por defecto (nunca hardcodeado)
+  error = '';
   rutaVolver: string = '/login';
+
+  // ✅ URL base de Jasper
+  private readonly jasperBaseUrl = 'http://localhost:8080/jasperserver-pro';
 
   constructor(
     private route: ActivatedRoute,
@@ -40,7 +42,7 @@ export class ReporteJasperComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // ✅ Determinar la ruta de regreso según el rol del usuario
     this.rutaVolver = this.authService.getRutaHubReportes();
 
@@ -49,18 +51,60 @@ export class ReporteJasperComponent implements OnInit {
     const reporte = this.jasperService.reportes.find(r => r.id === id);
 
     if (!reporte) {
-      // Si no existe el reporte, volver al HUB correcto
-      this.rutaVolver = this.authService.getRutaHubReportes();
+      this.error = 'Reporte no encontrado';
       this.cargando = false;
       return;
     }
 
     this.reporte = reporte;
 
-    // Cargar el reporte en iframe
-    const url = this.jasperService.getUrlReporte(reporte.rutaJasper);
+    // ✅ PASO 1: Hacer login en JasperReports para obtener la cookie JSESSIONID
+    await this.hacerLoginJasper();
+
+    // ✅ PASO 2: Cargar el iframe
+    this.cargarIframe();
+  }
+
+  /**
+   * ✅ Hacer login en JasperReports para obtener la cookie de sesión.
+   * Sin este paso, el iframe carga en blanco.
+   */
+  private async hacerLoginJasper(): Promise<void> {
+    try {
+      const formData = new URLSearchParams();
+      formData.set('j_username', 'jasperadmin');
+      formData.set('j_password', 'jasperadmin');
+
+      const response = await fetch(
+        `${this.jasperBaseUrl}/j_spring_security_check`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: formData.toString(),
+          credentials: 'include', // ✅ IMPORTANTE: Incluir cookies
+          redirect: 'manual' // ✅ No seguir redirects automáticamente
+        }
+      );
+
+      console.log('[ReporteJasper] Login status:', response.status);
+      console.log('[ReporteJasper] Login OK, cookie JSESSIONID obtenida');
+    } catch (err) {
+      console.error('[ReporteJasper] Error en login Jasper:', err);
+      // Continuar de todas formas (puede que el login no sea necesario)
+    }
+  }
+
+  /**
+   * Cargar el iframe con la URL del reporte.
+   */
+  private cargarIframe(): void {
+    const url = this.jasperService.getUrlReporte(this.reporte.rutaJasper);
+    console.log('[ReporteJasper] URL del iframe:', url);
     this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(url);
 
+    // ✅ Detectar cuando el iframe termina de cargar
     setTimeout(() => {
       this.cargando = false;
       this.cdr.detectChanges();
@@ -70,11 +114,13 @@ export class ReporteJasperComponent implements OnInit {
   recargar(): void {
     if (!this.reporte) return;
     this.cargando = true;
-    const url = this.jasperService.getUrlReporte(this.reporte.rutaJasper);
-    this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    setTimeout(() => {
-      this.cargando = false;
-      this.cdr.detectChanges();
-    }, 2000);
+    this.error = '';
+
+    // ✅ Rehacer login + recargar iframe
+    this.hacerLoginJasper().then(() => {
+      setTimeout(() => {
+        this.cargarIframe();
+      }, 500);
+    });
   }
 }

@@ -1,30 +1,25 @@
 import { Injectable } from '@angular/core';
 
-export interface ReporteJasper {
+export interface ReportePdf {
   id: string;
   titulo: string;
   descripcion: string;
   icono: string;
-  rutaJasper: string;
+  endpoint: string;
   color: string;
 }
 
 @Injectable({ providedIn: 'root' })
-export class JasperService {
-  private readonly serverBaseUrl = 'http://localhost:8080/jasperserver-pro';
+export class ReportePdfService {
+  private readonly apiUrl = 'http://localhost:5000/api/ReporteControlador/pdf';
 
-  // ✅ Credenciales de JasperReports
-  // ⚠️ IMPORTANTE: Cambiar en producción
-  private readonly jasperUser = 'jasperadmin';
-  private readonly jasperPassword = 'jasperadmin';
-
-  readonly reportes: ReporteJasper[] = [
+  readonly reportes: ReportePdf[] = [
     {
       id: 'ranking-proveedores',
       titulo: 'Ranking de Proveedores',
       descripcion: 'Top proveedores con mayores montos adjudicados.',
       icono: 'leaderboard',
-      rutaJasper: '/datasources/ReporteRanking',
+      endpoint: 'ranking-proveedores',
       color: 'gradient-green'
     },
     {
@@ -32,7 +27,7 @@ export class JasperService {
       titulo: 'Gasto Departamental',
       descripcion: 'Monto total gastado por departamento y sucursal.',
       icono: 'account_balance',
-      rutaJasper: '/datasources/ReporteGastoDepartamenta_',
+      endpoint: 'gasto-departamental',
       color: 'gradient-red'
     },
     {
@@ -40,7 +35,7 @@ export class JasperService {
       titulo: 'Órdenes Activas',
       descripcion: 'Órdenes de compra abiertas a recibir ofertas.',
       icono: 'play_circle',
-      rutaJasper: '/datasources/RepoteOrdenesActivas',
+      endpoint: 'ordenes-activas',
       color: 'gradient-cyan'
     },
     {
@@ -48,7 +43,7 @@ export class JasperService {
       titulo: 'Pedidos Pendientes',
       descripcion: 'Pedidos internos sin asignar a una orden.',
       icono: 'pending_actions',
-      rutaJasper: '/datasources/ReportePedidoPendiente',
+      endpoint: 'pedidos-pendientes',
       color: 'gradient-purple'
     },
     {
@@ -56,7 +51,7 @@ export class JasperService {
       titulo: 'Historial por Artículo',
       descripcion: 'Compras de un artículo con proveedor y precio.',
       icono: 'history',
-      rutaJasper: '/datasources/ReporteHistorialArticulo',
+      endpoint: 'historial-articulo',
       color: 'gradient-blue'
     },
     {
@@ -64,7 +59,7 @@ export class JasperService {
       titulo: 'Ofertas por Orden',
       descripcion: 'Comparativa de ofertas recibidas por orden.',
       icono: 'compare_arrows',
-      rutaJasper: '/datasources/ReporteOfertaOrden',
+      endpoint: 'ofertas-orden',
       color: 'gradient-orange'
     },
     {
@@ -72,7 +67,7 @@ export class JasperService {
       titulo: 'Eficiencia del Proceso',
       descripcion: 'Tiempo promedio desde orden hasta adjudicación.',
       icono: 'speed',
-      rutaJasper: '/datasources/ReporteEficienciaProceso',
+      endpoint: 'eficiencia-proceso',
       color: 'gradient-teal'
     },
     {
@@ -80,39 +75,15 @@ export class JasperService {
       titulo: 'Variación de Precios',
       descripcion: 'Evolución de precios por artículo y proveedor.',
       icono: 'trending_up',
-      rutaJasper: '/datasources/ReporteVariacionPrecio',
+      endpoint: 'variacion-precios',
       color: 'gradient-pink'
     }
   ];
 
   /**
-   * ✅ Genera la URL del iframe para un reporte Jasper.
-   * 
-   * IMPORTANTE: 
-   * - SIN `j_username` ni `j_password` (JasperReports los ignora por seguridad).
-   * - El login se hace por separado en el componente (POST a j_spring_security_check).
-   * - La cookie JSESSIONID se guarda automáticamente.
+   * Obtiene la URL del PDF para un reporte.
    */
-  getUrlReporte(rutaJasper: string): string {
-    const params = new URLSearchParams({
-      _flowId: 'viewReportFlow',
-      reportUnit: rutaJasper,
-      standAlone: 'true',
-      output: 'html',
-      decorator: 'no',
-      // ✅ Sin credenciales en la URL - se usan cookies de sesión
-    });
-
-    return `${this.serverBaseUrl}/flow.html?${params.toString()}`;
-  }
-
-  /**
-   * ✅ Obtiene las credenciales para el login programático.
-   */
-  getCredenciales(): { user: string; password: string } {
-    return {
-      user: this.jasperUser,
-      password: this.jasperPassword
-    };
+  getUrlPdf(endpoint: string): string {
+    return `${this.apiUrl}/${endpoint}`;
   }
 }

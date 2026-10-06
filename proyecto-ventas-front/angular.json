@@ -21,7 +21,7 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
-              
+              "zone.js"                          ← ✅ AÑADIDO
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
@@ -41,13 +41,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1mb",
-                  "maximumError": "2mb"
+                  "maximumWarning": "2mb",       ← ✅ Subido de 1mb
+                  "maximumError": "5mb"          ← ✅ Subido de 2mb
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kb",
-                  "maximumError": "8kb"
+                  "maximumWarning": "6kb",       ← ✅ Subido de 4kb
+                  "maximumError": "10kb"
                 }
               ],
               "outputHashing": "all"

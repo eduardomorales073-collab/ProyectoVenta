@@ -17,6 +17,9 @@ namespace Aplicacion.Servicios
         private readonly UsuarioRepositorio _usuarioRepositorio;
         private readonly IConfiguration _config;
 
+        // ✅ Clave por defecto si no está configurada (32+ caracteres)
+        private const string DEFAULT_JWT_KEY = "una-clave-secreta-muy-larga-de-al-menos-32-caracteres-para-desarrollo";
+
         public AuthService(UsuarioRepositorio usuarioRepositorio, IConfiguration config)
         {
             _usuarioRepositorio = usuarioRepositorio;
@@ -25,14 +28,23 @@ namespace Aplicacion.Servicios
 
         public async Task<AuthResponseDTO?> LoginAsync(LoginDTO dto)
         {
+            // ✅ Validar que email y password no sean null
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                return null;
+
             // 1. Buscar el usuario
             var usuarios = await _usuarioRepositorio.GetAllasync();
             var usuario = usuarios.FirstOrDefault(u =>
-                u.email.ToLower() == dto.Email.ToLower() && u.Activo);
+                !string.IsNullOrEmpty(u.email) &&
+                u.email.ToLower() == dto.Email.ToLower() &&
+                u.Activo);
             if (usuario == null)
                 return null;
 
             // 2. Verificar la contraseña
+            if (string.IsNullOrEmpty(usuario.Contrasena))
+                return null;
+
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, usuario.Contrasena))
                 return null;
 
@@ -62,13 +74,13 @@ namespace Aplicacion.Servicios
             };
 
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
-        new Claim(ClaimTypes.Email, usuario.email),
-        new Claim(ClaimTypes.Name, usuario.Nombre),
-        new Claim(ClaimTypes.Role, nombreRol),
-        new Claim("IdRol", usuario.id_Rol.ToString())
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.id.ToString()),
+                new Claim(ClaimTypes.Email, usuario.email ?? ""),
+                new Claim(ClaimTypes.Name, usuario.Nombre ?? ""),
+                new Claim(ClaimTypes.Role, nombreRol),
+                new Claim("IdRol", usuario.id_Rol.ToString())
+            };
 
             // IdProveedor (si existe)
             if (usuario.id_Proveedor.HasValue)
@@ -76,19 +88,34 @@ namespace Aplicacion.Servicios
                 claims.Add(new Claim("IdProveedor", usuario.id_Proveedor.Value.ToString()));
             }
 
-            // IdDepartamento (si existe) ← NUEVO
+            // IdDepartamento (si existe)
             if (usuario.id_Departamento.HasValue)
             {
                 claims.Add(new Claim("IdDepartamento", usuario.id_Departamento.Value.ToString()));
             }
 
+            // ✅ Leer la clave JWT con FALLBACK
+            var jwtKey = _config["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+            {
+                Console.WriteLine("!!! ADVERTENCIA: Jwt:Key es null o vacío. Usando clave por defecto.");
+                jwtKey = DEFAULT_JWT_KEY;
+            }
+
+            // ✅ Log de diagnóstico
+            Console.WriteLine($"[AuthService] Jwt:Key (primeros 20 chars): {jwtKey.Substring(0, Math.Min(20, jwtKey.Length))}...");
+            Console.WriteLine($"[AuthService] Jwt:Key length: {jwtKey.Length}");
+
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+                Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var issuer = _config["Jwt:Issuer"] ?? "ProyectoVentas";
+            var audience = _config["Jwt:Audience"] ?? "ProyectoVentasUsuarios";
+
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: issuer,
+                audience: audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: creds

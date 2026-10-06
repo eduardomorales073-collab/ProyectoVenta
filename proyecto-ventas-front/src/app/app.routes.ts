@@ -18,14 +18,6 @@ import { RolesComponent } from './pages/admin/roles/roles';
 import { TiposOrdenComponent } from './pages/admin/tipos-orden/tipos-orden';
 import { PerfilComponent } from './pages/perfil/perfil';
 import { ReportesComponent } from './pages/admin/reportes/reportes';
-import { OrdenesActivas } from './pages/admin/reportes/ordenes-activas/ordenes-activas';
-import { PedidosPendientes } from './pages/admin/reportes/pedidos-pendientes/pedidos-pendientes';
-import { EficienciaProceso } from './pages/admin/reportes/eficiencia-proceso/eficiencia-proceso';
-import { RankingProveedores } from './pages/admin/reportes/ranking-proveedores/ranking-proveedores';
-import { HistorialArticulo } from './pages/admin/reportes/historial-articulo/historial-articulo';
-import { OfertasOrden } from './pages/admin/reportes/ofertas-orden/ofertas-orden';
-import { GastoDepartamentalComponent } from './pages/admin/reportes/gasto-departamental/gasto-departamental';
-import { VariacionPreciosComponent } from './pages/admin/reportes/variacion-precios/variacion-precios';
 import { AdjudicacionesComponent } from './pages/admin/adjudicaciones/adjudicaciones';
 import { PedidosInternosComponent } from './pages/admin/pedidos-internos/pedidos-internos';
 import { AuditorReportesComponent } from './pages/auditor/reportes/reportes';
@@ -35,12 +27,21 @@ import { AccesoDenegadoComponent } from './pages/acceso-denegado/acceso-denegado
 import { PedidosDisponiblesComponent } from './pages/proveedor/pedidos-disponibles/pedidos-disponibles';
 import { creadorGuard } from './guards/creador-guard';
 import { AuditoriaComponent } from './pages/admin/auditoria/auditoria';
-import { ReporteJasperComponent } from './pages/admin/reportes/reporte-jasper/reporte-jasper';
 import { OrdenesCompraComponent } from './pages/admin/ordenes-compra/ordenes-compra';
+import { SeleccionBdComponent } from './pages/seleccion-bd/seleccion-bd';
 
+// ✅ NUEVO: Componente de reportes PDF (QuestPDF)
+import { ReportePdfComponent } from './pages/admin/reportes/reporte-pdf/reporte-pdf';
 
 export const routes: Routes = [
+  // ✅ PRIMERA RUTA: Selección de BD
+  { path: 'seleccion-bd', component: SeleccionBdComponent },
+
+  // ✅ LOGIN
   { path: 'login', component: Login },
+
+  // ✅ RAÍZ: Redirige a selección BD
+  { path: '', redirectTo: '/seleccion-bd', pathMatch: 'full' },
 
   // ===== ADMINISTRADOR =====
   {
@@ -59,23 +60,14 @@ export const routes: Routes = [
       { path: 'unidades-medida', component: UnidadesMedidaComponent },
       { path: 'categorias-proveedor', component: CategoriasProveedorComponent },
       { path: 'ordenes-compra', component: OrdenesCompraComponent },
-
-      // ===== REPORTES =====
       { path: 'reportes', component: ReportesComponent },
-      { path: 'reportes/ordenes-activas', component: OrdenesActivas },
-      { path: 'reportes/pedidos-pendientes', component: PedidosPendientes },
-      { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
-      { path: 'reportes/ranking-proveedores', component: RankingProveedores },
-      { path: 'reportes/historial-articulo', component: HistorialArticulo },
-      { path: 'reportes/ofertas-orden', component: OfertasOrden },
-      { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
-      { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      // ✅ NUEVO: Ruta de reportes PDF (QuestPDF)
+      { path: 'reportes/pdf/:id', component: ReportePdfComponent },
       { path: 'adjudicaciones', component: AdjudicacionesComponent },
       { path: 'pedidos-internos', component: PedidosInternosComponent },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'acceso-denegado', component: AccesoDenegadoComponent },
       { path: 'auditoria', component: AuditoriaComponent },
-      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
+      { path: 'acceso-denegado', component: AccesoDenegadoComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
 
@@ -84,10 +76,9 @@ export const routes: Routes = [
     path: 'creador',
     canActivate: [creadorGuard],
     children: [
-      { path: 'ordenes-compra', component: OrdenesCompraComponent }, 
+      { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: 'pedidos', component: PedidosInternosComponent },
-      { path: '', redirectTo: 'ordenes-compra', pathMatch: 'full' }, 
-      { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
+      { path: '', redirectTo: 'ordenes-compra', pathMatch: 'full' }
     ]
   },
 
@@ -97,17 +88,9 @@ export const routes: Routes = [
     canActivate: [auditorGuard],
     children: [
       { path: 'reportes', component: AuditorReportesComponent },
-      { path: 'reportes/ordenes-activas', component: OrdenesActivas },
-      { path: 'reportes/pedidos-pendientes', component: PedidosPendientes },
-      { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
-      { path: 'reportes/ranking-proveedores', component: RankingProveedores },
-      { path: 'reportes/historial-articulo', component: HistorialArticulo },
-      { path: 'reportes/ofertas-orden', component: OfertasOrden },
-      { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
-      { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      // ✅ NUEVO: Ruta de reportes PDF
+      { path: 'reportes/pdf/:id', component: ReportePdfComponent },
       { path: 'auditoria', component: AuditoriaComponent },
-      { path: 'reportes', component: ReportesComponent }, 
-      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: '', redirectTo: 'reportes', pathMatch: 'full' }
     ]
   },
@@ -118,26 +101,18 @@ export const routes: Routes = [
     canActivate: [empleadoGuard],
     children: [
       { path: 'pedidos', component: PedidosInternosComponent },
+      { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: 'adjudicaciones', component: AdjudicacionesComponent },
       { path: 'articulos', component: ArticulosComponent },
-      { path: 'ordenes-activas', component: OrdenesActivas },
-      { path: 'pedidos-pendientes', component: PedidosPendientes },
-      { path: 'reportes/eficiencia-proceso', component: EficienciaProceso },
-      { path: 'reportes/ranking-proveedores', component: RankingProveedores },
-      { path: 'reportes/historial-articulo', component: HistorialArticulo },
-      { path: 'reportes/ofertas-orden', component: OfertasOrden },
-      { path: 'reportes/gasto-departamental', component: GastoDepartamentalComponent },
-      { path: 'reportes/variacion-precios', component: VariacionPreciosComponent },
+      { path: 'reportes', component: ReportesComponent },
+      // ✅ NUEVO: Ruta de reportes PDF
+      { path: 'reportes/pdf/:id', component: ReportePdfComponent },
       { path: 'auditoria', component: AuditoriaComponent },
-      { path: 'reportes', component: ReportesComponent }, 
-      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
-      { path: 'ordenes-compra', component: OrdenesCompraComponent },
-      { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }
     ]
   },
 
-  // ===== PROVEEDOR (Admin de Proveedor) =====
+  // ===== PROVEEDOR =====
   {
     path: 'proveedor',
     canActivate: [proveedorGuard],
@@ -150,18 +125,9 @@ export const routes: Routes = [
   },
 
   // ===== COMÚN =====
-  {
-    path: 'articulos',
-    component: ArticulosComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'perfil',
-    component: PerfilComponent,
-    canActivate: [authGuard]
-  },
+  { path: 'articulos', component: ArticulosComponent, canActivate: [authGuard] },
+  { path: 'perfil', component: PerfilComponent, canActivate: [authGuard] },
 
-  // ===== RAÍZ Y 404 =====
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  // ===== 404 =====
   { path: '**', redirectTo: '/login' }
 ];

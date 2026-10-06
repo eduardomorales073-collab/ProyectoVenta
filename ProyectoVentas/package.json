@@ -1,0 +1,51 @@
+{
+  "name": "sistema-ventas-desktop",
+  "version": "1.0.0",
+  "description": "Sistema de Ventas - App de Escritorio",
+  "main": "main.js",
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "asar": "^3.2.0",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.sistemaventas.app",
+    "productName": "SistemaVentas",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!dist",
+      "!**/*.pdb",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "../Venta/bin/Release/net10.0/publish",
+        "to": "backend"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [ "x64" ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "SistemaVentas-Portable-${version}.exe"
+    }
+  }
+}

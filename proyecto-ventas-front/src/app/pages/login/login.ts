@@ -44,18 +44,34 @@ export class Login {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      console.log('[Login] Formulario inválido:', this.form.errors);
+      return;
+    }
 
     this.cargando = true;
     this.error = '';
 
-    this.authService.login(this.form.value).subscribe({
-      next: () => {
+    // ✅ Limpiar espacios en blanco del email
+    const datos = {
+      email: (this.form.value.email || '').trim().toLowerCase(),
+      password: this.form.value.password
+    };
+
+    console.log('[Login] Datos a enviar:', datos);
+
+    this.authService.login(datos).subscribe({
+      next: (respuesta: any) => {
+        console.log('[Login] ✅ Login exitoso:', respuesta);
         this.cargando = false;
         const ruta = this.authService.getRutaInicio();
         this.router.navigate([ruta]);
       },
       error: (err: any) => {
+        console.error('[Login] ❌ Error:', err);
+        console.error('[Login] Status:', err.status);
+        console.error('[Login] Error body:', err.error);
+        console.error('[Login] Error message:', err.message);
         this.cargando = false;
         this.error = 'Credenciales incorrectas. Verifica tu email y contraseña.';
       }

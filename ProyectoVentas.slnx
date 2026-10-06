@@ -1,6 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/" />
   <Project Path="Aplicacion/Aplicacion.csproj" />
   <Project Path="Infraestructura/Infraestructura.csproj" />
-  <Project Path="ProyectoVentas/ProyectoVentas.csproj" />
+  <Project Path="ProyectoVentas/electron.csproj" />
   <Project Path="Venta/Venta.csproj" Id="6937b817-4c01-4676-bc20-0c9d35e7e009" />
 </Solution>

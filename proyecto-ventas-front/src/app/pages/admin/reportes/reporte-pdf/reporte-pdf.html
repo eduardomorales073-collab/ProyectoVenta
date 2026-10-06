@@ -1,0 +1,46 @@
+<div class="reporte-pdf-container">
+  <div class="header-section">
+    <button mat-icon-button (click)="volver()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-content">
+      <h1>
+        <mat-icon>{{ reporte?.icono }}</mat-icon>
+        {{ reporte?.titulo }}
+      </h1>
+      <p>{{ reporte?.descripcion }}</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="recargar()">
+        <mat-icon>refresh</mat-icon>
+        Recargar
+      </button>
+      <button mat-raised-button color="accent" (click)="descargar()">
+        <mat-icon>download</mat-icon>
+        Descargar
+      </button>
+    </div>
+  </div>
+
+  <div class="pdf-container">
+    <div *ngIf="cargando" class="loading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Generando PDF...</p>
+    </div>
+
+    <div *ngIf="error && !cargando" class="error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- ✅ El iframe usa la URL del Blob (blob:http://...) -->
+    <iframe
+      *ngIf="urlPdf && !cargando && !error"
+      [src]="urlPdf"
+      class="pdf-frame"
+      type="application/pdf"
+      width="100%"
+      height="800px">
+    </iframe>
+  </div>
+</div>
