@@ -34,6 +34,6 @@ export class BdService {
 
   // ⚠️ Por ahora Azure no está configurado
   azureEstaConfigurado(): boolean {
-    return false;
+    return true;
   }
 }
