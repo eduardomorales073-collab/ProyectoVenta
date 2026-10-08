@@ -20,30 +20,11 @@ const BACKEND_PORT = 5000;
 const FRONTEND_PORT = 4200;
 const LOCAL_SERVER_PORT = 4321;
 
-// ✅ Credenciales de JasperReports (cambiar si son otras)
-const JASPER_USER = 'jasperadmin';
-const JASPER_PASSWORD = 'jasperadmin';
-
 let mainWindow = null;
 let backendProcess = null;
 let localServer = null;
 
 app.setPath('userData', USER_DATA_PATH);
-
-// ============ INTERCEPTAR PETICIONES A JASPERREPORTS ============
-// ✅ Añadir Basic Auth automáticamente a todas las peticiones al servidor Jasper
-function setupJasperAuth() {
-    session.defaultSession.webRequest.onBeforeSendHeaders(
-        { urls: ['http://localhost:8080/*', 'http://127.0.0.1:8080/*'] },
-        (details, callback) => {
-            const credentials = Buffer.from(`${JASPER_USER}:${JASPER_PASSWORD}`).toString('base64');
-            details.requestHeaders['Authorization'] = `Basic ${credentials}`;
-            callback({ requestHeaders: details.requestHeaders });
-        }
-    );
-
-    console.log('[JASPER] Interceptor de autenticacion activado');
-}
 
 // ============ SERVIDOR HTTP LOCAL PARA ANGULAR ============
 function startLocalServer() {
@@ -52,36 +33,59 @@ function startLocalServer() {
     const browserPath = path.join(__dirname, 'browser');
 
     localServer = http.createServer((req, res) => {
-        let urlPath = req.url.split('?')[0].split('#')[0];
-        let filePath = path.join(browserPath, urlPath === '/' ? 'index.html' : urlPath);
+        // ✅ Quitar query string
+        let urlPath = req.url.split('?')[0];
+        urlPath = decodeURIComponent(urlPath);
 
+        // ✅ Normalizar el path
+        if (urlPath === '/' || urlPath === '') {
+            urlPath = '/index.html';
+        }
+
+        // ✅ Construir la ruta del archivo
+        let filePath = path.join(browserPath, urlPath);
+
+        // ✅ SPA fallback: si NO existe el archivo, servir index.html
         if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+            console.log(`[Server] SPA fallback: ${urlPath} → index.html`);
             filePath = path.join(browserPath, 'index.html');
         }
 
+        // ✅ Content-Type según extensión
         const ext = path.extname(filePath).toLowerCase();
         const contentTypes = {
-            '.html': 'text/html',
-            '.js': 'application/javascript',
-            '.css': 'text/css',
-            '.json': 'application/json',
+            '.html': 'text/html; charset=utf-8',
+            '.js': 'application/javascript; charset=utf-8',
+            '.mjs': 'application/javascript; charset=utf-8',
+            '.css': 'text/css; charset=utf-8',
+            '.json': 'application/json; charset=utf-8',
             '.png': 'image/png',
             '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
             '.svg': 'image/svg+xml',
             '.ico': 'image/x-icon',
             '.woff': 'font/woff',
             '.woff2': 'font/woff2',
-            '.ttf': 'font/ttf'
+            '.ttf': 'font/ttf',
+            '.map': 'application/json'
         };
         const contentType = contentTypes[ext] || 'application/octet-stream';
 
+        // ✅ Leer y enviar el archivo
         fs.readFile(filePath, (err, data) => {
             if (err) {
-                res.writeHead(404);
+                console.error(`[Server] Error: ${filePath} -`, err.message);
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
                 res.end('Not found');
                 return;
             }
-            res.writeHead(200, { 'Content-Type': contentType });
+
+            res.writeHead(200, {
+                'Content-Type': contentType,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            });
             res.end(data);
         });
     });
@@ -139,7 +143,7 @@ function createWindow() {
         height: 900,
         minWidth: 1024,
         minHeight: 700,
-        show: true,
+        show: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
@@ -155,8 +159,10 @@ function createWindow() {
         mainWindow.loadURL(`http://localhost:${FRONTEND_PORT}`);
         mainWindow.webContents.openDevTools();
     } else {
+        // ✅ Cargar SIEMPRE la raíz (con base href="/" los recursos se piden correctamente)
         const url = `http://127.0.0.1:${LOCAL_SERVER_PORT}/`;
         console.log('[PROD] Cargando desde:', url);
+
         mainWindow.loadURL(url).catch(err => {
             console.error('Error al cargar:', err);
         });
@@ -169,6 +175,7 @@ function createWindow() {
     }
 
     mainWindow.once('ready-to-show', () => {
+        console.log('[PROD] Ventana lista para mostrar');
         mainWindow.show();
     });
 
@@ -181,12 +188,26 @@ function createWindow() {
         return { action: 'deny' };
     });
 
+    // ✅ Interceptar F5/Ctrl+R
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        const isF5 = input.key === 'F5';
+        const isCtrlR = input.control && (input.key === 'r' || input.key === 'R');
+
+        if (isF5 || isCtrlR) {
+            event.preventDefault();
+            const currentUrl = mainWindow.webContents.getURL();
+            console.log('[F5] Recargando:', currentUrl);
+            // ✅ Recargar la URL actual (el servidor tiene SPA fallback)
+            mainWindow.reload();
+        }
+    });
+
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-        console.error('Error al cargar:', errorCode, errorDescription);
+        console.error('[ERROR] Fallo al cargar:', errorCode, errorDescription);
     });
 
     mainWindow.webContents.on('did-finish-load', () => {
-        console.log('Contenido cargado');
+        console.log('[OK] Contenido cargado correctamente');
     });
 }
 
@@ -194,9 +215,6 @@ function createWindow() {
 app.whenReady().then(() => {
     console.log('=== SISTEMA VENTAS DESKTOP ===');
     console.log('Modo:', isDev ? 'DESARROLLO' : 'PRODUCCION');
-
-    // ✅ Activar interceptor de Jasper ANTES de crear ventana
-    setupJasperAuth();
 
     startLocalServer();
     startBackend();

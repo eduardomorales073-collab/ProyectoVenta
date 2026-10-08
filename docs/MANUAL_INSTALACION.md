@@ -5,7 +5,7 @@ Guía para instalar y configurar el sistema.
 ## 📋 Índice
 
 1. [Requisitos](#requisitos)
-2. [Instalación de SQL Server](#instalación-de-sql-server)
+2. [Instalación de SQL Server](#instalación-de-sql-server)F
 3. [Instalación de MongoDB](#instalación-de-mongodb)
 4. [Instalación de RabbitMQ](#instalación-de-rabbitmq)
 5. [Configuración de Azure SQL (Opcional)](#configuración-de-azure-sql)
