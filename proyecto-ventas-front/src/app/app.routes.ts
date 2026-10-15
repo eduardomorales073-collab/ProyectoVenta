@@ -30,7 +30,10 @@ import { AuditoriaComponent } from './pages/admin/auditoria/auditoria';
 import { OrdenesCompraComponent } from './pages/admin/ordenes-compra/ordenes-compra';
 import { SeleccionBdComponent } from './pages/seleccion-bd/seleccion-bd';
 
-// ✅ NUEVO: Componente de reportes PDF (QuestPDF)
+// ✅ Reporte Jasper (iframe con JasperReports Server)
+import { ReporteJasperComponent } from './pages/admin/reportes/reporte-jasper/reporte-jasper';
+
+// ✅ Reporte PDF (QuestPDF) - opcional
 import { ReportePdfComponent } from './pages/admin/reportes/reporte-pdf/reporte-pdf';
 
 export const routes: Routes = [
@@ -61,7 +64,7 @@ export const routes: Routes = [
       { path: 'categorias-proveedor', component: CategoriasProveedorComponent },
       { path: 'ordenes-compra', component: OrdenesCompraComponent },
       { path: 'reportes', component: ReportesComponent },
-      // ✅ NUEVO: Ruta de reportes PDF (QuestPDF)
+      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: 'reportes/pdf/:id', component: ReportePdfComponent },
       { path: 'adjudicaciones', component: AdjudicacionesComponent },
       { path: 'pedidos-internos', component: PedidosInternosComponent },
@@ -88,7 +91,7 @@ export const routes: Routes = [
     canActivate: [auditorGuard],
     children: [
       { path: 'reportes', component: AuditorReportesComponent },
-      // ✅ NUEVO: Ruta de reportes PDF
+      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: 'reportes/pdf/:id', component: ReportePdfComponent },
       { path: 'auditoria', component: AuditoriaComponent },
       { path: '', redirectTo: 'reportes', pathMatch: 'full' }
@@ -105,7 +108,7 @@ export const routes: Routes = [
       { path: 'adjudicaciones', component: AdjudicacionesComponent },
       { path: 'articulos', component: ArticulosComponent },
       { path: 'reportes', component: ReportesComponent },
-      // ✅ NUEVO: Ruta de reportes PDF
+      { path: 'reportes/jasper/:id', component: ReporteJasperComponent },
       { path: 'reportes/pdf/:id', component: ReportePdfComponent },
       { path: 'auditoria', component: AuditoriaComponent },
       { path: '', redirectTo: 'pedidos', pathMatch: 'full' }

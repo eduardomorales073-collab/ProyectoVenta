@@ -19,8 +19,8 @@ namespace Aplicacion.Servicios
         private readonly PedIntRepositorio _pedidoRepositorio;
         private readonly DetaAdjRepositorio _detalleAdjRepositorio;
         private readonly DepartaRepositorio _departamentoRepositorio;
-        private readonly SucursalRepositorio _sucursalRepositorio;       // ← NUEVO
-        private readonly UsuarioRepositorio _usuarioRepositorio;          // ← NUEVO
+        private readonly SucursalRepositorio _sucursalRepositorio;
+        private readonly UsuarioRepositorio _usuarioRepositorio;
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
@@ -29,8 +29,8 @@ namespace Aplicacion.Servicios
             PedIntRepositorio pedidoRepositorio,
             DetaAdjRepositorio detalleAdjRepositorio,
             DepartaRepositorio departamentoRepositorio,
-            SucursalRepositorio sucursalRepositorio,                      // ← NUEVO
-            UsuarioRepositorio usuarioRepositorio,                        // ← NUEVO
+            SucursalRepositorio sucursalRepositorio,
+            UsuarioRepositorio usuarioRepositorio,
             IPublishEndpoint publishEndpoint,
             IMapper mapper)
         {
@@ -40,8 +40,25 @@ namespace Aplicacion.Servicios
             _pedidoRepositorio = pedidoRepositorio;
             _detalleAdjRepositorio = detalleAdjRepositorio;
             _departamentoRepositorio = departamentoRepositorio;
-            _sucursalRepositorio = sucursalRepositorio;                   // ← NUEVO
-            _usuarioRepositorio = usuarioRepositorio;                     // ← NUEVO
+            _sucursalRepositorio = sucursalRepositorio;
+            _usuarioRepositorio = usuarioRepositorio;
+        }
+
+        // ✅ HELPER: Publicar evento SIN bloquear
+        private void PublicarEvento<T>(T evento) where T : class
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    await _publishEndpoint.Publish(evento, cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WARN] No se pudo publicar {typeof(T).Name}: {ex.Message}");
+                }
+            });
         }
 
         public async Task AddAsync(CreateOrdenCompraDTO orden, int idUsuario, int idDepartamento)
@@ -61,7 +78,8 @@ namespace Aplicacion.Servicios
 
             await _ordenCompraRepositorio.AddAsync(nuevaOrden);
 
-            await _publishEndpoint.Publish(new OrdenCreada(
+            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+            PublicarEvento(new OrdenCreada(
                 OrdenId: nuevaOrden.id,
                 Descripcion: nuevaOrden.Descripcion,
                 Fecha_Creacion: nuevaOrden.Fecha_Creacion,
@@ -87,21 +105,15 @@ namespace Aplicacion.Servicios
 
         public async Task UpdateAsync(UpdateOrdenCompraDTO orden, int idUsuario, string rol)
         {
-            // ✅ Obtener la entidad YA RASTREADA (no crear nueva)
             var existente = await _ordenCompraRepositorio.GetAsync(orden.id);
             if (existente == null)
                 throw new InvalidOperationException($"La orden #{orden.id} no existe.");
 
-            // ✅ Actualizar los campos de la entidad existente (NO mapear)
             existente.Descripcion = orden.Descripcion;
             existente.Fecha_Limite = orden.Fecha_Limite;
             existente.Fecha_Creacion = orden.Fecha_Creacion;
             existente.Tipo_Orden = orden.Tipo_Orden;
 
-            // Preservar campos que no vienen en el DTO
-            // (id_UsuarioCreador y Estado ya están en la entidad existente)
-
-            // Si el DTO no trae fecha_limite_ofertas, usar Fecha_Limite
             if (!existente.fecha_limite_ofertas.HasValue)
             {
                 existente.fecha_limite_ofertas = existente.Fecha_Limite;
@@ -117,17 +129,15 @@ namespace Aplicacion.Servicios
             var pedidos = await _pedidoRepositorio.GetAllasync();
             var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
             var departamentos = await _departamentoRepositorio.GetAllasync();
-            var sucursales = await _sucursalRepositorio.GetAllasync();       // ← NUEVO
-            var usuarios = await _usuarioRepositorio.GetAllasync();           // ← NUEVO
+            var sucursales = await _sucursalRepositorio.GetAllasync();
+            var usuarios = await _usuarioRepositorio.GetAllasync();
 
-            // ===== FILTRAR POR ROL =====
             IEnumerable<Orden_Compra> ordenesFiltradas = ordenes;
 
             if (rol == "CreadorPedidos")
             {
                 ordenesFiltradas = ordenes.Where(o => o.id_UsuarioCreador == idUsuario);
             }
-            // Gestor: las de su sucursal (con o sin pedidos) + las que él creó
             else if (rol == "GestorCompras")
             {
                 if (idDepartamento.HasValue)
@@ -137,21 +147,17 @@ namespace Aplicacion.Servicios
                     {
                         var idSucursalUsuario = deptoUsuario.id_Sucursal;
 
-                        // Departamentos de la misma sucursal
                         var idsDepartamentosDeLaSucursal = departamentos
                             .Where(d => d.id_Sucursal == idSucursalUsuario)
                             .Select(d => d.id)
                             .ToHashSet();
 
-                        // IDs de usuarios cuyo departamento es de la sucursal
                         var idsUsuariosDeLaSucursal = usuarios
                             .Where(u => u.id_Departamento.HasValue
                                      && idsDepartamentosDeLaSucursal.Contains(u.id_Departamento.Value))
                             .Select(u => u.id)
                             .ToHashSet();
 
-                        // ✅ Filtrar por CREADOR de la orden (no por pedidos)
-                        // El creador debe pertenecer a un departamento de la sucursal
                         ordenesFiltradas = ordenes.Where(o =>
                             o.id_UsuarioCreador.HasValue
                             && idsUsuariosDeLaSucursal.Contains(o.id_UsuarioCreador.Value));
@@ -162,7 +168,6 @@ namespace Aplicacion.Servicios
             {
                 ordenesFiltradas = ordenes.Where(o => o.Estado == "Publicada" || o.Estado == "Adjudicada");
             }
-            // Admin y Auditor: todas
 
             var idsPedidosAdjudicados = detallesAdj
                 .Select(d => d.id_Pedido)
@@ -181,7 +186,6 @@ namespace Aplicacion.Servicios
                         .Count(p => idsPedidosAdjudicados.Contains(p.id));
                     var pedidosPendientes = totalPedidos - pedidosAdjudicados;
 
-                    // ✅ CALCULAR SUCURSAL Y DEPARTAMENTO DEL CREADOR
                     string? nombreSucursal = null;
                     string? nombreDepartamento = null;
 
@@ -212,8 +216,8 @@ namespace Aplicacion.Servicios
                         pedidosPendientes,
                         o.Estado,
                         o.id_UsuarioCreador,
-                        nombreSucursal,           // ← NUEVO
-                        nombreDepartamento        // ← NUEVO
+                        nombreSucursal,
+                        nombreDepartamento
                     );
                 }).ToList();
         }
@@ -248,7 +252,7 @@ namespace Aplicacion.Servicios
                     null,
                     null,
                     null,
-                    null,                               // ← NUEVO: Observaciones
+                    null,
                     new List<ArticuloDePedidoDTO>()
                 )).ToList();
         }

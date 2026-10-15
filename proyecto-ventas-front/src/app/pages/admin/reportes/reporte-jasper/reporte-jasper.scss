@@ -1,72 +1,178 @@
 .reporte-container {
-  padding: 2rem;
-  max-width: 1600px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  padding: 1rem;
+  gap: 1rem;
+  background: #f1f5f9;
+  box-sizing: border-box;
 }
 
-.header-section {
+.reporte-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.75rem;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 
-  .back-btn {
-    margin-top: 0.25rem;
+  .header-izquierda {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    button {
+      color: white;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
   }
 
   .header-info {
-    flex: 1;
-
     h1 {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 1.75rem;
-      color: #1e293b;
       margin: 0 0 0.25rem;
+      font-size: 1.5rem;
+      font-weight: 700;
 
-      mat-icon {
-        font-size: 2rem;
-        width: 2rem;
-        height: 2rem;
-        color: #8b5cf6;
+      .icono-titulo {
+        font-size: 1.75rem;
+        width: 1.75rem;
+        height: 1.75rem;
       }
     }
 
     p {
-      color: #64748b;
       margin: 0;
+      font-size: 0.9rem;
+      opacity: 0.9;
     }
   }
+
+  .header-derecha {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    button {
+      font-weight: 600;
+
+      mat-icon {
+        margin-right: 0.25rem;
+      }
+    }
+      // ✅ Botón Recargar (outline sobre fondo morado)
+      button[mat-stroked-button] {
+        color: white;
+        border-color: rgba(255, 255, 255, 0.6);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: white;
+        }
+
+        &:disabled {
+          color: rgba(255, 255, 255, 0.5);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+      }
+      // ✅ Botón Descargar PDF (destacado)
+      button[mat-raised-button] {
+        background: #10b981;
+        color: white;
+
+        &:hover {
+          background: #059669;
+        }
+
+        &:disabled {
+          background: rgba(255, 255, 255, 0.3);
+          color: rgba(255, 255, 255, 0.6);
+        }
+      }
+  }
 }
 
-.iframe-card {
-  border-radius: 1rem !important;
+.reporte-body {
+  flex: 1;
+  position: relative;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  min-height: 600px;
+}
 
-  mat-card-content {
-    padding: 1rem !important;
-  }
+.jasper-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  border: none;
+  display: block;
 
-  iframe {
-    border-radius: 0.5rem;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+  &.oculto {
+    opacity: 0;
   }
 }
 
-.loading {
+.loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 4rem;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
   color: #64748b;
 
   p {
-    margin-top: 1rem;
     font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+  color: #dc2626;
+
+  mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .reporte-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .header-derecha {
+      width: 100%;
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
   }
 }

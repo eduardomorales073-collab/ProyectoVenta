@@ -30,8 +30,8 @@ interface ReporteCard {
 export class ReportesComponent implements OnInit {
   reportes: ReporteCard[] = [];
 
-  // ✅ CAMBIO: rutaBase apunta a "pdf" en lugar de "jasper"
-  rutaBase: string = '/admin/reportes/pdf/';
+  // ✅ CAMBIO: rutaBase apunta a "jasper" en lugar de "pdf"
+  rutaBase: string = '/admin/reportes/jasper/';
   titulo: string = 'Reportes y Análisis';
   subtitulo: string = 'Selecciona el reporte que deseas visualizar';
 
@@ -41,13 +41,13 @@ export class ReportesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // ✅ CAMBIO: Adaptar la ruta según el rol del usuario (usa "pdf" en lugar de "jasper")
+    // ✅ CAMBIO: Adaptar la ruta según el rol del usuario (usa "jasper")
     if (this.authService.esAdmin()) {
-      this.rutaBase = '/admin/reportes/pdf/';
+      this.rutaBase = '/admin/reportes/jasper/';
     } else if (this.authService.esAuditor()) {
-      this.rutaBase = '/auditor/reportes/pdf/';
+      this.rutaBase = '/auditor/reportes/jasper/';
     } else if (this.authService.esGestorCompras()) {
-      this.rutaBase = '/empleado/reportes/pdf/';
+      this.rutaBase = '/empleado/reportes/jasper/';
     }
 
     this.reportes = [

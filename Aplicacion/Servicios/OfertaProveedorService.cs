@@ -28,9 +28,25 @@ namespace Aplicacion.Servicios
             _publishEndpoint = publishEndpoint;
         }
 
+        // ✅ HELPER: Publicar evento SIN bloquear
+        private void PublicarEvento<T>(T evento) where T : class
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    await _publishEndpoint.Publish(evento, cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WARN] No se pudo publicar {typeof(T).Name}: {ex.Message}");
+                }
+            });
+        }
+
         public async Task AddAsync(CreateOfertaProveedorDTO oferta)
         {
-            // ===== VALIDACIÓN: Un proveedor solo puede ofertar UNA VEZ por pedido =====
             var todas = await _ofertaProveedorRepositorio.GetAllasync();
 
             var ofertaExistente = todas.FirstOrDefault(o =>
@@ -50,7 +66,8 @@ namespace Aplicacion.Servicios
 
             await _ofertaProveedorRepositorio.AddAsync(nuevaOferta);
 
-            await _publishEndpoint.Publish(new OfertaRegistrada(
+            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+            PublicarEvento(new OfertaRegistrada(
                 OfertaId: nuevaOferta.id,
                 IdProveedor: nuevaOferta.id_Proveedor,
                 IdPedidoInterno: nuevaOferta.id_Pedido_Interno,
@@ -75,10 +92,8 @@ namespace Aplicacion.Servicios
             return _mapper.Map<OfertaProveedorDTO>(await _ofertaProveedorRepositorio.GetAsync(id));
         }
 
-        // ===== MÉTODO CORREGIDO: UpdateAsync =====
         public async Task UpdateAsync(UpdateOfertaProveedorDTO oferta)
         {
-            // ===== OBTENER LA ENTIDAD YA RASTREADA =====
             var existente = await _ofertaProveedorRepositorio.GetAsync(oferta.id);
             if (existente == null)
             {
@@ -88,7 +103,6 @@ namespace Aplicacion.Servicios
             var precioAnterior = existente.Precio;
             var precioNuevo = oferta.Precio;
 
-            // ===== ACTUALIZAR LA ENTIDAD YA RASTREADA (NO mapear) =====
             existente.Precio = oferta.Precio;
             existente.Fecha_Oferta = oferta.Fecha_Oferta;
             existente.id_Proveedor = oferta.id_Proveedor;
@@ -96,8 +110,8 @@ namespace Aplicacion.Servicios
 
             await _ofertaProveedorRepositorio.UpdateAsync(existente);
 
-            // ===== EVENTO: OfertaActualizada =====
-            await _publishEndpoint.Publish(new OfertaActualizada(
+            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+            PublicarEvento(new OfertaActualizada(
                 OfertaId: existente.id,
                 IdProveedor: existente.id_Proveedor,
                 IdPedidoInterno: existente.id_Pedido_Interno,

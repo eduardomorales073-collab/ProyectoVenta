@@ -61,6 +61,23 @@ namespace Aplicacion.Servicios
             _publishEndpoint = publishEndpoint;
         }
 
+        // ✅ HELPER: Publicar evento SIN bloquear si RabbitMQ no está disponible
+        private void PublicarEvento<T>(T evento) where T : class
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    await _publishEndpoint.Publish(evento, cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WARN] No se pudo publicar {typeof(T).Name}: {ex.Message}");
+                }
+            });
+        }
+
         // ==================== ADD (CREATE) ====================
         public async Task AddAsync(CreatePedidoInternoDTO pedido)
         {
@@ -132,7 +149,8 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            await _publishEndpoint.Publish(new PedidoCreado(
+            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+            PublicarEvento(new PedidoCreado(
                 PedidoId: nuevoPedido.id,
                 Codigo: nuevoPedido.codigo ?? "",
                 IdDepartamento: nuevoPedido.id_Departamento,
@@ -150,7 +168,8 @@ namespace Aplicacion.Servicios
             {
                 await _pedidoInternoRepositorio.DeletAsync(id);
 
-                await _publishEndpoint.Publish(new PedidoCancelado(
+                // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+                PublicarEvento(new PedidoCancelado(
                     PedidoId: id,
                     Codigo: pedido.codigo ?? "",
                     Motivo: "Cancelado por el usuario",
@@ -388,8 +407,8 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== EVENTO: PedidoActualizado =====
-            await _publishEndpoint.Publish(new PedidoActualizado(
+            // ===== EVENTO: PedidoActualizado (SIN BLOQUEAR) =====
+            PublicarEvento(new PedidoActualizado(
                 PedidoId: pedidoExistente.id,
                 Codigo: pedidoExistente.codigo ?? "",
                 Cantidad: pedidoExistente.cantidad ?? 1,
@@ -409,7 +428,6 @@ namespace Aplicacion.Servicios
         // ==================== GET DISPONIBLES PARA PROVEEDOR ====================
         public async Task<List<PedidoDisponibleProveedorDTO>> GetDisponiblesParaProveedorAsync(int idProveedor)
         {
-            // 1. Obtener los artículos que provee este proveedor
             var proveedorArticulos = await _proveArtRepositorio.GetAllasync();
             var misArticulos = proveedorArticulos
                 .Where(pa => pa.id_Proveedor == idProveedor)
@@ -419,14 +437,12 @@ namespace Aplicacion.Servicios
             if (!misArticulos.Any())
                 return new List<PedidoDisponibleProveedorDTO>();
 
-            // 2. Obtener los rubros del proveedor
             var proveedorRubros = await _proveRubRepositorio.GetAllasync();
             var misRubros = proveedorRubros
                 .Where(pr => pr.id_Proveedor == idProveedor)
                 .Select(pr => pr.id_Rubro)
                 .ToHashSet();
 
-            // 3. Obtener TODOS los datos necesarios
             var pedidos = await _pedidoInternoRepositorio.GetAllasync();
             var detallesPedido = await _detallePedidoRepositorio.GetAllasync();
             var ofertas = await _ofertaRepositorio.GetAllasync();
@@ -437,13 +453,11 @@ namespace Aplicacion.Servicios
             var relaciones = await _relacionRepositorio.GetAllasync();
             var proveedores = await _proveedorRepositorio.GetAllasync();
 
-            // ✅ Obtener IDs de proveedores relacionados (relación bidireccional)
             var idsRelacionados = relaciones
                 .Where(r => r.Proveedor1 == idProveedor || r.Proveedor2 == idProveedor)
                 .Select(r => r.Proveedor1 == idProveedor ? r.Proveedor2 : r.Proveedor1)
                 .ToHashSet();
 
-            // 4. Filtrar pedidos con artículos que el proveedor maneja
             var pedidosFiltrados = pedidos
                 .Where(p =>
                 {
@@ -456,7 +470,6 @@ namespace Aplicacion.Servicios
                 })
                 .ToList();
 
-            // 5. Para cada pedido, calcular competencia y construir el DTO
             return pedidosFiltrados.Select(p =>
             {
                 var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == p.id).ToList();
@@ -475,7 +488,6 @@ namespace Aplicacion.Servicios
                     ? ofertasDelRubro.Min(o => o.Precio)
                     : null;
 
-                // ✅ Proveedores relacionados que ofertaron
                 var ofertasRelacionados = ofertasDelPedido
                     .Where(o => idsRelacionados.Contains(o.id_Proveedor))
                     .ToList();
@@ -496,7 +508,6 @@ namespace Aplicacion.Servicios
                     );
                 }).ToList();
 
-                // Artículos del pedido
                 var articulosDelPedido = detallesPedido
                     .Where(dp => dp.id_Pedido == p.id)
                     .Select(dp =>

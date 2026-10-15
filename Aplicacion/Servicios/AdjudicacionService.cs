@@ -40,7 +40,23 @@ namespace Aplicacion.Servicios
             _publishEndpoint = publishEndpoint;
         }
 
-        // ==================== ADD (CREATE) ====================
+        // ✅ HELPER: Publicar evento SIN bloquear
+        private void PublicarEvento<T>(T evento) where T : class
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    await _publishEndpoint.Publish(evento, cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WARN] No se pudo publicar {typeof(T).Name}: {ex.Message}");
+                }
+            });
+        }
+
         public async Task AddAsync(CreateAdjudicacionDTO adjudicacion)
         {
             var orden = await _ordenCompraRepositorio.GetAsync(adjudicacion.Orden_Compra);
@@ -67,7 +83,8 @@ namespace Aplicacion.Servicios
 
             await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
 
-            await _publishEndpoint.Publish(new CompraRegistrada(
+            // ✅ PUBLICAR EVENTOS SIN BLOQUEAR
+            PublicarEvento(new CompraRegistrada(
                 OrdenId: Guid.NewGuid(),
                 Detalle: $"Adjudicación de la orden #{adjudicacion.Orden_Compra}",
                 Monto: 0,
@@ -75,7 +92,7 @@ namespace Aplicacion.Servicios
                 Proveedor: "Por definir"
             ));
 
-            await _publishEndpoint.Publish(new AdjudicacionCreada(
+            PublicarEvento(new AdjudicacionCreada(
                 AdjudicacionId: nuevaAdjudicacion.id,
                 OrdenCompra: nuevaAdjudicacion.Orden_Compra,
                 Fecha_Resolucion: nuevaAdjudicacion.Fecha_Resolucion,
@@ -85,7 +102,6 @@ namespace Aplicacion.Servicios
             ));
         }
 
-        // ==================== ADJUDICAR MÚLTIPLES PEDIDOS ====================
         public async Task AdjudicarPedidosAsync(AdjudicarPedidosDTO dto)
         {
             if (dto.Pedidos == null || !dto.Pedidos.Any())
@@ -106,7 +122,6 @@ namespace Aplicacion.Servicios
             var todasLasOfertas = await _ofertaRepositorio.GetAllasync();
             var todosLosDetalles = await _detaAdjRepositorio.GetAllasync();
 
-            // Validar CADA pedido ANTES de crear nada
             foreach (var pedido in dto.Pedidos)
             {
                 var detalleExistente = todosLosDetalles.FirstOrDefault(d => d.id_Pedido == pedido.id_Pedido);
@@ -155,7 +170,6 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== CREAR LA ADJUDICACIÓN (CABECERA) CON FECHA Y ESTADO AUTOMÁTICOS =====
             var pedidosDeLaOrden = await _pedidoRepositorio.GetAllasync();
             var pedidosDeLaOrdenFiltrados = pedidosDeLaOrden
                 .Where(p => p.id_OrdenCompra == dto.Orden_Compra)
@@ -185,7 +199,6 @@ namespace Aplicacion.Servicios
 
             var todasLasAdjudicaciones = await _adjuRepositorio.GetAllasync();
 
-            // ✅ Calcular el siguiente ID disponible de forma segura
             int nuevoIdAdjudicacion = 1;
             if (todasLasAdjudicaciones.Any())
             {
@@ -205,9 +218,8 @@ namespace Aplicacion.Servicios
                 Estado = estadoFinal
             };
 
-            await _adjuRepositorio.AddAsync(nuevaAdjudicacion); // ← Solo UNA vez
+            await _adjuRepositorio.AddAsync(nuevaAdjudicacion);
 
-            // ===== CREAR LOS DETALLES (UNO POR CADA PEDIDO) =====
             foreach (var pedido in dto.Pedidos)
             {
                 var ofertaGanadora = todasLasOfertas
@@ -248,8 +260,8 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== PUBLICAR EVENTOS =====
-            await _publishEndpoint.Publish(new CompraRegistrada(
+            // ✅ PUBLICAR EVENTOS SIN BLOQUEAR
+            PublicarEvento(new CompraRegistrada(
                 OrdenId: Guid.NewGuid(),
                 Detalle: $"Adjudicación de la orden #{dto.Orden_Compra} ({dto.Pedidos.Count} pedidos)",
                 Monto: 0,
@@ -257,7 +269,7 @@ namespace Aplicacion.Servicios
                 Proveedor: "Por definir"
             ));
 
-            await _publishEndpoint.Publish(new AdjudicacionCreada(
+            PublicarEvento(new AdjudicacionCreada(
                 AdjudicacionId: nuevaAdjudicacion.id,
                 OrdenCompra: nuevaAdjudicacion.Orden_Compra,
                 Fecha_Resolucion: nuevaAdjudicacion.Fecha_Resolucion,

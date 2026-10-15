@@ -1,37 +1,56 @@
 <div class="reporte-container">
-  <div class="header-section">
-    <button mat-icon-button [routerLink]="rutaVolver" class="back-btn">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <div class="header-info">
-      <h1>
-        <mat-icon>{{ reporte?.icono || 'assessment' }}</mat-icon>
-        {{ reporte?.titulo || 'Reporte Jasper' }}
-      </h1>
-      <p>{{ reporte?.descripcion || 'Reporte generado con JasperReports Server' }}</p>
+  <!-- Header con título y botones -->
+  <div class="reporte-header">
+    <div class="header-izquierda">
+      <button mat-icon-button (click)="volver()" matTooltip="Volver a reportes">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-info">
+        <h1>
+          <mat-icon class="icono-titulo">{{ reporte?.icono || 'assessment' }}</mat-icon>
+          {{ reporte?.titulo || 'Reporte' }}
+        </h1>
+        <p>{{ reporte?.descripcion || '' }}</p>
+      </div>
     </div>
-    <div class="header-actions">
-      <button mat-raised-button color="primary" (click)="recargar()">
+    <div class="header-derecha">
+      <!-- ✅ Botón Recargar -->
+      <button mat-stroked-button color="primary" (click)="recargar()" [disabled]="cargando || descargando">
         <mat-icon>refresh</mat-icon>
         Recargar
+      </button>
+      <!-- ✅ Botón Descargar PDF -->
+      <button mat-raised-button color="accent" (click)="descargar()" [disabled]="cargando || descargando">
+        <mat-icon>{{ descargando ? 'hourglass_empty' : 'download' }}</mat-icon>
+        {{ descargando ? 'Descargando...' : 'Descargar PDF' }}
       </button>
     </div>
   </div>
 
-  <div class="loading" *ngIf="cargando">
-    <mat-spinner diameter="50"></mat-spinner>
-    <p>Cargando reporte desde JasperReports Server...</p>
-  </div>
+  <!-- Contenedor del reporte -->
+  <div class="reporte-body">
+    <!-- Loading -->
+    <div *ngIf="cargando" class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Cargando reporte...</p>
+    </div>
 
-  <mat-card class="iframe-card" *ngIf="!cargando && urlSegura">
-    <mat-card-content>
-      <iframe
-        [src]="urlSegura"
-        width="100%"
-        height="900"
-        frameborder="0"
-        allowfullscreen>
-      </iframe>
-    </mat-card-content>
-  </mat-card>
+    <!-- Error -->
+    <div *ngIf="error && !cargando" class="error-container">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="primary" (click)="recargar()">
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Iframe del reporte Jasper -->
+    <iframe *ngIf="!error"
+            [src]="urlSegura"
+            class="jasper-iframe"
+            frameborder="0"
+            [class.oculto]="cargando"
+            allowfullscreen>
+    </iframe>
+  </div>
 </div>

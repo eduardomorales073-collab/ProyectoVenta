@@ -13,8 +13,6 @@ export interface ReporteJasper {
 export class JasperService {
   private readonly serverBaseUrl = 'http://localhost:8080/jasperserver-pro';
 
-  // ✅ Credenciales de JasperReports
-  // ⚠️ IMPORTANTE: Cambiar en producción
   private readonly jasperUser = 'jasperadmin';
   private readonly jasperPassword = 'jasperadmin';
 
@@ -86,24 +84,21 @@ export class JasperService {
   ];
 
   /**
-   * ✅ Genera la URL del iframe para un reporte Jasper.
-   * 
-   * IMPORTANTE: 
-   * - SIN `j_username` ni `j_password` (JasperReports los ignora por seguridad).
-   * - El login se hace por separado en el componente (POST a j_spring_security_check).
-   * - La cookie JSESSIONID se guarda automáticamente.
+   * ✅ Genera la URL del iframe usando la API REST de JasperReports.
+   * Devuelve SOLO el HTML del reporte (sin toolbar, sin header, sin menús).
    */
   getUrlReporte(rutaJasper: string): string {
-    const params = new URLSearchParams({
-      _flowId: 'viewReportFlow',
-      reportUnit: rutaJasper,
-      standAlone: 'true',
-      output: 'html',
-      decorator: 'no',
-      // ✅ Sin credenciales en la URL - se usan cookies de sesión
-    });
+    const rutaLimpia = rutaJasper.startsWith('/') ? rutaJasper.substring(1) : rutaJasper;
+    return `${this.serverBaseUrl}/rest_v2/reports/${rutaLimpia}.html`;
+  }
 
-    return `${this.serverBaseUrl}/flow.html?${params.toString()}`;
+  /**
+   * ✅ Genera la URL del PDF del reporte para descarga.
+   * Usa la API REST con formato PDF.
+   */
+  getUrlPdf(rutaJasper: string): string {
+    const rutaLimpia = rutaJasper.startsWith('/') ? rutaJasper.substring(1) : rutaJasper;
+    return `${this.serverBaseUrl}/rest_v2/reports/${rutaLimpia}.pdf`;
   }
 
   /**

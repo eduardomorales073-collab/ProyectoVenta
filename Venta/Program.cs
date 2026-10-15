@@ -24,17 +24,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ============ LOG DE DIAGNÓSTICO ============
 Console.WriteLine("=== DIAGNOSTICO DE CONFIGURACION ===");
-Console.WriteLine($"Directorio actual: {Directory.GetCurrentDirectory()}");
 Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
-Console.WriteLine($"appsettings.json existe: {File.Exists("appsettings.json")}");
-Console.WriteLine($"appsettings.Production.json existe: {File.Exists("appsettings.Production.json")}");
 Console.WriteLine($"LocalSqlServer: {builder.Configuration.GetConnectionString("LocalSqlServer") ?? "NULL"}");
-Console.WriteLine($"AzureSql: {builder.Configuration.GetConnectionString("AzureSql") ?? "NULL"}");
 Console.WriteLine($"MongoDB: {builder.Configuration.GetConnectionString("MongoDB") ?? "NULL"}");
-Console.WriteLine($"Jwt:Key: {builder.Configuration["Jwt:Key"] ?? "NULL"}");
-Console.WriteLine($"Jwt:Issuer: {builder.Configuration["Jwt:Issuer"] ?? "NULL"}");
-Console.WriteLine($"Jwt:Audience: {builder.Configuration["Jwt:Audience"] ?? "NULL"}");
-Console.WriteLine($"DefaultBd: {builder.Configuration["DatabaseOptions:DefaultBd"] ?? "NULL"}");
 Console.WriteLine("====================================");
 
 // ============ SERVICIO PARA DETECTAR LA BD ============
@@ -45,60 +37,32 @@ builder.Services.AddScoped<AplicacionDBContexto>(serviceProvider =>
     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-    // ✅ Leer el header X-Tipo-BD
     var tipoBdRaw = httpContextAccessor.HttpContext?.Request.Headers["X-Tipo-BD"].FirstOrDefault();
-
-    // ✅ Normalizar: si es null, string vacío o espacios, usar default
     var tipoBd = (tipoBdRaw ?? "").Trim().ToLower();
     if (string.IsNullOrEmpty(tipoBd))
-    {
         tipoBd = (configuration["DatabaseOptions:DefaultBd"] ?? "local").Trim().ToLower();
-    }
     if (string.IsNullOrEmpty(tipoBd))
-    {
         tipoBd = "local";
-    }
 
-    Console.WriteLine($"[DB Context] X-Tipo-BD raw: '{tipoBdRaw}' -> normalizado: '{tipoBd}'");
-
-    // ✅ Leer connection string DIRECTAMENTE
     string? connectionString = null;
-
     if (tipoBd == "azure")
-    {
         connectionString = configuration.GetConnectionString("AzureSql");
-        Console.WriteLine($"[DB Context] AzureSql: {(string.IsNullOrEmpty(connectionString) ? "VACIO" : "OK")}");
-    }
 
-    // ✅ Si no es azure O azure está vacío, usar Local
     if (string.IsNullOrWhiteSpace(connectionString))
-    {
         connectionString = configuration.GetConnectionString("LocalSqlServer");
-        Console.WriteLine($"[DB Context] LocalSqlServer: {(string.IsNullOrEmpty(connectionString) ? "VACIO" : "OK")}");
-    }
 
-    // ✅ Fallback: leer directo de la sección ConnectionStrings
     if (string.IsNullOrWhiteSpace(connectionString))
-    {
         connectionString = configuration["ConnectionStrings:LocalSqlServer"];
-        Console.WriteLine($"[DB Context] Fallback ConnectionStrings:LocalSqlServer: {(string.IsNullOrEmpty(connectionString) ? "VACIO" : "OK")}");
-    }
 
-    // ✅ ÚLTIMO recurso: hardcodear
     if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        Console.WriteLine("!!! FALLBACK: usando connection string hardcodeada");
         connectionString = "Server=localhost;Database=SystemVentas;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
-    }
-
-    Console.WriteLine($"[DB Context] Connection string final: {connectionString.Substring(0, Math.Min(60, connectionString.Length))}...");
 
     var optionsBuilder = new DbContextOptionsBuilder<AplicacionDBContexto>();
     optionsBuilder.UseSqlServer(connectionString);
     return new AplicacionDBContexto(optionsBuilder.Options);
 });
 
-// --- Entidades simples ---
+// ============ SERVICIOS ============
 builder.Services.AddScoped<IArticuloService, ArticuloServicio>();
 builder.Services.AddScoped<ArticuRepositorio, ArticuloRepositorio>();
 builder.Services.AddScoped<ISucursalService, SucursalService>();
@@ -135,7 +99,6 @@ builder.Services.AddScoped<IProvRubService, ProveeRubroService>();
 builder.Services.AddScoped<ProveRubRepositorio, ProvRubRepositorio>();
 builder.Services.AddScoped<DetaTelRepositorio, DetaTelRepositorioImpl>();
 
-// --- Entidades de clave compuesta ---
 builder.Services.AddScoped<IDetAdjuService, DetalleAdjudicacionService>();
 builder.Services.AddScoped<DetaAdjRepositorio, DeARepositorio>();
 builder.Services.AddScoped<IDetPedidoService, DetallePedidoService>();
@@ -159,7 +122,7 @@ builder.Services.AddScoped<CatProvRepositorio, CatProvRepositorioImpl>();
 builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
 builder.Services.AddScoped<UnidadMedidaRepositorio, UniMedRepositorio>();
 
-// ===== SWAGGER CON JWT =====
+// ===== SWAGGER =====
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -179,15 +142,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// --- Autenticación JWT ---
+// ===== JWT =====
 builder.Services.AddScoped<AuthService>();
-
-var jwtKey = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrEmpty(jwtKey))
-{
-    Console.WriteLine("!!! ERROR: Jwt:Key es null o vacío. Usando clave por defecto.");
-    jwtKey = "una-clave-secreta-muy-larga-de-al-menos-32-caracteres-para-desarrollo";
-}
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "una-clave-secreta-muy-larga-de-al-menos-32-caracteres-para-desarrollo";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -207,33 +164,51 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// --- CORS ---
+// ===== CORS =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AngularApp", policy =>
-        policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4321", "http://localhost:4321")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+        policy
+            .SetIsOriginAllowed(origin => true)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 
-// ===== MONGODB =====
+// ===== MONGODB (TOLERANTE A FALLOS) =====
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017";
 Console.WriteLine($"[MongoDB] Connection string: {mongoConnectionString}");
-var mongoClient = new MongoClient(mongoConnectionString);
-var mongoDatabase = mongoClient.GetDatabase("LogsDB");
 
-builder.Services.AddSingleton<IMongoCollection<CompraHistorial>>(mongoDatabase.GetCollection<CompraHistorial>("compras_historial"));
-builder.Services.AddSingleton<IMongoCollection<PedidoHistorial>>(mongoDatabase.GetCollection<PedidoHistorial>("pedidos_historial"));
-builder.Services.AddSingleton<IMongoCollection<OfertaHistorial>>(mongoDatabase.GetCollection<OfertaHistorial>("ofertas_historial"));
-builder.Services.AddSingleton<IMongoCollection<OrdenHistorial>>(mongoDatabase.GetCollection<OrdenHistorial>("ordenes_historial"));
-builder.Services.AddSingleton<IMongoCollection<CancelacionHistorial>>(mongoDatabase.GetCollection<CancelacionHistorial>("cancelaciones_historial"));
-builder.Services.AddSingleton<IMongoCollection<AdjudicacionHistorial>>(mongoDatabase.GetCollection<AdjudicacionHistorial>("adjudicaciones_historial"));
-builder.Services.AddSingleton<IMongoCollection<PedidoActualizacionHistorial>>(mongoDatabase.GetCollection<PedidoActualizacionHistorial>("pedidos_actualizaciones_historial"));
-builder.Services.AddSingleton<IMongoCollection<OfertaActualizacionHistorial>>(mongoDatabase.GetCollection<OfertaActualizacionHistorial>("ofertas_actualizaciones_historial"));
+try
+{
+    var mongoClientSettings = MongoClientSettings.FromConnectionString(mongoConnectionString);
+    mongoClientSettings.ServerSelectionTimeout = TimeSpan.FromSeconds(3);
+    mongoClientSettings.ConnectTimeout = TimeSpan.FromSeconds(3);
+    mongoClientSettings.SocketTimeout = TimeSpan.FromSeconds(3);
+
+    var mongoClient = new MongoClient(mongoClientSettings);
+    var mongoDatabase = mongoClient.GetDatabase("LogsDB");
+
+    builder.Services.AddSingleton<IMongoCollection<CompraHistorial>>(mongoDatabase.GetCollection<CompraHistorial>("compras_historial"));
+    builder.Services.AddSingleton<IMongoCollection<PedidoHistorial>>(mongoDatabase.GetCollection<PedidoHistorial>("pedidos_historial"));
+    builder.Services.AddSingleton<IMongoCollection<OfertaHistorial>>(mongoDatabase.GetCollection<OfertaHistorial>("ofertas_historial"));
+    builder.Services.AddSingleton<IMongoCollection<OrdenHistorial>>(mongoDatabase.GetCollection<OrdenHistorial>("ordenes_historial"));
+    builder.Services.AddSingleton<IMongoCollection<CancelacionHistorial>>(mongoDatabase.GetCollection<CancelacionHistorial>("cancelaciones_historial"));
+    builder.Services.AddSingleton<IMongoCollection<AdjudicacionHistorial>>(mongoDatabase.GetCollection<AdjudicacionHistorial>("adjudicaciones_historial"));
+    builder.Services.AddSingleton<IMongoCollection<PedidoActualizacionHistorial>>(mongoDatabase.GetCollection<PedidoActualizacionHistorial>("pedidos_actualizaciones_historial"));
+    builder.Services.AddSingleton<IMongoCollection<OfertaActualizacionHistorial>>(mongoDatabase.GetCollection<OfertaActualizacionHistorial>("ofertas_actualizaciones_historial"));
+
+    Console.WriteLine("[MongoDB] Cliente configurado correctamente.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[MongoDB] ADVERTENCIA: No se pudo configurar MongoDB: {ex.Message}");
+    Console.WriteLine("[MongoDB] La auditoría estará deshabilitada.");
+}
 
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
-// ===== MASSTRANSIT + RABBITMQ =====
+// ===== MASSTRANSIT + RABBITMQ (TOLERANTE A FALLOS) =====
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<CompraRegistradaConsumer>();
@@ -251,7 +226,11 @@ builder.Services.AddMassTransit(x =>
         {
             h.Username("guest");
             h.Password("guest");
+            h.RequestedConnectionTimeout(TimeSpan.FromSeconds(3));
+            h.Heartbeat(TimeSpan.FromSeconds(10));
         });
+
+        cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(2)));
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -259,7 +238,7 @@ builder.Services.AddMassTransit(x =>
 // ===== BUILD =====
 var app = builder.Build();
 
-// ===== MIDDLEWARE GLOBAL DE EXCEPCIONES CON LOG COMPLETO =====
+// ===== MIDDLEWARE GLOBAL DE EXCEPCIONES =====
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -267,31 +246,11 @@ app.UseExceptionHandler(errorApp =>
         var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
         var exception = exceptionHandlerPathFeature?.Error;
 
-        Console.WriteLine("");
-        Console.WriteLine("========== ERROR EN API ==========");
-        Console.WriteLine($"Path: {context.Request.Path}");
-        Console.WriteLine($"Method: {context.Request.Method}");
+        Console.WriteLine($"========== ERROR EN API: {context.Request.Path} ==========");
         Console.WriteLine($"Exception: {exception?.GetType().FullName}");
         Console.WriteLine($"Message: {exception?.Message}");
-        Console.WriteLine($"Stack Trace:");
-        Console.WriteLine(exception?.StackTrace);
-
-        if (exception?.InnerException != null)
-        {
-            Console.WriteLine($"--- Inner Exception ---");
-            Console.WriteLine($"Type: {exception.InnerException.GetType().FullName}");
-            Console.WriteLine($"Message: {exception.InnerException.Message}");
-            Console.WriteLine($"Stack: {exception.InnerException.StackTrace}");
-
-            if (exception.InnerException.InnerException != null)
-            {
-                Console.WriteLine($"--- Inner Inner Exception ---");
-                Console.WriteLine($"Type: {exception.InnerException.InnerException.GetType().FullName}");
-                Console.WriteLine($"Message: {exception.InnerException.InnerException.Message}");
-            }
-        }
-        Console.WriteLine("==================================");
-        Console.WriteLine("");
+        Console.WriteLine($"Stack: {exception?.StackTrace}");
+        Console.WriteLine("==========================================");
 
         context.Response.StatusCode = exception is InvalidOperationException ? 400 : 500;
         context.Response.ContentType = "application/json";
@@ -300,8 +259,7 @@ app.UseExceptionHandler(errorApp =>
         {
             mensaje = exception?.Message ?? "Error interno del servidor",
             tipo = exception?.GetType().Name ?? "Error",
-            detalle = exception?.InnerException?.Message ?? "",
-            stack = exception?.StackTrace ?? ""
+            detalle = exception?.InnerException?.Message ?? ""
         });
     });
 });

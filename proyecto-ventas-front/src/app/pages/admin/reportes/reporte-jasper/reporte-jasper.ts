@@ -1,11 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { JasperService, ReporteJasper } from '../../../../services/jasper.service';
 import { AuthService } from '../../../../services/auth.service';
@@ -15,11 +17,12 @@ import { AuthService } from '../../../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatSnackBarModule
   ],
   templateUrl: './reporte-jasper.html',
   styleUrl: './reporte-jasper.scss'
@@ -28,27 +31,35 @@ export class ReporteJasperComponent implements OnInit {
   reporte!: ReporteJasper;
   urlSegura!: SafeResourceUrl;
   cargando = true;
+  descargando = false;
   error = '';
   rutaVolver: string = '/login';
 
-  // ✅ URL base de Jasper
   private readonly jasperBaseUrl = 'http://localhost:8080/jasperserver-pro';
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private jasperService: JasperService,
     private authService: AuthService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
   ) { }
 
   async ngOnInit(): Promise<void> {
-    // ✅ Determinar la ruta de regreso según el rol del usuario
-    this.rutaVolver = this.authService.getRutaHubReportes();
+    if (this.authService.esAdmin()) {
+      this.rutaVolver = '/admin/reportes';
+    } else if (this.authService.esAuditor()) {
+      this.rutaVolver = '/auditor/reportes';
+    } else if (this.authService.esGestorCompras()) {
+      this.rutaVolver = '/empleado/reportes';
+    } else {
+      this.rutaVolver = '/login';
+    }
 
-    // Obtener el reporte por id
     const id = this.route.snapshot.paramMap.get('id');
-    const reporte = this.jasperService.reportes.find(r => r.id === id);
+    const reporte = this.jasperService.reportes.find((r: ReporteJasper) => r.id === id);
 
     if (!reporte) {
       this.error = 'Reporte no encontrado';
@@ -58,17 +69,10 @@ export class ReporteJasperComponent implements OnInit {
 
     this.reporte = reporte;
 
-    // ✅ PASO 1: Hacer login en JasperReports para obtener la cookie JSESSIONID
     await this.hacerLoginJasper();
-
-    // ✅ PASO 2: Cargar el iframe
     this.cargarIframe();
   }
 
-  /**
-   * ✅ Hacer login en JasperReports para obtener la cookie de sesión.
-   * Sin este paso, el iframe carga en blanco.
-   */
   private async hacerLoginJasper(): Promise<void> {
     try {
       const formData = new URLSearchParams();
@@ -83,32 +87,30 @@ export class ReporteJasperComponent implements OnInit {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: formData.toString(),
-          credentials: 'include', // ✅ IMPORTANTE: Incluir cookies
-          redirect: 'manual' // ✅ No seguir redirects automáticamente
+          credentials: 'include',
+          redirect: 'manual'
         }
       );
 
       console.log('[ReporteJasper] Login status:', response.status);
-      console.log('[ReporteJasper] Login OK, cookie JSESSIONID obtenida');
     } catch (err) {
       console.error('[ReporteJasper] Error en login Jasper:', err);
-      // Continuar de todas formas (puede que el login no sea necesario)
     }
   }
 
-  /**
-   * Cargar el iframe con la URL del reporte.
-   */
   private cargarIframe(): void {
     const url = this.jasperService.getUrlReporte(this.reporte.rutaJasper);
     console.log('[ReporteJasper] URL del iframe:', url);
     this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(url);
 
-    // ✅ Detectar cuando el iframe termina de cargar
     setTimeout(() => {
       this.cargando = false;
       this.cdr.detectChanges();
     }, 3000);
+  }
+
+  volver(): void {
+    this.router.navigate([this.rutaVolver]);
   }
 
   recargar(): void {
@@ -116,11 +118,29 @@ export class ReporteJasperComponent implements OnInit {
     this.cargando = true;
     this.error = '';
 
-    // ✅ Rehacer login + recargar iframe
     this.hacerLoginJasper().then(() => {
       setTimeout(() => {
         this.cargarIframe();
       }, 500);
     });
+  }
+
+  /**
+ * ✅ Descargar el reporte como PDF
+ * 
+ * Usa window.open() porque fetch() está bloqueado por CORS.
+ * El navegador abrirá el PDF en una nueva pestaña donde el usuario
+ * puede verlo o guardarlo.
+ */
+  descargar(): void {
+    if (!this.reporte) return;
+
+    const urlPdf = this.jasperService.getUrlPdf(this.reporte.rutaJasper);
+    console.log('[ReporteJasper] Abriendo PDF:', urlPdf);
+
+    // ✅ Abrir el PDF en una nueva pestaña
+    window.open(urlPdf, '_blank');
+
+    this.snackBar.open('📄 PDF abierto en nueva pestaña', 'Cerrar', { duration: 3000 });
   }
 }
