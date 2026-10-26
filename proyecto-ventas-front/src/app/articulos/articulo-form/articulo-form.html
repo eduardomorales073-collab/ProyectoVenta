@@ -1,69 +1,61 @@
-<div class="modal-overlay" (click)="onCancelar()">
-  <div class="modal" (click)="$event.stopPropagation()">
+<div class="modal-overlay">
+  <div class="modal-content">
 
     <div class="modal-header">
       <h2>{{ esEdicion ? 'Editar Artículo' : 'Nuevo Artículo' }}</h2>
-      <button mat-icon-button (click)="onCancelar()">
+      <button mat-icon-button (click)="onCancel()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-      <!-- Código (auto-generado, solo lectura) -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Código</mat-label>
-        <input matInput formControlName="codigo" readonly>
-        <mat-icon matPrefix>qr_code</mat-icon>
-        <mat-hint>Generado automáticamente</mat-hint>
-      </mat-form-field>
+      <div class="modal-body">
+        <!-- Código -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" readonly>
+          <mat-hint>Generado automáticamente</mat-hint>
+        </mat-form-field>
 
-      <!-- Nombre -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nombre</mat-label>
-        <input matInput formControlName="nombre" placeholder="Ej: Computadora portátil" required>
-        <mat-icon matPrefix>inventory_2</mat-icon>
-        <mat-error *ngIf="form.get('nombre')?.hasError('required')">
-          El nombre es obligatorio
-        </mat-error>
-        <mat-error *ngIf="form.get('nombre')?.hasError('maxlength')">
-          Máximo 100 caracteres
-        </mat-error>
-      </mat-form-field>
+        <!-- Nombre -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" placeholder="Ej. Laptop HP">
+          <mat-icon matPrefix>inventory_2</mat-icon>
+        </mat-form-field>
 
-      <!-- Descripción -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Descripción</mat-label>
-        <textarea matInput formControlName="descripcion" rows="3"
-                  placeholder="Ej: Laptop para trabajo administrativo" required></textarea>
-        <mat-icon matPrefix>description</mat-icon>
-        <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
-          La descripción es obligatoria
-        </mat-error>
-        <mat-error *ngIf="form.get('descripcion')?.hasError('maxlength')">
-          Máximo 200 caracteres
-        </mat-error>
-      </mat-form-field>
+        <!-- Descripción -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="descripcion" rows="3"></textarea>
+        </mat-form-field>
 
-      <!-- Unidad de medida -->
-      <mat-form-field appearance="outline" class="full-width">
-  <mat-label>Unidad de medida</mat-label>
-  <mat-select formControlName="unidad_medida" required>
-    <mat-option *ngFor="let u of unidadesMedida" [value]="u.nombre">
-      {{ u.nombre }}
-    </mat-option>
-  </mat-select>
-  <mat-icon matPrefix>straighten</mat-icon>
-  <mat-error *ngIf="form.get('unidad_medida')?.hasError('required')">
-    La unidad de medida es obligatoria
-  </mat-error>
-</mat-form-field>
+        <!-- Unidad de medida -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Unidad de medida</mat-label>
+          <mat-select formControlName="unidad_medida">
+            <mat-option *ngFor="let u of unidadesMedida" [value]="u.nombre">
+              {{ u.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <!-- Botones -->
-      <div class="modal-actions">
-        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
-          Cancelar
-        </button>
+        <!-- ✅ Categoría (Rubro) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Categoría (Rubro)</mat-label>
+          <mat-select formControlName="id_Rubro">
+            <mat-option [value]="null">Sin Categoría</mat-option>
+            <mat-option *ngFor="let r of rubros" [value]="r.id">
+              {{ r.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>category</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button type="button" (click)="onCancel()" [disabled]="guardando">Cancelar</button>
         <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
           <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
           {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}

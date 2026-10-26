@@ -9,18 +9,54 @@
 
   <mat-card class="table-card">
     <mat-card-content>
+
+      <!-- ✅ NUEVO: DASHBOARD DE FILTROS -->
+      <div class="filtros-dashboard">
+        <mat-form-field appearance="outline" class="filtro-select">
+          <mat-label>Prioridad</mat-label>
+          <mat-select [(ngModel)]="filtroPrioridad" (selectionChange)="aplicarFiltros()">
+            <mat-option value="todos">Todas las prioridades</mat-option>
+            <mat-option value="urgentes">🚨 Solo Urgentes</mat-option>
+            <mat-option value="recientes">🕒 Últimos 7 días</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>filter_alt</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filtro-busqueda">
+          <mat-label>Buscar por código o departamento</mat-label>
+          <input matInput [(ngModel)]="filtroTexto" (keyup)="aplicarFiltros()" placeholder="Ej. PED-2026 o Administración">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="badge-urgentes" *ngIf="pedidosUrgentesCount > 0">
+          <mat-icon>warning</mat-icon>
+          Tienes {{ pedidosUrgentesCount }} pedidos urgentes
+        </div>
+      </div>
+
+      <!-- LOADING -->
       <div *ngIf="cargando" class="loading">
         <mat-spinner diameter="40"></mat-spinner>
         <p>Cargando pedidos...</p>
       </div>
 
+      <!-- EMPTY STATE -->
       <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
         <mat-icon>check_circle</mat-icon>
         <h3>No hay pedidos disponibles</h3>
-        <p>No hay pedidos de tus rubros disponibles para ofertar.</p>
+        <p>No hay pedidos que coincidan con los filtros seleccionados.</p>
       </div>
 
+      <!-- TABLA -->
       <table mat-table [dataSource]="pedidos" *ngIf="!cargando && pedidos.length > 0">
+
+        <!-- Urgente -->
+        <ng-container matColumnDef="urgente">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let p">
+            <mat-icon *ngIf="p.urgente" class="icon-urgente" matTooltip="¡Pedido URGENTE!">warning</mat-icon>
+          </td>
+        </ng-container>
 
         <!-- Código -->
         <ng-container matColumnDef="codigo">
@@ -41,9 +77,7 @@
                 <span class="articulo-nombre">{{ a.nombre }}</span>
               </div>
             </div>
-            <ng-template #sinArticulos>
-              <span class="sin-dato">—</span>
-            </ng-template>
+            <ng-template #sinArticulos><span class="sin-dato">-</span></ng-template>
           </td>
         </ng-container>
 
@@ -51,13 +85,10 @@
         <ng-container matColumnDef="observaciones">
           <th mat-header-cell *matHeaderCellDef>Observaciones</th>
           <td mat-cell *matCellDef="let p">
-            <span *ngIf="p.observaciones; else sinObs"
-              class="observaciones-text"
-              [matTooltip]="p.observaciones"
-              matTooltipPosition="above">
+            <span *ngIf="p.observaciones; else sinObs" class="observaciones-text" [matTooltip]="p.observaciones">
               {{ p.observaciones }}
             </span>
-            <ng-template #sinObs><span class="sin-dato">—</span></ng-template>
+            <ng-template #sinObs><span class="sin-dato">-</span></ng-template>
           </td>
         </ng-container>
 
@@ -74,7 +105,7 @@
           <th mat-header-cell *matHeaderCellDef>Departamento</th>
           <td mat-cell *matCellDef="let p">
             <mat-chip class="chip-departamento">
-              {{ p.nombreDepartamento || nombreDepartamento(p.id_Departamento) }}
+              {{ p.nombreDepartamento || 'Depto #' + p.id_Departamento }}
             </mat-chip>
           </td>
         </ng-container>
@@ -89,7 +120,6 @@
         <ng-container matColumnDef="competencia">
           <th mat-header-cell *matHeaderCellDef>Competencia</th>
           <td mat-cell *matCellDef="let p">
-            <!-- Info de competencia del mismo rubro -->
             <div *ngIf="p.ofertasDeMiRubro > 0" class="competencia-info">
               <mat-chip class="chip-competencia">
                 <mat-icon class="icon-chip">people</mat-icon>
@@ -99,11 +129,9 @@
                 Menor: Q {{ p.precioMinimoDelRubro | number:'1.2-2' }}
               </span>
             </div>
-            <span *ngIf="p.ofertasDeMiRubro === 0" class="sin-competencia">
-              Sin competencia
-            </span>
+            <span *ngIf="p.ofertasDeMiRubro === 0" class="sin-competencia">Sin competencia</span>
 
-            <!-- ✅ Alerta de proveedores relacionados (DENTRO del <td>) -->
+            <!-- Alerta de proveedores relacionados -->
             <div *ngIf="p.proveedoresRelacionadosQueOfertaron?.length > 0" class="alert-relacionado">
               <mat-icon class="icon-relacionado">link</mat-icon>
               <div class="relacionados-lista">
@@ -124,8 +152,7 @@
           <td mat-cell *matCellDef="let p">
             <div *ngIf="p.miPrecioOfertado" class="mi-oferta-info">
               <span class="precio-propio">Q {{ p.miPrecioOfertado | number:'1.2-2' }}</span>
-              <mat-chip
-                [class]="p.miPrecioOfertado <= (p.precioMinimoDelRubro || 999999) ? 'chip-ganando' : 'chip-perdiendo'">
+              <mat-chip [class]="p.miPrecioOfertado <= (p.precioMinimoDelRubro || 999999) ? 'chip-ganando' : 'chip-perdiendo'">
                 <mat-icon class="icon-chip">
                   {{ p.miPrecioOfertado <= (p.precioMinimoDelRubro || 999999) ? 'emoji_events' : 'trending_down' }}
                 </mat-icon>
@@ -152,7 +179,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.fila-urgente]="row.urgente"></tr>
       </table>
     </mat-card-content>
   </mat-card>
@@ -160,7 +187,7 @@
 
 <!-- Modal de Oferta -->
 <app-oferta-form *ngIf="mostrarFormulario"
-  [pedido]="pedidoSeleccionado"
-  (guardado)="onOfertado()"
-  (cancelado)="cerrarFormulario()">
+                 [pedido]="pedidoSeleccionado"
+                 (guardado)="onOfertado()"
+                 (cancelado)="cerrarFormulario()">
 </app-oferta-form>

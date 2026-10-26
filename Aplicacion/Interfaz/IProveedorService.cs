@@ -11,6 +11,7 @@ namespace Aplicacion.Interfaz
         Task<ProveedorDTO> GetByIdAsync(int id);
         Task AddAsync(CreateProveedorDTO proveedor);
         Task DeleteAsync(int id);
-        Task UpdateAsync(UpdateProveedorDTO proveedor   );
+        Task UpdateAsync(UpdateProveedorDTO proveedor);
+        Task AsignarArticulosAsync(int idProveedor, List<int> idArticulos);
     }
 }

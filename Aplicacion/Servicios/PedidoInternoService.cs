@@ -81,7 +81,6 @@ namespace Aplicacion.Servicios
         // ==================== ADD (CREATE) ====================
         public async Task AddAsync(CreatePedidoInternoDTO pedido)
         {
-            // ===== REGLA DE NEGOCIO 1 =====
             if (pedido.id_OrdenCompra.HasValue)
             {
                 var orden = await _ordenCompraRepositorio.GetAsync(pedido.id_OrdenCompra.Value);
@@ -123,7 +122,6 @@ namespace Aplicacion.Servicios
 
             await _pedidoInternoRepositorio.AddAsync(nuevoPedido);
 
-            // ✅ GUARDAR LOS ARTÍCULOS DEL PEDIDO
             if (pedido.Articulos != null && pedido.Articulos.Any())
             {
                 foreach (var art in pedido.Articulos)
@@ -138,7 +136,6 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ✅ PUBLICAR AUTOMÁTICAMENTE LA ORDEN (Aprobada → Publicada)
             if (pedido.id_OrdenCompra.HasValue)
             {
                 var ordenActualizar = await _ordenCompraRepositorio.GetAsync(pedido.id_OrdenCompra.Value);
@@ -149,7 +146,6 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
             PublicarEvento(new PedidoCreado(
                 PedidoId: nuevoPedido.id,
                 Codigo: nuevoPedido.codigo ?? "",
@@ -168,7 +164,6 @@ namespace Aplicacion.Servicios
             {
                 await _pedidoInternoRepositorio.DeletAsync(id);
 
-                // ✅ PUBLICAR EVENTO SIN BLOQUEAR
                 PublicarEvento(new PedidoCancelado(
                     PedidoId: id,
                     Codigo: pedido.codigo ?? "",
@@ -340,7 +335,6 @@ namespace Aplicacion.Servicios
                 throw new InvalidOperationException($"El pedido #{pedido.id} no existe.");
             }
 
-            // ===== VALIDACIÓN: Pedido no puede estar en 2 órdenes =====
             if (pedidoExistente.id_OrdenCompra.HasValue
                 && pedido.id_OrdenCompra.HasValue
                 && pedidoExistente.id_OrdenCompra.Value != pedido.id_OrdenCompra.Value)
@@ -351,7 +345,6 @@ namespace Aplicacion.Servicios
                 );
             }
 
-            // ===== REGLA DE NEGOCIO 1 (fecha) =====
             if (pedido.id_OrdenCompra.HasValue)
             {
                 var orden = await _ordenCompraRepositorio.GetAsync(pedido.id_OrdenCompra.Value);
@@ -373,7 +366,6 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== ACTUALIZAR LA ENTIDAD YA RASTREADA =====
             pedidoExistente.codigo = pedido.codigo;
             pedidoExistente.cantidad = pedido.cantidad ?? 1;
             pedidoExistente.id_Departamento = pedido.id_Departamento;
@@ -384,7 +376,6 @@ namespace Aplicacion.Servicios
 
             await _pedidoInternoRepositorio.UpdateAsync(pedidoExistente);
 
-            // ===== ACTUALIZAR LOS ARTÍCULOS (BORRAR + RECREAR) =====
             if (pedido.Articulos != null)
             {
                 var detallesExistentes = await _detallePedidoRepositorio.GetAllasync();
@@ -407,7 +398,6 @@ namespace Aplicacion.Servicios
                 }
             }
 
-            // ===== EVENTO: PedidoActualizado (SIN BLOQUEAR) =====
             PublicarEvento(new PedidoActualizado(
                 PedidoId: pedidoExistente.id,
                 Codigo: pedidoExistente.codigo ?? "",
@@ -428,25 +418,36 @@ namespace Aplicacion.Servicios
         // ==================== GET DISPONIBLES PARA PROVEEDOR ====================
         public async Task<List<PedidoDisponibleProveedorDTO>> GetDisponiblesParaProveedorAsync(int idProveedor)
         {
-            var proveedorArticulos = await _proveArtRepositorio.GetAllasync();
-            var misArticulos = proveedorArticulos
-                .Where(pa => pa.id_Proveedor == idProveedor)
-                .Select(pa => pa.id_Articulo)
-                .ToHashSet();
-
-            if (!misArticulos.Any())
-                return new List<PedidoDisponibleProveedorDTO>();
-
+            // 1. Obtener los rubros del proveedor
             var proveedorRubros = await _proveRubRepositorio.GetAllasync();
             var misRubros = proveedorRubros
                 .Where(pr => pr.id_Proveedor == idProveedor)
                 .Select(pr => pr.id_Rubro)
                 .ToHashSet();
 
+            if (!misRubros.Any())
+                return new List<PedidoDisponibleProveedorDTO>();
+
+            // 2. Obtener los artículos que pertenecen a los rubros del proveedor
+            var articulos = await _articuloRepositorio.GetAllasync();
+            var articulosDeMisRubros = articulos
+                .Where(a => a.codigo != null && (
+                    (misRubros.Contains(1) && a.codigo.StartsWith("TEC-")) ||
+                    (misRubros.Contains(2) && a.codigo.StartsWith("ALI-")) ||
+                    (misRubros.Contains(3) && a.codigo.StartsWith("MOB-")) ||
+                    (misRubros.Contains(4) && a.codigo.StartsWith("PAP-")) ||
+                    (misRubros.Contains(5) && a.codigo.StartsWith("OTR-"))
+                ))
+                .Select(a => a.id)
+                .ToHashSet();
+
+            if (!articulosDeMisRubros.Any())
+                return new List<PedidoDisponibleProveedorDTO>();
+
+            // 3. Obtener pedidos y filtrar por los artículos de los rubros del proveedor
             var pedidos = await _pedidoInternoRepositorio.GetAllasync();
             var detallesPedido = await _detallePedidoRepositorio.GetAllasync();
             var ofertas = await _ofertaRepositorio.GetAllasync();
-            var articulos = await _articuloRepositorio.GetAllasync();
             var departamentos = await _departamentoRepositorio.GetAllasync();
             var sucursales = await _sucursalRepositorio.GetAllasync();
             var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
@@ -466,92 +467,96 @@ namespace Aplicacion.Servicios
                         .Select(dp => dp.id_Articulo)
                         .ToList();
 
-                    return articulosDelPedidoIds.Any(a => misArticulos.Contains(a));
+                    return articulosDelPedidoIds.Any(a => articulosDeMisRubros.Contains(a));
                 })
                 .ToList();
 
-            return pedidosFiltrados.Select(p =>
-            {
-                var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == p.id).ToList();
-                var miOferta = ofertasDelPedido.FirstOrDefault(o => o.id_Proveedor == idProveedor);
-
-                var idsProveedoresDelMismoRubro = proveedorRubros
-                    .Where(pr => misRubros.Contains(pr.id_Rubro) && pr.id_Proveedor != idProveedor)
-                    .Select(pr => pr.id_Proveedor)
-                    .ToHashSet();
-
-                var ofertasDelRubro = ofertasDelPedido
-                    .Where(o => idsProveedoresDelMismoRubro.Contains(o.id_Proveedor))
-                    .ToList();
-
-                decimal? precioMin = ofertasDelRubro.Any()
-                    ? ofertasDelRubro.Min(o => o.Precio)
-                    : null;
-
-                var ofertasRelacionados = ofertasDelPedido
-                    .Where(o => idsRelacionados.Contains(o.id_Proveedor))
-                    .ToList();
-
-                var proveedoresRelacionados = ofertasRelacionados.Select(o =>
+            // 4. Construir el DTO con el ordenamiento
+            return pedidosFiltrados
+                .OrderByDescending(p => p.urgente)
+                .ThenByDescending(p => p.id)
+                .Select(p =>
                 {
-                    var prov = proveedores.FirstOrDefault(pr => pr.id == o.id_Proveedor);
-                    var relacion = relaciones.FirstOrDefault(r =>
-                        (r.Proveedor1 == idProveedor && r.Proveedor2 == o.id_Proveedor) ||
-                        (r.Proveedor2 == idProveedor && r.Proveedor1 == o.id_Proveedor)
-                    );
+                    var ofertasDelPedido = ofertas.Where(o => o.id_Pedido_Interno == p.id).ToList();
+                    var miOferta = ofertasDelPedido.FirstOrDefault(o => o.id_Proveedor == idProveedor);
 
-                    return new ProveedorRelacionadoDTO(
-                        o.id_Proveedor,
-                        prov?.Nombre ?? $"Proveedor #{o.id_Proveedor}",
-                        relacion?.TipoRelacion ?? "Relacionado",
-                        o.Precio
+                    var idsProveedoresDelMismoRubro = proveedorRubros
+                        .Where(pr => misRubros.Contains(pr.id_Rubro) && pr.id_Proveedor != idProveedor)
+                        .Select(pr => pr.id_Proveedor)
+                        .ToHashSet();
+
+                    var ofertasDelRubro = ofertasDelPedido
+                        .Where(o => idsProveedoresDelMismoRubro.Contains(o.id_Proveedor))
+                        .ToList();
+
+                    decimal? precioMin = ofertasDelRubro.Any()
+                        ? ofertasDelRubro.Min(o => o.Precio)
+                        : null;
+
+                    var ofertasRelacionados = ofertasDelPedido
+                        .Where(o => idsRelacionados.Contains(o.id_Proveedor))
+                        .ToList();
+
+                    var proveedoresRelacionados = ofertasRelacionados.Select(o =>
+                    {
+                        var prov = proveedores.FirstOrDefault(pr => pr.id == o.id_Proveedor);
+                        var relacion = relaciones.FirstOrDefault(r =>
+                            (r.Proveedor1 == idProveedor && r.Proveedor2 == o.id_Proveedor) ||
+                            (r.Proveedor2 == idProveedor && r.Proveedor1 == o.id_Proveedor)
+                        );
+
+                        return new ProveedorRelacionadoDTO(
+                            o.id_Proveedor,
+                            prov?.Nombre ?? $"Proveedor #{o.id_Proveedor}",
+                            relacion?.TipoRelacion ?? "Relacionado",
+                            o.Precio
+                        );
+                    }).ToList();
+
+                    var articulosDelPedido = detallesPedido
+                        .Where(dp => dp.id_Pedido == p.id)
+                        .Select(dp =>
+                        {
+                            var art = articulos.FirstOrDefault(a => a.id == dp.id_Articulo);
+                            return new ArticuloDePedidoDTO(
+                                dp.id_Articulo,
+                                art?.codigo ?? "",
+                                art?.Nombre ?? $"Artículo #{dp.id_Articulo}",
+                                dp.Cantidad,
+                                art?.unidad_medida
+                            );
+                        })
+                        .ToList();
+
+                    var depto = departamentos.FirstOrDefault(d => d.id == p.id_Departamento);
+                    var sucursal = depto != null
+                        ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
+                        : null;
+                    var estaAdjudicado = detallesAdj.Any(d => d.id_Pedido == p.id);
+
+                    return new PedidoDisponibleProveedorDTO(
+                        p.id,
+                        p.codigo,
+                        p.cantidad,
+                        p.id_Departamento,
+                        depto?.Nombre,
+                        p.id_OrdenCompra,
+                        p.Fecha_Solicitada,
+                        p.Fecha_Ingreso,
+                        sucursal?.Nombre,
+                        sucursal?.id,
+                        p.urgente,
+                        p.Observaciones,
+                        ofertasDelPedido.Count,
+                        estaAdjudicado,
+                        articulosDelPedido,
+                        ofertasDelRubro.Count,
+                        precioMin,
+                        miOferta != null,
+                        miOferta?.Precio,
+                        proveedoresRelacionados
                     );
                 }).ToList();
-
-                var articulosDelPedido = detallesPedido
-                    .Where(dp => dp.id_Pedido == p.id)
-                    .Select(dp =>
-                    {
-                        var art = articulos.FirstOrDefault(a => a.id == dp.id_Articulo);
-                        return new ArticuloDePedidoDTO(
-                            dp.id_Articulo,
-                            art?.codigo ?? "",
-                            art?.Nombre ?? $"Artículo #{dp.id_Articulo}",
-                            dp.Cantidad,
-                            art?.unidad_medida
-                        );
-                    })
-                    .ToList();
-
-                var depto = departamentos.FirstOrDefault(d => d.id == p.id_Departamento);
-                var sucursal = depto != null
-                    ? sucursales.FirstOrDefault(s => s.id == depto.id_Sucursal)
-                    : null;
-                var estaAdjudicado = detallesAdj.Any(d => d.id_Pedido == p.id);
-
-                return new PedidoDisponibleProveedorDTO(
-                    p.id,
-                    p.codigo,
-                    p.cantidad,
-                    p.id_Departamento,
-                    depto?.Nombre,
-                    p.id_OrdenCompra,
-                    p.Fecha_Solicitada,
-                    p.Fecha_Ingreso,
-                    sucursal?.Nombre,
-                    sucursal?.id,
-                    p.urgente,
-                    p.Observaciones,
-                    ofertasDelPedido.Count,
-                    estaAdjudicado,
-                    articulosDelPedido,
-                    ofertasDelRubro.Count,
-                    precioMin,
-                    miOferta != null,
-                    miOferta?.Precio,
-                    proveedoresRelacionados
-                );
-            }).ToList();
         }
     }
 }

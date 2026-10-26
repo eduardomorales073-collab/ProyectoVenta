@@ -1,25 +1,23 @@
 <div class="reporte-container">
-  <!-- Header con título y botones -->
+  <!-- Header formal con branding -->
   <div class="reporte-header">
     <div class="header-izquierda">
       <button mat-icon-button (click)="volver()" matTooltip="Volver a reportes">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <div class="header-info">
-        <h1>
-          <mat-icon class="icono-titulo">{{ reporte?.icono || 'assessment' }}</mat-icon>
-          {{ reporte?.titulo || 'Reporte' }}
-        </h1>
-        <p>{{ reporte?.descripcion || '' }}</p>
+      <div class="logo-empresa">
+        <mat-icon class="logo-icono">inventory_2</mat-icon>
+        <div class="logo-texto">
+          <span class="empresa-nombre">SistemaVentas</span>
+          <span class="empresa-slogan">Sistema de Gestión de Compras</span>
+        </div>
       </div>
     </div>
     <div class="header-derecha">
-      <!-- ✅ Botón Recargar -->
-      <button mat-stroked-button color="primary" (click)="recargar()" [disabled]="cargando || descargando">
+      <button mat-stroked-button (click)="recargar()" [disabled]="cargando || descargando">
         <mat-icon>refresh</mat-icon>
         Recargar
       </button>
-      <!-- ✅ Botón Descargar PDF -->
       <button mat-raised-button color="accent" (click)="descargar()" [disabled]="cargando || descargando">
         <mat-icon>{{ descargando ? 'hourglass_empty' : 'download' }}</mat-icon>
         {{ descargando ? 'Descargando...' : 'Descargar PDF' }}
@@ -27,24 +25,44 @@
     </div>
   </div>
 
+  <!-- Info del reporte -->
+  <div class="reporte-info-bar">
+    <div class="info-titulo">
+      <mat-icon class="info-icono">{{ reporte?.icono || 'assessment' }}</mat-icon>
+      <div>
+        <h2>{{ reporte?.titulo || 'Reporte' }}</h2>
+        <p>{{ reporte?.descripcion || '' }}</p>
+      </div>
+    </div>
+    <div class="info-meta">
+      <div class="meta-item">
+        <mat-icon>calendar_today</mat-icon>
+        <span>{{ fechaActual | date:'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon>schedule</mat-icon>
+        <span>{{ fechaActual | date:'HH:mm' }}</span>
+      </div>
+      <div class="meta-item">
+        <mat-icon>person</mat-icon>
+        <span>{{ nombreUsuario }}</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Contenedor del reporte -->
   <div class="reporte-body">
-    <!-- Loading -->
     <div *ngIf="cargando" class="loading-container">
       <mat-spinner diameter="50"></mat-spinner>
-      <p>Cargando reporte...</p>
+      <p>Generando reporte...</p>
     </div>
 
-    <!-- Error -->
     <div *ngIf="error && !cargando" class="error-container">
       <mat-icon>error_outline</mat-icon>
       <p>{{ error }}</p>
-      <button mat-raised-button color="primary" (click)="recargar()">
-        Reintentar
-      </button>
+      <button mat-raised-button color="primary" (click)="recargar()">Reintentar</button>
     </div>
 
-    <!-- Iframe del reporte Jasper -->
     <iframe *ngIf="!error"
             [src]="urlSegura"
             class="jasper-iframe"
@@ -52,5 +70,12 @@
             [class.oculto]="cargando"
             allowfullscreen>
     </iframe>
+  </div>
+
+  <!-- Footer formal -->
+  <div class="reporte-footer">
+    <span>SistemaVentas © {{ anioActual }} — Documento generado automáticamente</span>
+    <span class="footer-separador">|</span>
+    <span>Reporte: {{ reporte?.titulo }}</span>
   </div>
 </div>

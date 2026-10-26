@@ -6,10 +6,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Articulo, ArticuloService, CreateArticuloDTO } from '../../services/articulo.service';
-import { NotificacionService } from '../../services/notificacion';
+
+import { Articulo, ArticuloService, CreateArticuloDTO, UpdateArticuloDTO } from '../../services/articulo.service';
+import { RubroService } from '../../services/rubro.service';
+import { Rubro } from '../../models/rubro.model';
 import { UnidadMedidaService } from '../../services/unidad-medida.service';
 import { UnidadMedida } from '../../models/unidad-medida.model';
+import { NotificacionService } from '../../services/notificacion';
 
 @Component({
   selector: 'app-articulo-form',
@@ -33,128 +36,121 @@ export class ArticuloFormComponent implements OnInit {
 
   form: FormGroup;
   guardando = false;
-  error = '';
+  esEdicion = false;
 
-  // Unidades de medida cargadas dinámicamente desde la BD
+  rubros: Rubro[] = [];
   unidadesMedida: UnidadMedida[] = [];
 
   constructor(
     private fb: FormBuilder,
     private articuloService: ArticuloService,
+    private rubroService: RubroService,
     private unidadMedidaService: UnidadMedidaService,
-    private notificacion: NotificacionService
+    private notification: NotificacionService
   ) {
     this.form = this.fb.group({
-      codigo: [{ value: '', disabled: true }], // ← auto-generado
-      nombre: ['', [Validators.required, Validators.maxLength(100)]],
-      descripcion: ['', [Validators.required, Validators.maxLength(200)]],
-      unidad_medida: ['Unidad', [Validators.required]]
+      codigo: [{ value: '', disabled: true }],
+      nombre: ['', [Validators.required]],
+      descripcion: ['', [Validators.required]],
+      unidad_medida: ['', [Validators.required]],
+      id_Rubro: [null]
     });
   }
 
   ngOnInit(): void {
-    this.cargarUnidades();
+    this.esEdicion = !!this.articulo;
+
+    // Cargar Rubros
+    this.rubroService.listar().subscribe({
+      next: (data: any) => {
+        this.rubros = Array.isArray(data) ? data : (data.$values || []);
+      }
+    });
+
+    // Cargar Unidades de Medida
+    this.unidadMedidaService.listar().subscribe({
+      next: (data: any) => {
+        this.unidadesMedida = Array.isArray(data) ? data : (data.$values || []);
+      },
+      error: () => {
+        this.unidadesMedida = [{ id: 1, nombre: 'Unidad' } as any];
+      }
+    });
 
     if (this.articulo) {
-      // Edición: mostrar el código actual
       this.form.patchValue({
         codigo: this.articulo.codigo || '',
         nombre: this.articulo.nombre,
         descripcion: this.articulo.descripcion,
-        unidad_medida: this.articulo.unidad_medida || 'Unidad'
+        unidad_medida: this.articulo.unidad_medida || ''
       });
     } else {
-      // Creación: auto-generar el código
       this.generarCodigo();
     }
   }
 
-  cargarUnidades(): void {
-    this.unidadMedidaService.listar().subscribe({
-      next: (data) => {
-        this.unidadesMedida = data;
-      },
-      error: (err: any) => {
-        this.notificacion.error(`Error al cargar unidades: ${err.status}`);
-      }
-    });
-  }
-
-  get esEdicion(): boolean {
-    return !!this.articulo;
-  }
-
-  /**
-   * Genera un código único basado en el último ID + 1
-   * Formato: ART-XXX (ej: ART-008)
-   */
   generarCodigo(): void {
     this.articuloService.listar().subscribe({
       next: (articulos) => {
-        const maxId = articulos.length > 0
-          ? Math.max(...articulos.map(a => a.id))
-          : 0;
-        const nuevoId = maxId + 1;
-        const codigo = 'ART-' + String(nuevoId).padStart(3, '0');
-        this.form.patchValue({ codigo });
+        const maxId = articulos.length > 0 ? Math.max(...articulos.map(a => a.id)) : 0;
+        this.form.patchValue({ codigo: `ART-${String(maxId + 1).padStart(3, '0')}` });
       },
-      error: () => {
-        // Si falla, generar con timestamp
-        const codigo = 'ART-' + Date.now().toString().slice(-4);
-        this.form.patchValue({ codigo });
-      }
+      error: () => this.form.patchValue({ codigo: 'ART-' + Date.now().toString().slice(-4) })
     });
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.guardando = true;
-    this.error = '';
+    const datos = this.form.getRawValue();
 
-    const datos = this.form.getRawValue(); // ← getRawValue para incluir el campo disabled
-
-    if (this.esEdicion) {
-      const dto = {
-        id: this.articulo!.id,
+    if (this.articulo) {
+      const dto: UpdateArticuloDTO = {
+        id: this.articulo.id,
         nombre: datos.nombre,
         descripcion: datos.descripcion,
-        codigo: datos.codigo,
-        unidad_medida: datos.unidad_medida
+        codigo: this.articulo.codigo,
+        unidad_medida: datos.unidad_medida,
+        id_Rubro: datos.id_Rubro
       };
+
       this.articuloService.actualizar(dto).subscribe({
-        next: () => {
-          this.guardando = false;
-          this.notificacion.exito('Artículo actualizado correctamente');
-          this.guardado.emit();
-        },
-        error: (err: any) => {
-          this.guardando = false;
-          this.notificacion.error(`Error al actualizar: ${err.status} ${err.statusText}`);
-        }
+        next: () => this.finalizar(),
+        error: (err) => this.error(err)
       });
     } else {
       const dto: CreateArticuloDTO = {
         nombre: datos.nombre,
         descripcion: datos.descripcion,
         codigo: datos.codigo,
-        unidad_medida: datos.unidad_medida
+        unidad_medida: datos.unidad_medida,
+        id_Rubro: datos.id_Rubro
       };
+
       this.articuloService.crear(dto).subscribe({
-        next: () => {
-          this.guardando = false;
-          this.notificacion.exito('Artículo creado correctamente');
-          this.guardado.emit();
-        },
-        error: (err: any) => {
-          this.guardando = false;
-          this.notificacion.error(`Error al crear: ${err.status} ${err.statusText}`);
-        }
+        next: () => this.finalizar(),
+        error: (err) => this.error(err)
       });
     }
   }
 
-  onCancelar(): void {
+  private finalizar() {
+    this.guardando = false;
+    this.notification.exito(this.esEdicion ? 'Artículo actualizado' : 'Artículo creado');
+    this.guardado.emit();
+  }
+
+  private error(err: any) {
+    this.guardando = false;
+    this.notification.error(err.error?.mensaje || 'Error al guardar');
+  }
+
+  // ✅ CORREGIDO: Ahora se llama onCancel() igual que en el HTML
+  onCancel(): void {
     this.cancelado.emit();
   }
 }

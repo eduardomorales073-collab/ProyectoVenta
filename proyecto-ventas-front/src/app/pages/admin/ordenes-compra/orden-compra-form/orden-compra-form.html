@@ -1,74 +1,119 @@
-<div class="modal-overlay" (click)="onCancelar()">
-  <div class="modal" (click)="$event.stopPropagation()">
+<div class="modal-overlay">
+  <div class="modal-content">
 
     <div class="modal-header">
-      <h2>{{ esEdicion ? 'Editar Orden de Compra' : 'Nueva Orden de Compra' }}</h2>
-      <button mat-icon-button (click)="onCancelar()">
-        <mat-icon>close</mat-icon>
-      </button>
+      <h2><mat-icon>receipt_long</mat-icon> {{ esEdicion ? 'Editar Orden' : 'Nueva Orden de Compra' }}</h2>
+      <button mat-icon-button (click)="onCancelar()"><mat-icon>close</mat-icon></button>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-form">
 
-      <!-- Descripción -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Descripción</mat-label>
-        <input matInput formControlName="descripcion" placeholder="Ej: Compra de suministros de oficina" required>
-        <mat-icon matPrefix>description</mat-icon>
-        <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
-          La descripción es obligatoria
-        </mat-error>
-      </mat-form-field>
+      <div class="modal-body">
+        <!-- DATOS GENERALES -->
+        <div class="datos-generales">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descripción de la Orden</mat-label>
+            <input matInput formControlName="descripcion" placeholder="Ej. Compra de suministros...">
+            <mat-icon matPrefix>description</mat-icon>
+          </mat-form-field>
 
-      <!-- Tipo de Orden -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Tipo de Orden</mat-label>
-        <mat-select formControlName="tipo_Orden" required>
-  <mat-option *ngFor="let t of tiposOrden" [value]="t.id">
-    {{ nombreTipo(t) }}
-  </mat-option>
-</mat-select>
-        <mat-icon matPrefix>category</mat-icon>
-        <mat-error *ngIf="form.get('tipo_Orden')?.hasError('required')">
-          El tipo es obligatorio
-        </mat-error>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de Orden</mat-label>
+            <mat-select formControlName="tipo_Orden">
+              <mat-option *ngFor="let t of tiposOrden" [value]="t.id">
+                {{ nombreTipo(t) }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
-      <!-- Fecha Creación -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Fecha Creación</mat-label>
-        <input matInput type="date" formControlName="fecha_Creacion" required>
-        <mat-icon matPrefix>event</mat-icon>
-        <mat-hint>Automática (no se puede cambiar en edición)</mat-hint>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Creación</mat-label>
+            <input matInput type="date" formControlName="fecha_Creacion">
+          </mat-form-field>
 
-      <!-- Fecha Límite -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Fecha Límite</mat-label>
-        <input matInput type="date" formControlName="fecha_Limite" required>
-        <mat-icon matPrefix>event_available</mat-icon>
-        <mat-hint>Fecha máxima para completar la orden</mat-hint>
-        <mat-error *ngIf="form.get('fecha_Limite')?.hasError('required')">
-          La fecha límite es obligatoria
-        </mat-error>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Límite</mat-label>
+            <input matInput type="date" formControlName="fecha_Limite">
+          </mat-form-field>
 
-      <!-- Fecha Límite Ofertas -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Límite de Ofertas (opcional)</mat-label>
-        <input matInput type="date" formControlName="fecha_limite_ofertas">
-        <mat-icon matPrefix>schedule</mat-icon>
-        <mat-hint>Fecha máxima para recibir ofertas de proveedores</mat-hint>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Límite Ofertas (Opcional)</mat-label>
+            <input matInput type="date" formControlName="fecha_limite_ofertas">
+          </mat-form-field>
+        </div>
 
-      <!-- Botones -->
-      <div class="modal-actions">
-        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
-          Cancelar
-        </button>
+        <!-- DASHBOARD DE ARTÍCULOS -->
+        <div class="dashboard-articulos">
+
+          <!-- CATÁLOGO (Izquierda) -->
+          <div class="catalogo-panel">
+            <div class="panel-header">
+              <h3><mat-icon>inventory_2</mat-icon> Catálogo de Productos</h3>
+              <mat-form-field appearance="outline" class="search-bar">
+                <mat-label>Buscar producto...</mat-label>
+                <input matInput (keyup)="filtrarArticulos($event)">
+                <mat-icon matPrefix>search</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <div class="grid-articulos">
+              <mat-card class="articulo-card" *ngFor="let art of articulosFiltrados" (click)="agregarAlCarrito(art)">
+                <div class="card-content">
+                  <div class="art-info">
+                    <span class="art-code">{{ art.codigo }}</span>
+                    <span class="art-name">{{ art.nombre }}</span>
+                  </div>
+                  <div class="add-icon">
+                    <mat-icon>add_circle_outline</mat-icon>
+                  </div>
+                </div>
+              </mat-card>
+            </div>
+          </div>
+
+          <!-- CARRITO (Derecha) -->
+          <div class="carrito-panel">
+            <div class="panel-header">
+              <h3><mat-icon>shopping_cart</mat-icon> Artículos a Comprar</h3>
+              <span class="badge">{{ articulos.length }} items</span>
+            </div>
+
+            <div formArrayName="articulos" class="lista-carrito">
+              <div *ngIf="articulos.length === 0" class="empty-cart">
+                <mat-icon>remove_shopping_cart</mat-icon>
+                <p>Agrega productos desde el catálogo.</p>
+              </div>
+
+              <div *ngFor="let ctrl of articulos.controls; let i = index" [formGroupName]="i" class="carrito-item">
+                <div class="item-info">
+                  <span class="item-name">{{ ctrl.get('nombre')?.value }}</span>
+                  <span class="item-code">{{ ctrl.get('codigo')?.value }}</span>
+                </div>
+
+                <div class="item-actions">
+                  <mat-form-field appearance="outline" class="qty-field">
+                    <mat-label>Cant.</mat-label>
+                    <input matInput type="number" formControlName="cantidad" min="1">
+                  </mat-form-field>
+
+                  <button mat-icon-button color="warn" type="button" (click)="eliminarDelCarrito(i)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">Cancelar</button>
+        <!-- ✅ CORREGIDO: El texto cambia según si es edición o creación -->
         <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
-          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
-          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+          <mat-icon>save</mat-icon>
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Guardar Cambios' : 'Crear Orden') }}
         </button>
       </div>
     </form>

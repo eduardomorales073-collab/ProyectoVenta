@@ -1,147 +1,135 @@
-<div class="modal-overlay" (click)="onCancelar()">
-  <div class="modal" (click)="$event.stopPropagation()">
+<div class="modal-overlay">
+  <div class="modal-content">
 
+    <!-- HEADER -->
     <div class="modal-header">
-      <h2>{{ esEdicion ? 'Editar Pedido' : 'Nuevo Pedido Interno' }}</h2>
-      <button mat-icon-button (click)="onCancelar()">
-        <mat-icon>close</mat-icon>
-      </button>
+      <h2><mat-icon>assignment</mat-icon> {{ pedido ? 'Editar Pedido Interno' : 'Nuevo Pedido Interno' }}</h2>
+      <button mat-icon-button (click)="onCancel()"><mat-icon>close</mat-icon></button>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-form">
 
-      <!-- Código -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Código</mat-label>
-        <input matInput formControlName="codigo" readonly>
-        <mat-icon matPrefix>qr_code</mat-icon>
-        <mat-hint>Generado automáticamente</mat-hint>
-      </mat-form-field>
+      <div class="modal-body">
+        <!-- DATOS GENERALES -->
+        <div class="datos-generales">
+          <mat-form-field appearance="outline">
+            <mat-label>Código</mat-label>
+            <input matInput formControlName="codigo" readonly>
+          </mat-form-field>
 
-      <!-- Urgente -->
-      <div class="urgente-checkbox">
-        <mat-checkbox formControlName="urgente" color="warn">
-          <mat-icon class="icon-urgente">priority_high</mat-icon>
-          <strong>Marcar como URGENTE</strong>
-        </mat-checkbox>
-        <span class="hint-urgente">Los pedidos urgentes aparecen primero en la lista</span>
-      </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Departamento</mat-label>
+            <mat-select formControlName="id_Departamento">
+              <mat-option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
+            </mat-select>
+            <mat-hint *ngIf="sucursalSeleccionada">Sucursal: {{ sucursalSeleccionada }}</mat-hint>
+          </mat-form-field>
 
-      <!-- Cantidad -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Cantidad</mat-label>
-        <input matInput type="number" formControlName="cantidad" min="1" required>
-        <mat-icon matPrefix>numbers</mat-icon>
-        <mat-error *ngIf="form.get('cantidad')?.hasError('required')">
-          La cantidad es obligatoria
-        </mat-error>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Orden de Compra</mat-label>
+            <mat-select formControlName="id_OrdenCompra">
+              <mat-option [value]="null">-- Sin Orden --</mat-option>
+              <mat-option *ngFor="let o of ordenes" [value]="o.id">
+                #{{ o.id }} - {{ o.descripcion }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
-      <!-- Departamento -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Departamento</mat-label>
-        <mat-select formControlName="id_Departamento" required>
-          <mat-option *ngFor="let d of departamentos" [value]="d.id">
-            {{ d.nombre }}
-          </mat-option>
-        </mat-select>
-        <mat-icon matPrefix>business_center</mat-icon>
-        <mat-error *ngIf="form.get('id_Departamento')?.hasError('required')">
-          El departamento es obligatorio
-        </mat-error>
-      </mat-form-field>
-
-      <!-- Sucursal -->
-      <mat-form-field appearance="outline" class="full-width" *ngIf="sucursalSeleccionada">
-        <mat-label>Sucursal</mat-label>
-        <input matInput [value]="sucursalSeleccionada" readonly>
-        <mat-icon matPrefix>business</mat-icon>
-        <mat-hint>Asignada automáticamente según el departamento</mat-hint>
-      </mat-form-field>
-
-      <!-- Orden de Compra -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Orden de Compra (opcional)</mat-label>
-        <mat-select formControlName="id_OrdenCompra">
-          <mat-option [value]="null">
-            <em>Sin asignar</em>
-          </mat-option>
-          <mat-option *ngFor="let o of ordenes" [value]="o.id">
-            #{{ o.id }} - {{ o.descripcion }}
-          </mat-option>
-        </mat-select>
-        <mat-icon matPrefix>shopping_cart</mat-icon>
-      </mat-form-field>
-
-      <!-- Fecha Solicitada -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Fecha Solicitada (límite de ofertas)</mat-label>
-        <input matInput type="date" formControlName="fecha_Solicitada" required>
-        <mat-icon matPrefix>event</mat-icon>
-        <mat-hint>Los proveedores solo pueden ofertar hasta esta fecha</mat-hint>
-        <mat-error *ngIf="form.get('fecha_Solicitada')?.hasError('required')">
-          La fecha es obligatoria
-        </mat-error>
-      </mat-form-field>
-
-      <!-- ⚠️ NUEVO: SECCIÓN DE ARTÍCULOS -->
-      <div class="articulos-section">
-        <div class="articulos-header">
-          <label>Artículos del pedido</label>
-          <button mat-icon-button color="primary" type="button" (click)="agregarArticulo()"
-                  matTooltip="Agregar artículo">
-            <mat-icon>add_circle</mat-icon>
-          </button>
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Solicitada</mat-label>
+            <input matInput type="date" formControlName="fecha_Solicitada">
+            <mat-error *ngIf="form.get('fecha_Solicitada')?.hasError('fechaInvalid')">
+              Fecha no puede ser anterior a la creación de la orden
+            </mat-error>
+          </mat-form-field>
         </div>
 
-        <div formArrayName="articulos" class="articulos-list">
-          <div *ngFor="let art of articulos.controls; let i = index" [formGroupName]="i" class="articulo-row">
-            <mat-form-field appearance="outline" class="articulo-field">
-              <mat-label>Artículo</mat-label>
-              <mat-select formControlName="id_Articulo" required>
-                <mat-option *ngFor="let a of articulosDisponibles" [value]="a.id">
-                  {{ a.nombre || a.Nombre }}
-                </mat-option>
-              </mat-select>
-              <mat-icon matPrefix>inventory_2</mat-icon>
-            </mat-form-field>
+        <!-- DASHBOARD DE ARTÍCULOS -->
+        <div class="dashboard-articulos">
 
-            <mat-form-field appearance="outline" class="cantidad-field">
-              <mat-label>Cantidad</mat-label>
-              <input matInput type="number" formControlName="cantidad" min="1">
-            </mat-form-field>
+          <!-- CATÁLOGO (Izquierda) -->
+          <div class="catalogo-panel">
+            <div class="panel-header">
+              <h3><mat-icon>inventory_2</mat-icon> Catálogo de Productos</h3>
+              <mat-form-field appearance="outline" class="search-bar">
+                <mat-label>Buscar por nombre o código...</mat-label>
+                <input matInput (keyup)="filtrarArticulos($event)">
+                <mat-icon matPrefix>search</mat-icon>
+              </mat-form-field>
+            </div>
 
-            <button mat-icon-button color="warn" type="button" (click)="eliminarArticulo(i)"
-                    matTooltip="Eliminar artículo">
-              <mat-icon>remove_circle</mat-icon>
-            </button>
+            <div class="grid-articulos">
+              <mat-card class="articulo-card" *ngFor="let art of articulosFiltrados" (click)="agregarAlCarrito(art)">
+                <div class="card-content">
+                  <div class="art-info">
+                    <span class="art-code">{{ art.codigo }}</span>
+                    <span class="art-name">{{ art.nombre }}</span>
+                  </div>
+                  <div class="add-icon">
+                    <mat-icon>add_circle_outline</mat-icon>
+                  </div>
+                </div>
+              </mat-card>
+
+              <div *ngIf="articulosFiltrados.length === 0" class="empty-search">
+                No se encontraron productos.
+              </div>
+            </div>
+          </div>
+
+          <!-- CARRITO (Derecha) -->
+          <div class="carrito-panel">
+            <div class="panel-header">
+              <h3><mat-icon>shopping_cart</mat-icon> Artículos Seleccionados</h3>
+              <span class="badge">{{ articulos.length }} items</span>
+            </div>
+
+            <div formArrayName="articulos" class="lista-carrito">
+              <div *ngIf="articulos.length === 0" class="empty-cart">
+                <mat-icon>remove_shopping_cart</mat-icon>
+                <p>Haz clic en los productos de la izquierda para agregarlos.</p>
+              </div>
+
+              <div *ngFor="let ctrl of articulos.controls; let i = index" [formGroupName]="i" class="carrito-item">
+                <div class="item-info">
+                  <span class="item-name">{{ ctrl.get('nombre')?.value }}</span>
+                  <span class="item-code">{{ ctrl.get('codigo')?.value }}</span>
+                </div>
+
+                <div class="item-actions">
+                  <mat-form-field appearance="outline" class="qty-field">
+                    <mat-label>Cant.</mat-label>
+                    <input matInput type="number" formControlName="cantidad" min="1">
+                  </mat-form-field>
+
+                  <button mat-icon-button color="warn" type="button" (click)="eliminarDelCarrito(i)" matTooltip="Quitar">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="observaciones-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Observaciones adicionales</mat-label>
+            <textarea matInput formControlName="observaciones" rows="2" placeholder="Ej. Entregar en recepción..."></textarea>
+          </mat-form-field>
+
+          <mat-checkbox formControlName="urgente" color="warn" class="urgente-check">
+            <mat-icon inline>warning</mat-icon> Marcar como URGENTE
+          </mat-checkbox>
+        </div>
       </div>
 
-      <!-- ⚠️ NUEVO: OBSERVACIONES -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Observaciones (opcional)</mat-label>
-        <textarea matInput formControlName="observaciones" rows="3"
-                  placeholder="Ej: Compra urgente para el viernes..."></textarea>
-        <mat-icon matPrefix>notes</mat-icon>
-        <mat-hint>Máximo 500 caracteres</mat-hint>
-      </mat-form-field>
-
-      <!-- Info: fecha de ingreso automática -->
-      <div class="info-auto-fecha">
-        <mat-icon>info</mat-icon>
-        <span>La fecha de ingreso se registrará automáticamente al crear el pedido.</span>
-      </div>
-
-      <!-- Botones -->
-      <div class="modal-actions">
-        <button mat-button type="button" (click)="onCancelar()" [disabled]="guardando">
-          Cancelar
-        </button>
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button mat-button type="button" (click)="onCancel()" [disabled]="guardando">Cancelar</button>
         <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
-          <mat-icon>{{ esEdicion ? 'save' : 'add' }}</mat-icon>
-          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear') }}
+          <mat-icon>save</mat-icon>
+          {{ guardando ? 'Guardando...' : 'Guardar Pedido' }}
         </button>
       </div>
     </form>

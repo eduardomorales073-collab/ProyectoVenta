@@ -188,4 +188,9 @@ export class AuthService {
       return null;
     }
   }
+  getNombreUsuario(): string {
+    // Ajusta según cómo guardes el nombre del usuario
+    return localStorage.getItem('nombreUsuario') || 'Usuario';
+  }
+
 }

@@ -13,31 +13,28 @@ namespace Aplicacion.Servicios
     {
         private readonly ProveedorRepositorio _proveedorRepositorio;
         private readonly ProveRubRepositorio _proveRubRepositorio;
+        private readonly ProveArtRepositorio _proveArtRepositorio;
         private readonly IMapper _mapper;
 
         public ProveedorService(
             ProveedorRepositorio proveedorRepository,
             ProveRubRepositorio proveRubRepositorio,
+            ProveArtRepositorio proveArtRepositorio,
             IMapper mapper)
         {
             _mapper = mapper;
             _proveedorRepositorio = proveedorRepository;
             _proveRubRepositorio = proveRubRepositorio;
+            _proveArtRepositorio = proveArtRepositorio;
         }
 
         public async Task AddAsync(CreateProveedorDTO proveedor)
         {
-            // 1. Mapear
             var nuevoProveedor = _mapper.Map<Proveedor>(proveedor);
-
-            // 2. Calcular el id
             var todos = await _proveedorRepositorio.GetAllasync();
             nuevoProveedor.id = todos.Any() ? todos.Max(p => p.id) + 1 : 1;
-
-            // 3. Guardar el proveedor
             await _proveedorRepositorio.AddAsync(nuevoProveedor);
 
-            // 4. Guardar las asociaciones con rubros
             if (proveedor.id_Rubros != null)
             {
                 foreach (var idRubro in proveedor.id_Rubros)
@@ -99,7 +96,6 @@ namespace Aplicacion.Servicios
 
         public async Task UpdateAsync(UpdateProveedorDTO proveedor)
         {
-            // 1. Actualizar el proveedor
             var existente = await _proveedorRepositorio.GetAsync(proveedor.id);
             if (existente == null) throw new System.Exception("Proveedor no encontrado");
 
@@ -112,10 +108,8 @@ namespace Aplicacion.Servicios
 
             await _proveedorRepositorio.UpdateAsync(existente);
 
-            // 2. Eliminar asociaciones anteriores
             await _proveRubRepositorio.EliminarPorProveedorAsync(proveedor.id);
 
-            // 3. Crear nuevas asociaciones
             if (proveedor.id_Rubros != null)
             {
                 foreach (var idRubro in proveedor.id_Rubros)
@@ -126,6 +120,33 @@ namespace Aplicacion.Servicios
                         id_Rubro = idRubro
                     });
                 }
+            }
+        }
+
+        
+        public async Task AsignarArticulosAsync(int idProveedor, List<int> idArticulos)
+        {
+            // 1. Obtener todas las relaciones actuales del proveedor
+            var relacionesActuales = await _proveArtRepositorio.GetAllasync();
+            var relacionesDelProveedor = relacionesActuales
+                .Where(pa => pa.id_Proveedor == idProveedor)
+                .ToList();
+
+            // 2. Eliminar las relaciones existentes usando DeletAsync
+            foreach (var relacion in relacionesDelProveedor)
+            {
+                await _proveArtRepositorio.DeletAsync(relacion.id_Proveedor, relacion.id_Articulo);
+            }
+
+            // 3. Insertar las nuevas
+            foreach (var idArticulo in idArticulos)
+            {
+                await _proveArtRepositorio.AddAsync(new Provee_Artic
+                {
+                    id_Proveedor = idProveedor,
+                    id_Articulo = idArticulo,
+                    Precio = 100.00M //  La 'M' indica decimal
+                });
             }
         }
     }

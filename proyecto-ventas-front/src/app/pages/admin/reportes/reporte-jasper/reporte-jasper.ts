@@ -35,6 +35,11 @@ export class ReporteJasperComponent implements OnInit {
   error = '';
   rutaVolver: string = '/login';
 
+  // ✅ Propiedades para el header formal
+  fechaActual = new Date();
+  anioActual = new Date().getFullYear();
+  nombreUsuario = 'Usuario';
+
   private readonly jasperBaseUrl = 'http://localhost:8080/jasperserver-pro';
 
   constructor(
@@ -48,6 +53,7 @@ export class ReporteJasperComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    // ✅ Determinar la ruta de regreso según el rol del usuario
     if (this.authService.esAdmin()) {
       this.rutaVolver = '/admin/reportes';
     } else if (this.authService.esAuditor()) {
@@ -58,6 +64,10 @@ export class ReporteJasperComponent implements OnInit {
       this.rutaVolver = '/login';
     }
 
+    // ✅ Obtener el nombre del usuario
+    this.nombreUsuario = this.authService.getNombreUsuario() || 'Usuario';
+
+    // Obtener el reporte por id
     const id = this.route.snapshot.paramMap.get('id');
     const reporte = this.jasperService.reportes.find((r: ReporteJasper) => r.id === id);
 
@@ -73,6 +83,9 @@ export class ReporteJasperComponent implements OnInit {
     this.cargarIframe();
   }
 
+  /**
+   * ✅ Hacer login en JasperReports para obtener la cookie de sesión.
+   */
   private async hacerLoginJasper(): Promise<void> {
     try {
       const formData = new URLSearchParams();
@@ -98,6 +111,9 @@ export class ReporteJasperComponent implements OnInit {
     }
   }
 
+  /**
+   * ✅ Cargar el iframe con la URL del reporte.
+   */
   private cargarIframe(): void {
     const url = this.jasperService.getUrlReporte(this.reporte.rutaJasper);
     console.log('[ReporteJasper] URL del iframe:', url);
@@ -109,10 +125,16 @@ export class ReporteJasperComponent implements OnInit {
     }, 3000);
   }
 
+  /**
+   * ✅ Volver al hub de Reportes
+   */
   volver(): void {
     this.router.navigate([this.rutaVolver]);
   }
 
+  /**
+   * ✅ Recargar el reporte
+   */
   recargar(): void {
     if (!this.reporte) return;
     this.cargando = true;
@@ -126,19 +148,14 @@ export class ReporteJasperComponent implements OnInit {
   }
 
   /**
- * ✅ Descargar el reporte como PDF
- * 
- * Usa window.open() porque fetch() está bloqueado por CORS.
- * El navegador abrirá el PDF en una nueva pestaña donde el usuario
- * puede verlo o guardarlo.
- */
+   * ✅ Descargar el reporte como PDF
+   */
   descargar(): void {
     if (!this.reporte) return;
 
     const urlPdf = this.jasperService.getUrlPdf(this.reporte.rutaJasper);
     console.log('[ReporteJasper] Abriendo PDF:', urlPdf);
 
-    // ✅ Abrir el PDF en una nueva pestaña
     window.open(urlPdf, '_blank');
 
     this.snackBar.open('📄 PDF abierto en nueva pestaña', 'Cerrar', { duration: 3000 });

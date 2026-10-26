@@ -8,6 +8,7 @@ namespace Aplicacion.DTO
         string Nombre,
         string Descripcion,
         string? codigo,
-        string? unidad_medida
+        string? unidad_medida,
+        int? id_Rubro
     );
 }

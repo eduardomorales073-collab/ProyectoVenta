@@ -1,23 +1,21 @@
 <div class="container">
   <div class="header-actions">
     <h2>Lista de Usuarios</h2>
-    <button mat-raised-button color="primary" (click)="abrirFormulario(null)" *ngIf="puedeGestionarUsuarios()">
+    <button mat-raised-button color="primary" (click)="abrirFormulario(null)">
       <mat-icon>add</mat-icon>
       Nuevo Usuario
     </button>
   </div>
 
-  <!-- Filtro de búsqueda -->
   <mat-form-field appearance="outline" class="filtro">
     <mat-label>Buscar usuario</mat-label>
-    <input matInput (keyup)="aplicarFiltro($event)" placeholder="Nombre, email o rol...">
+    <input matInput (keyup)="aplicarFiltro($event)" placeholder="Nombre, email, rol, sucursal...">
     <mat-icon matPrefix>search</mat-icon>
   </mat-form-field>
 
   <p *ngIf="cargando">Cargando...</p>
   <p *ngIf="error" class="error">{{ error }}</p>
 
-  <!-- Tabla Material -->
   <div class="tabla-container">
     <table mat-table [dataSource]="dataSource" matSort class="tabla-mat">
 
@@ -37,18 +35,30 @@
       </ng-container>
 
       <ng-container matColumnDef="rol">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Rol</th>
-  <td mat-cell *matCellDef="let u">
-    <mat-chip [class]="claseRol(u.id_Rol)">
-      {{ nombreRol(u.id_Rol) }}
-    </mat-chip>
-  </td>
-</ng-container>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Rol</th>
+        <td mat-cell *matCellDef="let u">
+          <!-- ✅ Usamos el nuevo método getNombreRol -->
+          <mat-chip [class]="claseRol(getNombreRol(u))">
+            {{ getNombreRol(u) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="asignacion">
+        <th mat-header-cell *matHeaderCellDef>Asignación / Ubicación</th>
+        <td mat-cell *matCellDef="let u">
+          <span class="asignacion-texto">
+            <mat-icon class="icon-mini" *ngIf="u.id_Proveedor">business</mat-icon>
+            <mat-icon class="icon-mini" *ngIf="!u.id_Proveedor">account_tree</mat-icon>
+            {{ getAsignacion(u) }}
+          </span>
+        </td>
+      </ng-container>
 
       <ng-container matColumnDef="activo">
         <th mat-header-cell *matHeaderCellDef>Activo</th>
         <td mat-cell *matCellDef="let u">
-          <mat-chip [highlighted]="u.activo" [color]="u.activo ? 'primary' : 'warn'">
+          <mat-chip [class]="u.activo ? 'chip-activo' : 'chip-inactivo'">
             {{ u.activo ? 'Activo' : 'Inactivo' }}
           </mat-chip>
         </td>
@@ -57,19 +67,12 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let u">
-          <button mat-icon-button color="primary" (click)="verPermisos(u)" matTooltip="Ver permisos" *ngIf="puedeGestionarUsuarios()">
-            <mat-icon>vpn_key</mat-icon>
-          </button>
-          <button mat-icon-button color="accent" (click)="abrirFormulario(u)" matTooltip="Editar" *ngIf="puedeGestionarUsuarios()">
+          <button mat-icon-button color="accent" (click)="abrirFormulario(u)" matTooltip="Editar">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="confirmarEliminar(u)" matTooltip="Eliminar" *ngIf="puedeEliminarUsuarios()">
+          <button mat-icon-button color="warn" (click)="confirmarEliminar(u)" matTooltip="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>
-          <!-- Mensaje cuando el usuario no tiene permisos -->
-          <span *ngIf="!puedeGestionarUsuarios()" class="sin-permisos">
-            Solo lectura
-          </span>
         </td>
       </ng-container>
 
@@ -77,23 +80,13 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 
-    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"
-                   [pageSize]="10"
-                   showFirstLastButtons>
-    </mat-paginator>
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" showFirstLastButtons></mat-paginator>
   </div>
 </div>
 
-<!-- Modales -->
+<!-- ✅ CORREGIDO: Eliminamos [departamentos] y [proveedores] porque el formulario hijo no los recibe como @Input -->
 <app-usuario-form *ngIf="mostrarFormulario"
                   [usuario]="usuarioSeleccionado"
                   (guardado)="onGuardado()"
                   (cancelado)="cerrarFormulario()">
 </app-usuario-form>
-
-<app-permisos-modal *ngIf="mostrarPermisos && usuarioPermisos"
-                    [idUsuario]="usuarioPermisos.id"
-                    [nombreUsuario]="usuarioPermisos.nombre"
-                    (cerrar)="cerrarPermisos()"
-                    (actualizado)="onPermisosActualizados()">
-</app-permisos-modal>

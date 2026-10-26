@@ -9,6 +9,7 @@ export interface Articulo {
   descripcion: string;
   codigo: string | null;
   unidad_medida: string | null;
+  categoria?: string;
 }
 
 export interface CreateArticuloDTO {
@@ -16,6 +17,7 @@ export interface CreateArticuloDTO {
   descripcion: string;
   codigo: string | null;
   unidad_medida: string | null;
+  id_Rubro?: number | null;
 }
 
 export interface UpdateArticuloDTO {
@@ -24,6 +26,7 @@ export interface UpdateArticuloDTO {
   descripcion: string;
   codigo: string | null;
   unidad_medida: string | null;
+  id_Rubro?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

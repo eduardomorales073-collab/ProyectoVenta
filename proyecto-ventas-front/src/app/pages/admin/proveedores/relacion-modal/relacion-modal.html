@@ -1,0 +1,62 @@
+<div class="modal-overlay" (click)="cerrar()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Gestionar Relaciones</h2>
+      <button mat-icon-button (click)="cerrar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Formulario para nueva relación -->
+      <form [formGroup]="form" (ngSubmit)="agregarRelacion()" class="form-relacion">
+        <h3>Agregar nueva relación</h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Proveedor Relacionado</mat-label>
+            <mat-select formControlName="proveedor2">
+              <mat-option *ngFor="let p of proveedores" [value]="p.id" [disabled]="p.id === proveedorId">
+                {{ p.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de Relación</mat-label>
+            <mat-select formControlName="tipoRelacion">
+              <mat-option value="Socio Comercial">Socio Comercial</mat-option>
+              <mat-option value="Distribuidor Autorizado">Distribuidor Autorizado</mat-option>
+              <mat-option value="Matriz">Matriz</mat-option>
+              <mat-option value="Filial">Filial</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
+            <mat-icon>add</mat-icon> Agregar
+          </button>
+        </div>
+      </form>
+
+      <!-- Lista de relaciones existentes -->
+      <h3>Relaciones Actuales</h3>
+
+      <div class="lista-relaciones">
+        <div *ngFor="let r of relaciones" class="relacion-item">
+          <span class="proveedor-nombre">
+            {{ r.proveedor1 === proveedorId ? r.nombreProveedor2 : r.nombreProveedor1 }}
+          </span>
+
+          <mat-chip class="chip-tipo">{{ r.tipoRelacion }}</mat-chip>
+
+          <button mat-icon-button color="warn" (click)="eliminarRelacion(r.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <p *ngIf="relaciones.length === 0" class="sin-relaciones">No hay relaciones asignadas.</p>
+      </div>
+    </div>
+  </div>
+</div>

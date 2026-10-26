@@ -8,6 +8,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+
 import { PedidoInternoService } from '../../../services/pedido-interno.service';
 import { DepartamentoService } from '../../../services/departamento.service';
 import { NotificacionService } from '../../../services/notificacion';
@@ -28,6 +32,9 @@ import { Departamento } from '../../../models/departamento.model';
     MatProgressSpinnerModule,
     MatChipsModule,
     MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     OfertaFormComponent
   ],
   templateUrl: './pedidos-disponibles.html',
@@ -35,24 +42,22 @@ import { Departamento } from '../../../models/departamento.model';
 })
 export class PedidosDisponiblesComponent implements OnInit {
   pedidos: PedidoDisponibleProveedor[] = [];
+  pedidosOriginales: PedidoDisponibleProveedor[] = [];
   departamentos: Departamento[] = [];
-  cargando = false;
-  error = '';
 
+  // Filtros
+  filtroPrioridad: string = 'todos';
+  filtroTexto: string = '';
+  pedidosUrgentesCount = 0;
+
+  cargando = false;
   mostrarFormulario = false;
   pedidoSeleccionado: PedidoDisponibleProveedor | null = null;
 
   displayedColumns: string[] = [
-    'codigo',
-    'articulos',
-    'observaciones',
-    'cantidad',
-    'departamento',
-    'fecha_Solicitada',
-    'competencia',
-    'miOferta',
-    'acciones'
-    
+    'urgente', 'codigo', 'articulos', 'observaciones',
+    'cantidad', 'departamento', 'fecha_Solicitada',
+    'competencia', 'miOferta', 'acciones'
   ];
 
   constructor(
@@ -63,36 +68,56 @@ export class PedidosDisponiblesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cargarDepartamentos();
     this.cargar();
-  }
-
-  cargarDepartamentos(): void {
-    this.departamentoService.listar().subscribe({
-      next: (data) => { this.departamentos = data; this.cdr.detectChanges(); }
-    });
   }
 
   cargar(): void {
     this.cargando = true;
-    // ✅ Usar el nuevo endpoint que filtra por rubro del proveedor
     this.pedidoService.listarDisponiblesParaProveedor().subscribe({
       next: (data) => {
-        this.pedidos = data;
+        this.pedidosOriginales = data;
+        this.pedidosUrgentesCount = data.filter(p => p.urgente).length;
+        this.aplicarFiltros();
         this.cargando = false;
         this.cdr.detectChanges();
       },
       error: (err: any) => {
-        this.error = `Error: ${err.status} ${err.statusText}`;
-        this.notification.error(this.error);
+        this.notification.error(`Error: ${err.status}`);
         this.cargando = false;
-        this.cdr.detectChanges();
       }
     });
   }
 
-  nombreDepartamento(id: number): string {
-    return this.departamentos.find(d => d.id === id)?.nombre || `Depto #${id}`;
+  aplicarFiltros(): void {
+    let filtrados = [...this.pedidosOriginales];
+
+    // Filtro de prioridad
+    if (this.filtroPrioridad === 'urgentes') {
+      filtrados = filtrados.filter(p => p.urgente);
+    } else if (this.filtroPrioridad === 'recientes') {
+      const hace7Dias = new Date();
+      hace7Dias.setDate(hace7Dias.getDate() - 7);
+      filtrados = filtrados.filter(p => new Date(p.fecha_Ingreso) >= hace7Dias);
+    }
+
+    // Filtro de texto
+    if (this.filtroTexto.trim()) {
+      const texto = this.filtroTexto.toLowerCase();
+      filtrados = filtrados.filter(p =>
+        p.codigo.toLowerCase().includes(texto) ||
+        (p.nombreDepartamento || '').toLowerCase().includes(texto)
+      );
+    }
+
+    // ✅ ORDENAMIENTO: Urgentes primero, luego los más recientes (ID mayor)
+    this.pedidos = filtrados.sort((a, b) => {
+      if (a.urgente === b.urgente) {
+        return b.id - a.id;
+      }
+      return a.urgente ? -1 : 1;
+    });
+
+    this.cdr.detectChanges();
   }
 
   abrirOferta(pedido: PedidoDisponibleProveedor): void {

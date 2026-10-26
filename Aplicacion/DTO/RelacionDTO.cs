@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Aplicacion.DTO
+﻿namespace Aplicacion.DTO
 {
-    public record RelacionDTO(int id, int Proveedor1, int Proveedor2, string TipoRelacion);
+    public record RelacionDTO(
+        int id,
+        int Proveedor1,
+        string NombreProveedor1,
+        int Proveedor2,
+        string NombreProveedor2,
+        string TipoRelacion
+    );
 }

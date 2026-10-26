@@ -10,15 +10,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { forkJoin } from 'rxjs';
+
 import { UsuarioService } from '../../../services/usuario.service';
+import { DepartamentoService } from '../../../services/departamento.service';
+import { SucursalService } from '../../../services/sucursal.service';
+import { ProveedorService } from '../../../services/proveedor.service';
+import { RolService } from '../../../services/rol.service'; // ✅ IMPORTAMOS EL SERVICIO DE ROLES
 import { Usuario } from '../../../models/usuario.model';
+import { Departamento } from '../../../models/departamento.model';
+import { Sucursal } from '../../../models/sucursal.model';
+import { Proveedor } from '../../../models/proveedor.model';
 import { UsuarioFormComponent } from './usuario-form/usuario-form';
-import { PermisosModalComponent } from './permisos-modal/permisos-modal';
+import { ConfirmService } from '../../../services/confirm';
 import { NotificacionService } from '../../../services/notificacion';
-import { ConfirmService } from '../../../services/confirm';   
-import { AuthService } from '../../../services/auth.service';
-
-
 
 @Component({
   selector: 'app-usuarios',
@@ -27,7 +32,6 @@ import { AuthService } from '../../../services/auth.service';
     CommonModule,
     FormsModule,
     UsuarioFormComponent,
-    PermisosModalComponent,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -42,59 +46,80 @@ import { AuthService } from '../../../services/auth.service';
   styleUrl: './usuarios.scss'
 })
 export class UsuariosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'email', 'rol', 'activo', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'email', 'rol', 'asignacion', 'activo', 'acciones'];
   dataSource = new MatTableDataSource<Usuario>([]);
+
+  usuarios: Usuario[] = [];
+  departamentos: Departamento[] = [];
+  sucursales: Sucursal[] = [];
+  proveedores: Proveedor[] = [];
+  roles: any[] = []; // ✅ NUEVA LISTA DE ROLES
 
   cargando = false;
   error = '';
   mostrarFormulario = false;
   usuarioSeleccionado: Usuario | null = null;
-  mostrarPermisos = false;
-  usuarioPermisos: Usuario | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-
   constructor(
     private usuarioService: UsuarioService,
+    private departamentoService: DepartamentoService,
+    private sucursalService: SucursalService,
+    private proveedorService: ProveedorService,
+    private rolService: RolService, // ✅ INYECTAMOS EL SERVICIO
     private cdr: ChangeDetectorRef,
-    private notificacion: NotificacionService,
-    private confirm: ConfirmService,  
-    private authService: AuthService,  
+    private confirm: ConfirmService,
+    private notification: NotificacionService
   ) { }
 
-  ngOnInit(): void {
-    // NO cargamos aquí. Esperamos a que la vista esté lista.
-  }
+  ngOnInit(): void { }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
-    // ✅ Personalizar el filtro para que busque en nombre, email y rol
     this.dataSource.filterPredicate = (usuario: Usuario, filtro: string) => {
-      const nombreRol = this.nombreRol(usuario.id_Rol).toLowerCase();
+      const rolStr = this.getNombreRol(usuario);
       const dataStr = (
-        usuario.nombre + ' ' +
-        usuario.email + ' ' +
-        nombreRol + ' ' +
-        (usuario.activo ? 'activo' : 'inactivo')
+        usuario.id + ' ' +
+        (usuario.nombre || '') + ' ' +
+        (usuario.email || '') + ' ' +
+        rolStr + ' ' +
+        this.getAsignacion(usuario)
       ).toLowerCase();
-
       return dataStr.includes(filtro);
     };
 
-    this.cargar();
+    this.cargarTodo();
   }
 
-  cargar(): void {
+  cargarTodo(): void {
     this.cargando = true;
-    this.error = '';
-    this.usuarioService.listar().subscribe({
-      next: (data) => {
-        this.dataSource.data = data;
+
+    // ✅ Agregamos los roles al forkJoin
+    forkJoin({
+      usuarios: this.usuarioService.listar(),
+      departamentos: this.departamentoService.listar(),
+      sucursales: this.sucursalService.listar(),
+      proveedores: this.proveedorService.listar(),
+      roles: this.rolService.listar()
+    }).subscribe({
+      next: (res: any) => {
+        this.usuarios = Array.isArray(res.usuarios) ? res.usuarios : (res.usuarios.$values || []);
+        this.departamentos = Array.isArray(res.departamentos) ? res.departamentos : (res.departamentos.$values || []);
+        this.sucursales = Array.isArray(res.sucursales) ? res.sucursales : (res.sucursales.$values || []);
+        this.proveedores = Array.isArray(res.proveedores) ? res.proveedores : (res.proveedores.$values || []);
+        this.roles = Array.isArray(res.roles) ? res.roles : (res.roles.$values || []);
+
+        this.dataSource.data = this.usuarios;
         this.cargando = false;
+
+        if (this.paginator) {
+          this.paginator.firstPage();
+        }
+
         this.cdr.detectChanges();
       },
       error: (err: any) => {
@@ -103,6 +128,33 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // ✅ NUEVO MÉTODO: Busca el nombre del rol usando el id_Rol del JSON
+  getNombreRol(usuario: any): string {
+    if (!usuario.id_Rol) return 'Sin Rol';
+
+    const rolEncontrado = this.roles.find(r => r.id === usuario.id_Rol);
+    return rolEncontrado ? (rolEncontrado.nombre || rolEncontrado.Nombre) : `Rol #${usuario.id_Rol}`;
+  }
+
+  getAsignacion(usuario: Usuario): string {
+    if (usuario.id_Proveedor) {
+      const prov = this.proveedores.find(p => p.id === usuario.id_Proveedor);
+      return prov ? `Empresa: ${prov.nombre}` : `Proveedor #${usuario.id_Proveedor}`;
+    }
+
+    if (usuario.id_Departamento) {
+      const depto = this.departamentos.find(d => d.id === usuario.id_Departamento);
+      if (depto) {
+        const sucursal = this.sucursales.find(s => s.id === depto.id_Sucursal);
+        const nombreSucursal = sucursal ? sucursal.nombre : 'Sin Sucursal';
+        return `${nombreSucursal} → ${depto.nombre}`;
+      }
+      return `Depto #${usuario.id_Departamento}`;
+    }
+
+    return 'Sin asignación';
   }
 
   aplicarFiltro(event: Event): void {
@@ -124,70 +176,32 @@ export class UsuariosComponent implements OnInit, AfterViewInit {
 
   onGuardado(): void {
     this.cerrarFormulario();
-    this.cargar();
-    this.notificacion.exito('Usuario guardado correctamente');        // ← AÑADIR
+    this.cargarTodo();
   }
-  
 
   confirmarEliminar(usuario: Usuario): void {
-    this.confirm.eliminar(usuario.nombre).subscribe(confirmado => {
+    this.confirm.eliminar(`Usuario ${usuario.nombre}`).subscribe((confirmado: boolean) => {
       if (!confirmado) return;
-
       this.usuarioService.eliminar(usuario.id).subscribe({
         next: () => {
-          this.notificacion.exito(`Usuario "${usuario.nombre}" eliminado correctamente`);
-          this.cargar();
+          this.notification.exito('Usuario eliminado correctamente');
+          this.cargarTodo();
         },
         error: (err: any) => {
-          this.notificacion.error(`Error al eliminar: ${err.status} ${err.statusText}`);
+          this.notification.error(`Error al eliminar: ${err.error?.mensaje || err.status + ' ' + err.statusText}`);
         }
       });
     });
   }
 
-  nombreRol(idRol: number): string {
-    switch (idRol) {
-      case 1: return 'Administrador del Sistema';
-      case 2: return 'Gestor de Compras';
-      case 3: return 'Administrador de Proveedor';
-      case 4: return 'Auditor / Reportes';
-      case 5: return 'Creador de Pedidos';
-      default: return 'Desconocido';
+  claseRol(rol: string): string {
+    switch (rol?.toLowerCase()) {
+      case 'administrador del sistema': return 'chip-admin';
+      case 'gestor de compras': return 'chip-gestor';
+      case 'administrador de proveedor': return 'chip-proveedor';
+      case 'auditor': return 'chip-auditor';
+      case 'creador de pedidos': return 'chip-creador';
+      default: return 'chip-default';
     }
   }
-  claseRol(idRol: number): string {
-  switch (idRol) {
-    case 1: return 'chip-admin';
-    case 2: return 'chip-gestor';
-    case 3: return 'chip-proveedor';
-    case 4: return 'chip-auditor';
-    case 5: return 'chip-creador';
-    default: return 'chip-default';
-  }
-}
-
-  verPermisos(usuario: Usuario): void {
-    this.usuarioPermisos = usuario;
-    this.mostrarPermisos = true;
-    this.cdr.detectChanges();
-  }
-
-  cerrarPermisos(): void {
-    this.mostrarPermisos = false;
-    this.usuarioPermisos = null;
-    this.cdr.detectChanges();
-  }
-
-  onPermisosActualizados(): void {
-    this.cerrarPermisos();
-    this.cargar();
-  }
-
-  puedeGestionarUsuarios(): boolean {
-  return this.authService.puedeGestionarUsuarios();
-}
-
-puedeEliminarUsuarios(): boolean {
-  return this.authService.esAdmin();
-}
 }

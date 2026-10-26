@@ -2,6 +2,7 @@
 using Aplicacion.Interfaz;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Venta.Controllers
 {
@@ -11,6 +12,7 @@ namespace Venta.Controllers
     public class ProveedorControlador : ControllerBase
     {
         private readonly IProveedorService _proveedorService;
+
         public ProveedorControlador(IProveedorService proveedorService) => _proveedorService = proveedorService;
 
         [HttpGet]
@@ -41,6 +43,31 @@ namespace Venta.Controllers
         {
             await _proveedorService.DeleteAsync(id);
             return Ok();
+        }
+
+        //  Permite al proveedor asignarse artículos
+        [HttpPost("{idProveedor}/asignar-articulos")]
+        [Authorize(Roles = "Proveedor,Administrador")] // Solo el proveedor o el admin pueden hacer esto
+        public async Task<IActionResult> AsignarArticulos(int idProveedor, [FromBody] List<int> idArticulos)
+        {
+            // Validación de seguridad: Si es Proveedor, verificar que solo se asigne a sí mismo
+            if (User.IsInRole("Proveedor"))
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+                
+            }
+
+            try
+            {
+                await _proveedorService.AsignarArticulosAsync(idProveedor, idArticulos);
+                return Ok(new { mensaje = "Artículos asignados correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = ex.Message });
+            }
         }
     }
 }

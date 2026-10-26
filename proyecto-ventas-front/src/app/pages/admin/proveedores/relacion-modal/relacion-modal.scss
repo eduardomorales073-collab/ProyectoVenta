@@ -1,0 +1,89 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1e293b;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.form-relacion {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+}
+
+.lista-relaciones {
+  .relacion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e2e8f0;
+
+    .proveedor-nombre {
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .chip-tipo {
+      background: #e0e7ff !important;
+      color: #3730a3 !important;
+    }
+  }
+
+  .sin-relaciones {
+    text-align: center;
+    color: #94a3b8;
+    padding: 1rem;
+  }
+}

@@ -37,7 +37,8 @@ import { ConfirmService } from '../services/confirm';
   styleUrl: './articulos.component.scss'
 })
 export class ArticulosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'codigo', 'nombre', 'descripcion', 'unidad_medida', 'acciones'];
+  // ✅ Agregamos 'categoria' a las columnas mostradas
+  displayedColumns: string[] = ['id', 'codigo', 'nombre', 'descripcion', 'categoria', 'unidad_medida', 'acciones'];
   dataSource = new MatTableDataSource<Articulo>([]);
 
   cargando = false;
@@ -64,13 +65,14 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
-    // ✅ Filtro personalizado (incluye codigo y unidad_medida)
+    // ✅ Filtro personalizado (incluye la nueva categoría)
     this.dataSource.filterPredicate = (articulo: Articulo, filtro: string) => {
       const dataStr = (
         articulo.id + ' ' +
         (articulo.codigo || '') + ' ' +
         articulo.nombre + ' ' +
         articulo.descripcion + ' ' +
+        (articulo.categoria || '') + ' ' + // ✅ Búsqueda por categoría
         (articulo.unidad_medida || '')
       ).toLowerCase();
 
@@ -84,8 +86,9 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
     this.cargando = true;
     this.error = '';
     this.articuloService.listar().subscribe({
-      next: (data) => {
-        this.dataSource.data = data;
+      next: (data: any) => {
+        // ✅ Desenvolvemos el arreglo si viene con $values
+        this.dataSource.data = Array.isArray(data) ? data : (data.$values || []);
         this.cargando = false;
         this.cdr.detectChanges();
       },

@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';  // ← Router añadido
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -66,7 +66,7 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     private ordenCompraService: OrdenCompraService,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router,  // ← NUEVO
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private notificacion: NotificacionService,
     private confirm: ConfirmService
@@ -77,6 +77,7 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+
     this.dataSource.filterPredicate = (pedido: PedidoInterno, filtro: string) => {
       const estadoStr = this.estadoPedido(pedido).toLowerCase();
       const dataStr = (
@@ -105,38 +106,36 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ✅ Espera a que las órdenes estén cargadas antes de abrir el formulario
+  // ✅ MÉTODO CORREGIDO Y CERRADO CORRECTAMENTE
   esperarYAbirFormulario(ordenId: number): void {
-  // Si ya están cargadas, verificar que la orden exista
-  if (this.ordenes.length > 0) {
-    const ordenExiste = this.ordenes.find(o => o.id === ordenId);
-    if (ordenExiste) {
-      this.abrirFormularioConOrden();
-    } else {
-      this.notificacion.error(`La orden #${ordenId} no está disponible para agregar pedidos (debe estar en estado Borrador o Aprobada sin pedidos).`);
-    }
-    return;
-  }
-
-  // Esperar a que carguen
-  let intentos = 0;
-  const intervalo = setInterval(() => {
-    intentos++;
-    if (this.ordenes.length > 0 || intentos > 25) {
-      clearInterval(intervalo);
-      if (this.ordenes.length > 0) {
-        const ordenExiste = this.ordenes.find(o => o.id === ordenId);
-        if (ordenExiste) {
-          this.abrirFormularioConOrden();
-        } else {
-          this.notificacion.error(`La orden #${ordenId} no está disponible para agregar pedidos.`);
-        }
+    if (this.ordenes.length > 0) {
+      const ordenExiste = this.ordenes.find(o => o.id === ordenId);
+      if (ordenExiste) {
+        this.abrirFormularioConOrden();
       } else {
-        this.notificacion.error('No se pudieron cargar las órdenes disponibles.');
+        this.notificacion.error(`La orden #${ordenId} no está disponible.`);
       }
+      return;
     }
-  }, 200);
-}
+
+    let intentos = 0;
+    const intervalo = setInterval(() => {
+      intentos++;
+      if (this.ordenes.length > 0 || intentos > 25) {
+        clearInterval(intervalo);
+        if (this.ordenes.length > 0) {
+          const ordenExiste = this.ordenes.find(o => o.id === ordenId);
+          if (ordenExiste) {
+            this.abrirFormularioConOrden();
+          } else {
+            this.notificacion.error(`La orden #${ordenId} no está disponible.`);
+          }
+        } else {
+          this.notificacion.error('No se pudieron cargar las órdenes disponibles.');
+        }
+      }
+    }, 200);
+  }
 
   aplicarFiltro(event: Event): void {
     const valor = (event.target as HTMLInputElement).value;
@@ -150,15 +149,15 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
 
     this.ordenCompraService.listarConContadores().subscribe({
       next: (data) => {
+        // ✅ Permitimos Borrador, Aprobada y Publicada, sin importar si ya tienen pedidos
         this.ordenes = data.filter(o =>
-          (o.estado === 'Borrador' || o.estado === 'Aprobada')
-          && o.totalPedidos === 0
+          o.estado === 'Borrador' ||
+          o.estado === 'Aprobada' ||
+          o.estado === 'Publicada'
         );
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al cargar órdenes:', err);
-      }
+      error: (err) => { console.error('Error al cargar órdenes:', err); }
     });
   }
 
@@ -278,12 +277,10 @@ export class PedidosInternosComponent implements OnInit, AfterViewInit {
   }
 
   puedeEliminarPedidos(): boolean {
-    // ✅ Admin y Gestor pueden eliminar
     return this.authService.esAdmin() || this.authService.esGestorCompras();
   }
 
   puedeEliminarEstePedido(pedido: PedidoInterno): boolean {
-    // ❌ No se puede eliminar un pedido ya adjudicado
     if (pedido.adjudicado) return false;
     return this.puedeEliminarPedidos();
   }

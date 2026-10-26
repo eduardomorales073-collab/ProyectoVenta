@@ -12,5 +12,6 @@ namespace Aplicacion.Interfaz
         Task AddAsync(CreateArticuloDTO articulo);
         Task DeleteAsync(int id);
         Task UpdateAsync(UpdateActArtDTO articulo);
+        Task<List<ArticuloDTO>> GetByRubroAsync(int idRubro);
     }
 }

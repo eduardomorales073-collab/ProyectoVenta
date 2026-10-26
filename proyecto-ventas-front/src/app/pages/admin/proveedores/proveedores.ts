@@ -15,6 +15,8 @@ import { RubroService } from '../../../services/rubro.service';
 import { Proveedor } from '../../../models/proveedor.model';
 import { Rubro } from '../../../models/rubro.model';
 import { ProveedorFormComponent } from './proveedor-form/proveedor-form';
+
+import { RelacionModalComponent } from './relacion-modal/relacion-modal';
 import { ConfirmService } from '../../../services/confirm';
 import { NotificacionService } from '../../../services/notificacion';
 
@@ -25,6 +27,7 @@ import { NotificacionService } from '../../../services/notificacion';
     CommonModule,
     FormsModule,
     ProveedorFormComponent,
+    RelacionModalComponent, 
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -47,6 +50,10 @@ export class ProveedoresComponent implements OnInit, AfterViewInit {
   error = '';
   mostrarFormulario = false;
   proveedorSeleccionado: Proveedor | null = null;
+
+  //  PROPIEDADES PARA EL MODAL DE RELACIONES
+  mostrarRelaciones = false;
+  proveedorRelacionId: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -119,11 +126,12 @@ export class ProveedoresComponent implements OnInit, AfterViewInit {
       .map(id => this.rubros.find(r => r.id === id)?.nombre || 'Desconocido')
       .join(', ');
   }
+
   nombresRubrosArray(ids: number[]): string[] {
-  if (!ids || ids.length === 0) return [];
-  return ids
-    .map(id => this.rubros.find(r => r.id === id)?.nombre || 'Desconocido');
-}
+    if (!ids || ids.length === 0) return [];
+    return ids
+      .map(id => this.rubros.find(r => r.id === id)?.nombre || 'Desconocido');
+  }
 
   abrirFormulario(proveedor: Proveedor | null): void {
     this.proveedorSeleccionado = proveedor;
@@ -140,6 +148,19 @@ export class ProveedoresComponent implements OnInit, AfterViewInit {
   onGuardado(): void {
     this.cerrarFormulario();
     this.cargar();
+  }
+
+  // MÉTODOS PARA EL MODAL DE RELACIONES
+  abrirRelaciones(proveedor: Proveedor): void {
+    this.proveedorRelacionId = proveedor.id;
+    this.mostrarRelaciones = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarRelaciones(): void {
+    this.mostrarRelaciones = false;
+    this.proveedorRelacionId = null;
+    this.cdr.detectChanges();
   }
 
   confirmarEliminar(proveedor: Proveedor): void {
