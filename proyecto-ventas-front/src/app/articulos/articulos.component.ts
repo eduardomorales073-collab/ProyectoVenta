@@ -37,10 +37,8 @@ import { ConfirmService } from '../services/confirm';
   styleUrl: './articulos.component.scss'
 })
 export class ArticulosComponent implements OnInit, AfterViewInit {
-  // ✅ Agregamos 'categoria' a las columnas mostradas
   displayedColumns: string[] = ['id', 'codigo', 'nombre', 'descripcion', 'categoria', 'unidad_medida', 'acciones'];
   dataSource = new MatTableDataSource<Articulo>([]);
-
   cargando = false;
   error = '';
   mostrarFormulario = false;
@@ -58,24 +56,21 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    // vacío
   }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
-    // ✅ Filtro personalizado (incluye la nueva categoría)
     this.dataSource.filterPredicate = (articulo: Articulo, filtro: string) => {
       const dataStr = (
         articulo.id + ' ' +
         (articulo.codigo || '') + ' ' +
         articulo.nombre + ' ' +
         articulo.descripcion + ' ' +
-        (articulo.categoria || '') + ' ' + // ✅ Búsqueda por categoría
+        (articulo.categoria || '') + ' ' +
         (articulo.unidad_medida || '')
       ).toLowerCase();
-
       return dataStr.includes(filtro);
     };
 
@@ -87,7 +82,6 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
     this.error = '';
     this.articuloService.listar().subscribe({
       next: (data: any) => {
-        // ✅ Desenvolvemos el arreglo si viene con $values
         this.dataSource.data = Array.isArray(data) ? data : (data.$values || []);
         this.cargando = false;
         this.cdr.detectChanges();
@@ -107,7 +101,7 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
 
   // ====== PERMISOS ======
   puedeCrear(): boolean {
-    return this.authService.puedeCrear();
+    return this.authService.puedeCrear() || this.esProveedor();
   }
 
   puedeEditar(): boolean {
@@ -116,6 +110,11 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
 
   puedeEliminar(): boolean {
     return this.authService.puedeEliminar();
+  }
+
+  // ✅ CORREGIDO: Usamos el método del AuthService
+  esProveedor(): boolean {
+    return this.authService.esProveedor();
   }
 
   // ====== CRUD ======
@@ -140,7 +139,6 @@ export class ArticulosComponent implements OnInit, AfterViewInit {
   confirmarEliminar(articulo: Articulo): void {
     this.confirm.eliminar(articulo.nombre).subscribe(confirmado => {
       if (!confirmado) return;
-
       this.articuloService.eliminar(articulo.id).subscribe({
         next: () => {
           this.notificacion.exito(`Artículo "${articulo.nombre}" eliminado correctamente`);

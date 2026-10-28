@@ -9,6 +9,7 @@ import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../../services/auth.service';
 import { ArticuloService } from '../../../services/articulo.service';
 import { UsuarioService } from '../../../services/usuario.service';
+import { SucursalService } from '../../../services/sucursal.service'; // ✅ IMPORTAMOS EL SERVICIO
 import { Articulo } from '../../../services/articulo.service';
 import { Usuario } from '../../../models/usuario.model';
 
@@ -58,6 +59,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     private authService: AuthService,
     private articuloService: ArticuloService,
     private usuarioService: UsuarioService,
+    private sucursalService: SucursalService, 
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -111,6 +113,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       error: () => {
         this.totalUsuarios = 0;
         this.cargando = false;
+      }
+    });
+
+    //  CARGAR SUCURSALES
+    this.sucursalService.listar().subscribe({
+      next: (sucursales: any) => {
+        const lista = Array.isArray(sucursales) ? sucursales : (sucursales.$values || []);
+        this.totalSucursales = lista.length;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cargar sucursales', err);
+        this.totalSucursales = 0;
       }
     });
   }

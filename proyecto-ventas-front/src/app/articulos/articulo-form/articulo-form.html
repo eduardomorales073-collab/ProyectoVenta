@@ -14,8 +14,8 @@
         <!-- Código -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Código</mat-label>
-          <input matInput formControlName="codigo" readonly>
-          <mat-hint>Generado automáticamente</mat-hint>
+          <input matInput formControlName="codigo" placeholder="Ej: TEC-001">
+          <mat-hint>Puedes editarlo o se actualizará al elegir la categoría</mat-hint>
         </mat-form-field>
 
         <!-- Nombre -->
@@ -41,17 +41,35 @@
           </mat-select>
         </mat-form-field>
 
-        <!-- ✅ Categoría (Rubro) -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Categoría (Rubro)</mat-label>
-          <mat-select formControlName="id_Rubro">
-            <mat-option [value]="null">Sin Categoría</mat-option>
-            <mat-option *ngFor="let r of rubros" [value]="r.id">
-              {{ r.nombre }}
-            </mat-option>
-          </mat-select>
-          <mat-icon matPrefix>category</mat-icon>
-        </mat-form-field>
+        <!-- ✅ DASHBOARD DE RUBROS -->
+        <div class="rubro-dashboard">
+          <label class="dashboard-label">Selecciona una Categoría (Rubro)</label>
+          <div class="rubro-grid">
+
+            <!-- Tarjeta: Sin Categoría (Solo para Admin/Gestor) -->
+            <mat-card *ngIf="!esProveedor"
+                      class="rubro-card"
+                      [class.selected]="form.get('id_Rubro')?.value === null"
+                      (click)="seleccionarRubro(null)">
+              <mat-icon class="rubro-icon">remove_circle_outline</mat-icon>
+              <span class="rubro-nombre">Sin Categoría</span>
+            </mat-card>
+
+            <!-- Tarjetas de Rubros Dinámicas -->
+            <mat-card *ngFor="let r of rubros"
+                      class="rubro-card"
+                      [class.selected]="form.get('id_Rubro')?.value === r.id"
+                      (click)="seleccionarRubro(r.id)">
+
+              <mat-icon class="rubro-icon">{{ getIconoRubro(r.nombre) }}</mat-icon>
+              <span class="rubro-nombre">{{ r.nombre }}</span>
+              <span class="rubro-prefijo" *ngIf="getPrefijoRubro(r.id)">
+                {{ getPrefijoRubro(r.id) }}
+              </span>
+            </mat-card>
+          </div>
+        </div>
+
       </div>
 
       <div class="modal-footer">

@@ -15,7 +15,6 @@ export class AuthService {
       tap(res => {
         localStorage.setItem('token', res.token);
 
-        // Decodificar el JWT para extraer el IdProveedor (si existe)
         let idProveedor: number | null = null;
         try {
           const payload = JSON.parse(atob(res.token.split('.')[1]));
@@ -48,8 +47,6 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
-
-  // ====== USUARIO Y ROL ======
 
   getUsuario(): { nombre: string; email: string; rol: string; idRol: number; id_Proveedor: number | null } | null {
     const raw = localStorage.getItem('usuario');
@@ -91,7 +88,6 @@ export class AuthService {
   esProveedor(): boolean { return this.esAdminProveedor(); }
 
   // ====== RUTAS ======
-
   getRutaInicio(): string {
     switch (this.getRol()) {
       case 'Administrador': return '/admin/dashboard';
@@ -102,80 +98,51 @@ export class AuthService {
       default: return '/login';
     }
   }
-  getIdDepartamento(): number | null {
-  const token = this.getToken();
-  if (!token) return null;
 
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const idDepto = payload['IdDepartamento'] || payload['idDepartamento'];
-    return idDepto ? parseInt(idDepto, 10) : null;
-  } catch (error) {
-    console.error('Error al decodificar el token:', error);
-    return null;
+  getIdDepartamento(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const idDepto = payload['IdDepartamento'] || payload['idDepartamento'];
+      return idDepto ? parseInt(idDepto, 10) : null;
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      return null;
+    }
   }
-}
 
   getRutaHubReportes(): string {
-  switch (this.getRol()) {
-    case 'Auditor': return '/auditor/reportes';
-    case 'GestorCompras': return '/empleado/pedidos';   // ← NUEVO
-    case 'Administrador':
-    default: return '/admin/reportes';
+    switch (this.getRol()) {
+      case 'Auditor': return '/auditor/reportes';
+      case 'GestorCompras': return '/empleado/pedidos';
+      case 'Administrador':
+      default: return '/admin/reportes';
+    }
   }
-}
 
-  // ====== PERMISOS ESPECÍFICOS POR MÓDULO ======
-
+  // ====== PERMISOS ESPECÍFICOS ======
   puedeGestionarArticulos(): boolean { return this.esAdmin(); }
   puedeGestionarUsuarios(): boolean { return this.esAdmin(); }
   puedeGestionarProveedores(): boolean { return this.esAdmin(); }
-  puedeGestionarCategorias(): boolean { return this.esAdmin(); }
-  puedeGestionarUnidades(): boolean { return this.esAdmin(); }
-  puedeGestionarCatalogos(): boolean { return this.esAdmin(); }
-  puedeGestionarRoles(): boolean { return this.esAdmin(); }
-
-  // --- PEDIDOS ---
-  puedeCrearPedidos(): boolean {
-    return this.esAdmin() || this.esGestorCompras();
-  }
-
-  puedeEditarPedidos(): boolean {
-    return this.esAdmin() || this.esGestorCompras();
-  }
-
+  puedeCrearPedidos(): boolean { return this.esAdmin() || this.esGestorCompras(); }
+  puedeEditarPedidos(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEliminarPedidos(): boolean { return this.esAdmin(); }
-
-  // --- ADJUDICACIONES ---
   puedeCrearAdjudicaciones(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEditarAdjudicaciones(): boolean { return this.esAdmin() || this.esGestorCompras(); }
-  puedeEliminarAdjudicaciones(): boolean { return this.esAdmin(); }
-
-  // --- ÓRDENES Y OFERTAS ---
-  puedeGestionarOrdenes(): boolean { return this.esAdmin() || this.esGestorCompras(); }
-  puedeGestionarOfertas(): boolean { return this.esAdminProveedor() || this.esAdmin(); }
-
-  // --- REPORTES ---
   puedeVerReportes(): boolean { return this.esAdmin() || this.esAuditor() || this.esGestorCompras(); }
 
-  // ====== ALIAS GENÉRICOS (para compatibilidad) ======
   puedeCrear(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEditar(): boolean { return this.esAdmin() || this.esGestorCompras(); }
   puedeEliminar(): boolean { return this.esAdmin(); }
-  puedeGestionarCompras(): boolean { return this.esAdmin() || this.esGestorCompras(); }
 
-  /**
-   * Obtener el id_Proveedor del usuario logueado.
-   * Primero intenta con localStorage, luego con el JWT (fallback robusto).
-   */
   getIdProveedor(): number | null {
-    // 1. Intentar con localStorage
     const usuario = this.getUsuario();
     if (usuario && usuario.id_Proveedor) {
       return usuario.id_Proveedor;
     }
 
-    // 2. Fallback: decodificar el JWT
     const token = this.getToken();
     if (!token) return null;
 
@@ -188,9 +155,13 @@ export class AuthService {
       return null;
     }
   }
+
   getNombreUsuario(): string {
-    // Ajusta según cómo guardes el nombre del usuario
     return localStorage.getItem('nombreUsuario') || 'Usuario';
   }
 
+  // ✅ Método de respaldo
+  getIdRubroProveedor(): number | null {
+    return null; // Lo obtendremos desde el backend con ProveedorService
+  }
 }
