@@ -54,10 +54,11 @@ export class PedidosDisponiblesComponent implements OnInit {
   mostrarFormulario = false;
   pedidoSeleccionado: PedidoDisponibleProveedor | null = null;
 
+  // ✅ CORRECCIÓN: Se eliminó 'miOferta' de las columnas
   displayedColumns: string[] = [
     'urgente', 'codigo', 'articulos', 'observaciones',
     'cantidad', 'departamento', 'fecha_Solicitada',
-    'competencia', 'miOferta', 'acciones'
+    'competencia', 'acciones'
   ];
 
   constructor(
@@ -134,6 +135,6 @@ export class PedidosDisponiblesComponent implements OnInit {
 
   onOfertado(): void {
     this.cerrarFormulario();
-    this.cargar();
+    this.cargar(); // Recarga para ocultar el pedido ofertado
   }
 }

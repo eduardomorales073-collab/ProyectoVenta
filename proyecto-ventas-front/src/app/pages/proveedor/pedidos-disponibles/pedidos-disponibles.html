@@ -10,7 +10,7 @@
   <mat-card class="table-card">
     <mat-card-content>
 
-      <!-- ✅ NUEVO: DASHBOARD DE FILTROS -->
+      <!-- DASHBOARD DE FILTROS -->
       <div class="filtros-dashboard">
         <mat-form-field appearance="outline" class="filtro-select">
           <mat-label>Prioridad</mat-label>
@@ -44,7 +44,7 @@
       <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
         <mat-icon>check_circle</mat-icon>
         <h3>No hay pedidos disponibles</h3>
-        <p>No hay pedidos que coincidan con los filtros seleccionados.</p>
+        <p>No tienes pedidos pendientes por ofertar en este momento.</p>
       </div>
 
       <!-- TABLA -->
@@ -116,50 +116,39 @@
           <td mat-cell *matCellDef="let p">{{ p.fecha_Solicitada | date:'dd/MM/yyyy' }}</td>
         </ng-container>
 
-        <!-- Competencia -->
+        <!-- Competencia y Socios -->
         <ng-container matColumnDef="competencia">
           <th mat-header-cell *matHeaderCellDef>Competencia</th>
           <td mat-cell *matCellDef="let p">
-            <div *ngIf="p.ofertasDeMiRubro > 0" class="competencia-info">
-              <mat-chip class="chip-competencia">
-                <mat-icon class="icon-chip">people</mat-icon>
-                {{ p.ofertasDeMiRubro }} oferta(s)
-              </mat-chip>
-              <span class="precio-min" *ngIf="p.precioMinimoDelRubro">
-                Menor: Q {{ p.precioMinimoDelRubro | number:'1.2-2' }}
-              </span>
-            </div>
-            <span *ngIf="p.ofertasDeMiRubro === 0" class="sin-competencia">Sin competencia</span>
+            <div class="competencia-wrapper" *ngIf="p.ofertasDeMiRubro > 0; else sinOfertas">
 
-            <!-- Alerta de proveedores relacionados -->
-            <div *ngIf="p.proveedoresRelacionadosQueOfertaron?.length > 0" class="alert-relacionado">
-              <mat-icon class="icon-relacionado">link</mat-icon>
-              <div class="relacionados-lista">
-                <strong>{{ p.proveedoresRelacionadosQueOfertaron.length }} relacionado(s):</strong>
-                <div *ngFor="let pr of p.proveedoresRelacionadosQueOfertaron" class="relacionado-item">
-                  <span class="nombre-rel">{{ pr.nombre }}</span>
-                  <span class="tipo-rel">{{ pr.tipoRelacion }}</span>
-                  <span class="precio-rel">Q {{ pr.precioOfertado | number:'1.2-2' }}</span>
+              <!-- Resumen de ofertas del rubro -->
+              <div class="badge-ofertas">
+                <mat-icon>groups</mat-icon>
+                <span>{{ p.ofertasDeMiRubro }} oferta(s)</span>
+                <span class="precio-min" *ngIf="p.precioMinimoDelRubro">
+                  Menor: Q{{ p.precioMinimoDelRubro | number:'1.2-2' }}
+                </span>
+              </div>
+
+              <!-- Tarjetas de Socios -->
+              <div class="socios-lista" *ngIf="p.proveedoresRelacionadosQueOfertaron?.length > 0">
+                <div class="socio-card" *ngFor="let socio of p.proveedoresRelacionadosQueOfertaron">
+                  <mat-icon class="icon-socio">handshake</mat-icon>
+                  <div class="socio-info">
+                    <span class="socio-nombre">{{ socio.nombre }}</span>
+                    <span class="socio-tipo">{{ socio.tipoRelacion }}</span>
+                  </div>
+                  <span class="socio-precio">Q{{ socio.precioOfertado | number:'1.2-2' }}</span>
                 </div>
               </div>
-            </div>
-          </td>
-        </ng-container>
 
-        <!-- Tu Oferta -->
-        <ng-container matColumnDef="miOferta">
-          <th mat-header-cell *matHeaderCellDef>Tu Oferta</th>
-          <td mat-cell *matCellDef="let p">
-            <div *ngIf="p.miPrecioOfertado" class="mi-oferta-info">
-              <span class="precio-propio">Q {{ p.miPrecioOfertado | number:'1.2-2' }}</span>
-              <mat-chip [class]="p.miPrecioOfertado <= (p.precioMinimoDelRubro || 999999) ? 'chip-ganando' : 'chip-perdiendo'">
-                <mat-icon class="icon-chip">
-                  {{ p.miPrecioOfertado <= (p.precioMinimoDelRubro || 999999) ? 'emoji_events' : 'trending_down' }}
-                </mat-icon>
-                {{ p.miPrecioOfertado <= (p.precioMinimoDelRubro || 999999) ? 'Ganando' : 'Mejorar' }}
-              </mat-chip>
             </div>
-            <span *ngIf="!p.miPrecioOfertado" class="sin-dato">Sin oferta</span>
+            <ng-template #sinOfertas>
+              <span class="sin-competencia">
+                <mat-icon>remove_circle_outline</mat-icon> Sin competencia
+              </span>
+            </ng-template>
           </td>
         </ng-container>
 
@@ -167,11 +156,7 @@
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef>Acciones</th>
           <td mat-cell *matCellDef="let p">
-            <mat-chip *ngIf="p.yaOferte" class="chip-ya-oferto" highlighted>
-              <mat-icon>check_circle</mat-icon>
-              Ya ofertaste
-            </mat-chip>
-            <button *ngIf="!p.yaOferte" mat-raised-button color="primary" (click)="abrirOferta(p)">
+            <button mat-raised-button color="primary" class="btn-ofertar" (click)="abrirOferta(p)">
               <mat-icon>local_offer</mat-icon>
               Ofertar
             </button>

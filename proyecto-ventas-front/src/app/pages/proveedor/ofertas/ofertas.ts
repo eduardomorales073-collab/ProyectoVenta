@@ -35,8 +35,13 @@ import { OfertaEditFormComponent } from './oferta-edit-form/oferta-edit-form';
 export class ProveedorOfertasComponent implements OnInit {
   ofertas: OfertaProveedor[] = [];
   pedidos: PedidoInterno[] = [];
-  displayedColumns: string[] = ['id', 'pedido', 'precio', 'fecha', 'acciones'];
+
+  // ✅ Agregamos 'socios' a las columnas
+  displayedColumns: string[] = ['id', 'pedido', 'precio', 'socios', 'fecha', 'acciones'];
   cargando = false;
+
+  mostrarFormulario = false;
+  ofertaSeleccionada: OfertaProveedor | null = null;
 
   constructor(
     private ofertaService: OfertaProveedorService,
@@ -45,9 +50,6 @@ export class ProveedorOfertasComponent implements OnInit {
     private confirm: ConfirmService,
     private cdr: ChangeDetectorRef
   ) { }
-
-  mostrarFormulario = false;
-ofertaSeleccionada: OfertaProveedor | null = null;
 
   ngOnInit(): void {
     this.cargarPedidos();
@@ -98,19 +100,19 @@ ofertaSeleccionada: OfertaProveedor | null = null;
   }
 
   abrirFormulario(oferta: OfertaProveedor): void {
-  this.ofertaSeleccionada = oferta;
-  this.mostrarFormulario = true;
-  this.cdr.detectChanges();
-}
+    this.ofertaSeleccionada = oferta;
+    this.mostrarFormulario = true;
+    this.cdr.detectChanges();
+  }
 
-cerrarFormulario(): void {
-  this.mostrarFormulario = false;
-  this.ofertaSeleccionada = null;
-  this.cdr.detectChanges();
-}
+  cerrarFormulario(): void {
+    this.mostrarFormulario = false;
+    this.ofertaSeleccionada = null;
+    this.cdr.detectChanges();
+  }
 
-onGuardado(): void {
-  this.cerrarFormulario();
-  this.cargarOfertas();
-}
+  onGuardado(): void {
+    this.cerrarFormulario();
+    this.cargarOfertas();
+  }
 }

@@ -1,20 +1,21 @@
 <div class="modal-overlay" (click)="onCancelar()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Nueva Oferta</h2>
+      <!-- ✅ Título Dinámico -->
+      <h2>{{ esEdicion ? 'Mejorar Oferta' : 'Nueva Oferta' }}</h2>
       <button mat-icon-button (click)="onCancelar()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
 
-    <div class="info-pedido" *ngIf="pedido">
-      <p><strong>Pedido:</strong> {{ pedido.codigo }}</p>
-      <p><strong>Cantidad:</strong> {{ pedido.cantidad || 1 }}</p>
+    <div class="info-pedido" *ngIf="pedido || oferta">
+      <p><strong>Pedido:</strong> {{ pedido?.codigo || oferta?.codigoPedido }}</p>
+      <p *ngIf="pedido"><strong>Cantidad:</strong> {{ pedido.cantidad || 1 }}</p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Precio de tu Oferta (Q)</mat-label>
+        <mat-label>{{ esEdicion ? 'Nuevo Precio (Q)' : 'Precio de tu Oferta (Q)' }}</mat-label>
         <input matInput type="number" step="0.01" min="0.01" formControlName="precio" placeholder="Ej: 1500.00" required>
         <mat-icon matPrefix>attach_money</mat-icon>
         <mat-error *ngIf="form.get('precio')?.hasError('required')">
@@ -30,8 +31,9 @@
           Cancelar
         </button>
         <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando">
-          <mat-icon>send</mat-icon>
-          {{ guardando ? 'Enviando...' : 'Enviar Oferta' }}
+          <mat-icon>{{ esEdicion ? 'trending_up' : 'send' }}</mat-icon>
+          <!-- ✅ Texto Dinámico -->
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar Oferta' : 'Enviar Oferta') }}
         </button>
       </div>
     </form>

@@ -11,7 +11,8 @@ export interface ReporteJasper {
 
 @Injectable({ providedIn: 'root' })
 export class JasperService {
-  private readonly serverBaseUrl = 'http://localhost:8080/jasperserver-pro';
+  // ✅ URL de Docker (sin el /jasperserver-pro)
+  private readonly serverBaseUrl = 'http://localhost:8080';
 
   private readonly jasperUser = 'jasperadmin';
   private readonly jasperPassword = 'jasperadmin';
@@ -22,7 +23,8 @@ export class JasperService {
       titulo: 'Ranking de Proveedores',
       descripcion: 'Top proveedores con mayores montos adjudicados.',
       icono: 'leaderboard',
-      rutaJasper: '/datasources/ReporteRanking',
+      // Nombres corregidos según tus archivos subidos
+      rutaJasper: '/datasources/RankingProveedores',
       color: 'gradient-green'
     },
     {
@@ -30,7 +32,7 @@ export class JasperService {
       titulo: 'Gasto Departamental',
       descripcion: 'Monto total gastado por departamento y sucursal.',
       icono: 'account_balance',
-      rutaJasper: '/datasources/ReporteGastoDepartamenta_',
+      rutaJasper: '/datasources/GastoDepartametal',
       color: 'gradient-red'
     },
     {
@@ -38,7 +40,7 @@ export class JasperService {
       titulo: 'Órdenes Activas',
       descripcion: 'Órdenes de compra abiertas a recibir ofertas.',
       icono: 'play_circle',
-      rutaJasper: '/datasources/RepoteOrdenesActivas',
+      rutaJasper: '/datasources/OrdenesActivas',
       color: 'gradient-cyan'
     },
     {
@@ -46,7 +48,7 @@ export class JasperService {
       titulo: 'Pedidos Pendientes',
       descripcion: 'Pedidos internos sin asignar a una orden.',
       icono: 'pending_actions',
-      rutaJasper: '/datasources/ReportePedidoPendiente',
+      rutaJasper: '/datasources/PedidosPendientes',
       color: 'gradient-purple'
     },
     {
@@ -54,7 +56,7 @@ export class JasperService {
       titulo: 'Historial por Artículo',
       descripcion: 'Compras de un artículo con proveedor y precio.',
       icono: 'history',
-      rutaJasper: '/datasources/ReporteHistorialArticulo',
+      rutaJasper: '/datasources/HistorialArticulos',
       color: 'gradient-blue'
     },
     {
@@ -62,7 +64,7 @@ export class JasperService {
       titulo: 'Ofertas por Orden',
       descripcion: 'Comparativa de ofertas recibidas por orden.',
       icono: 'compare_arrows',
-      rutaJasper: '/datasources/ReporteOfertaOrden',
+      rutaJasper: '/datasources/OfertasOrden',
       color: 'gradient-orange'
     },
     {
@@ -70,7 +72,7 @@ export class JasperService {
       titulo: 'Eficiencia del Proceso',
       descripcion: 'Tiempo promedio desde orden hasta adjudicación.',
       icono: 'speed',
-      rutaJasper: '/datasources/ReporteEficienciaProceso',
+      rutaJasper: '/datasources/EficienciaProceso',
       color: 'gradient-teal'
     },
     {
@@ -78,32 +80,21 @@ export class JasperService {
       titulo: 'Variación de Precios',
       descripcion: 'Evolución de precios por artículo y proveedor.',
       icono: 'trending_up',
-      rutaJasper: '/datasources/ReporteVariacionPrecio',
+      rutaJasper: '/datasources/Var',
       color: 'gradient-pink'
     }
   ];
 
-  /**
-   * ✅ Genera la URL del iframe usando la API REST de JasperReports.
-   * Devuelve SOLO el HTML del reporte (sin toolbar, sin header, sin menús).
-   */
   getUrlReporte(rutaJasper: string): string {
     const rutaLimpia = rutaJasper.startsWith('/') ? rutaJasper.substring(1) : rutaJasper;
     return `${this.serverBaseUrl}/rest_v2/reports/${rutaLimpia}.html`;
   }
 
-  /**
-   * ✅ Genera la URL del PDF del reporte para descarga.
-   * Usa la API REST con formato PDF.
-   */
   getUrlPdf(rutaJasper: string): string {
     const rutaLimpia = rutaJasper.startsWith('/') ? rutaJasper.substring(1) : rutaJasper;
     return `${this.serverBaseUrl}/rest_v2/reports/${rutaLimpia}.pdf`;
   }
 
-  /**
-   * ✅ Obtiene las credenciales para el login programático.
-   */
   getCredenciales(): { user: string; password: string } {
     return {
       user: this.jasperUser,

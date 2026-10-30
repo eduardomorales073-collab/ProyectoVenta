@@ -1,271 +1,122 @@
-.container {
-  padding: 1.5rem;
-  background: #f1f5f9;
-  min-height: calc(100vh - 64px);
-}
-
-.header-section {
-  margin-bottom: 1.5rem;
-
-  h1 {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 0.25rem;
-    color: #1e293b;
-    font-weight: 700;
-  }
-
-  p {
-    margin: 0;
-    color: #64748b;
-  }
-}
-
-.table-card {
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-/* ===== DASHBOARD FILTROS ===== */
-.filtros-dashboard {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-  background: #f8fafc;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #e2e8f0;
-
-  .filtro-select {
-    width: 220px;
-  }
-
-  .filtro-busqueda {
-    flex: 1;
-    min-width: 250px;
-  }
-
-  .badge-urgentes {
-    background: #fee2e2;
-    color: #991b1b;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid #f87171;
-
-    mat-icon {
-      color: #dc2626;
-    }
-  }
-}
-
-/* ===== TABLA ===== */
-table {
-  width: 100%;
-}
-
-.fila-urgente {
-  background-color: #fff1f2 !important;
-
-  &:hover {
-    background-color: #ffe4e6 !important;
-  }
-}
-
-.icon-urgente {
-  color: #dc2626;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-.chip-codigo {
-  background: #e0f2fe !important;
-  color: #0369a1 !important;
-  font-weight: 600;
-}
-
-.chip-departamento {
-  background: #f1f5f9 !important;
-  color: #475569 !important;
-}
-
+/* Estilos para los Artículos */
 .articulos-list {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.3rem;
 
   .articulo-item {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
     font-size: 0.85rem;
 
     .icon-mini {
-      font-size: 1rem;
-      width: 1rem;
-      height: 1rem;
-      color: #8b5cf6;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #64748b;
     }
 
     .cantidad-badge-sm {
-      background: #ede9fe;
-      color: #6d28d9;
-      padding: 0.1rem 0.4rem;
-      border-radius: 0.25rem;
-      font-weight: 700;
-      font-size: 0.7rem;
-    }
-
-    .articulo-nombre {
-      color: #1e293b;
-    }
-  }
-}
-
-.observaciones-text {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #475569;
-  font-size: 0.85rem;
-  font-style: italic;
-  max-width: 200px;
-}
-
-.cantidad-badge {
-  background: #f1f5f9;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-weight: 700;
-  color: #334155;
-}
-
-/* Competencia */
-.competencia-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.chip-competencia {
-  background: #fef3c7 !important;
-  color: #92400e !important;
-  font-size: 0.75rem;
-}
-
-.precio-min {
-  font-size: 0.75rem;
-  color: #059669;
-  font-weight: 600;
-}
-
-.alert-relacionado {
-  margin-top: 0.5rem;
-  padding: 0.4rem;
-  background: #fff7ed;
-  border-left: 3px solid #f97316;
-  border-radius: 0.25rem;
-  font-size: 0.7rem;
-
-  .icon-relacionado {
-    font-size: 0.9rem;
-    width: 0.9rem;
-    height: 0.9rem;
-    color: #ea580c;
-  }
-
-  .relacionado-item {
-    display: flex;
-    gap: 0.3rem;
-    margin-top: 0.2rem;
-
-    .nombre-rel {
-      font-weight: 600;
-    }
-
-    .tipo-rel {
-      color: #c2410c;
-      font-style: italic;
-    }
-
-    .precio-rel {
-      margin-left: auto;
-      color: #b91c1c;
       font-weight: bold;
+      color: #3b82f6;
     }
   }
 }
 
-.sin-competencia, .sin-dato {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  font-style: italic;
-}
-
-/* Tu oferta */
-.mi-oferta-info {
+/* Estilos para la Competencia */
+.competencia-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-
-  .precio-propio {
-    font-weight: 700;
-    color: #1e293b;
-  }
+  gap: 0.5rem;
+  padding: 0.2rem 0;
 }
 
-.chip-ganando {
-  background: #d1fae5 !important;
-  color: #065f46 !important;
-  font-size: 0.7rem;
-}
-
-.chip-perdiendo {
-  background: #fee2e2 !important;
-  color: #991b1b !important;
-  font-size: 0.7rem;
-}
-
-.chip-ya-oferto {
-  background: #e0e7ff !important;
-  color: #3730a3 !important;
-  font-weight: 600;
-}
-
-/* Utilidades */
-.loading, .empty-state {
-  display: flex;
-  flex-direction: column;
+.badge-ofertas {
+  display: inline-flex;
   align-items: center;
-  padding: 3rem 1rem;
-  color: #64748b;
+  gap: 0.5rem;
+  background: #fef9c3;
+  color: #854d0e;
+  padding: 0.4rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
 
   mat-icon {
-    font-size: 3rem;
-    width: 3rem;
-    height: 3rem;
-    margin-bottom: 0.5rem;
-    opacity: 0.5;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
+
+  .precio-min {
+    color: #15803d;
+    border-left: 1px solid #ca8a04;
+    padding-left: 0.5rem;
+  }
+}
+
+.socios-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  .socio-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.5rem;
+
+    .icon-socio {
+      color: #f59e0b;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .socio-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      .socio-nombre {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .socio-tipo {
+        font-size: 0.7rem;
+        color: #64748b;
+      }
+    }
+
+    .socio-precio {
+      font-weight: bold;
+      font-size: 0.85rem;
+      color: #0f172a;
+    }
+  }
+}
+
+.sin-competencia {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.btn-ofertar {
+  border-radius: 2rem;
+  padding: 0 1rem;
 }

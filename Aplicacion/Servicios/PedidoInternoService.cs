@@ -139,7 +139,8 @@ namespace Aplicacion.Servicios
             if (pedido.id_OrdenCompra.HasValue)
             {
                 var ordenActualizar = await _ordenCompraRepositorio.GetAsync(pedido.id_OrdenCompra.Value);
-                if (ordenActualizar != null && ordenActualizar.Estado == "Aprobada")
+                // ✅ CORRECCIÓN: Si está en Borrador o Aprobada, pasa a Publicada al crearle un pedido
+                if (ordenActualizar != null && (ordenActualizar.Estado == "Aprobada" || ordenActualizar.Estado == "Borrador"))
                 {
                     ordenActualizar.Estado = "Publicada";
                     await _ordenCompraRepositorio.UpdateAsync(ordenActualizar);
@@ -467,7 +468,13 @@ namespace Aplicacion.Servicios
                         .Select(dp => dp.id_Articulo)
                         .ToList();
 
-                    return articulosDelPedidoIds.Any(a => articulosDeMisRubros.Contains(a));
+                    bool tieneArticulos = articulosDelPedidoIds.Any(a => articulosDeMisRubros.Contains(a));
+
+                    //  Verificar si el proveedor YA ofertó en este pedido
+                    bool yaOferto = ofertas.Any(o => o.id_Pedido_Interno == p.id && o.id_Proveedor == idProveedor);
+
+                    // Solo mostramos el pedido si tiene los artículos del rubro Y NO ha ofertado
+                    return tieneArticulos && !yaOferto;
                 })
                 .ToList();
 

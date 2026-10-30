@@ -9,21 +9,26 @@
 
   <mat-card class="table-card">
     <mat-card-content>
+
+      <!-- LOADING -->
       <div *ngIf="cargando" class="loading">
         <mat-spinner diameter="40"></mat-spinner>
         <p>Cargando ofertas...</p>
       </div>
 
+      <!-- EMPTY STATE -->
       <div *ngIf="!cargando && ofertas.length === 0" class="empty-state">
         <mat-icon>inbox</mat-icon>
         <h3>No tienes ofertas registradas</h3>
         <p>Ve a "Pedidos Disponibles" para ofertar por algún pedido.</p>
       </div>
 
+      <!-- TABLA -->
       <table mat-table [dataSource]="ofertas" *ngIf="!cargando && ofertas.length > 0">
+
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let o">{{ o.id }}</td>
+          <td mat-cell *matCellDef="let o">#{{ o.id }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pedido">
@@ -35,42 +40,85 @@
           </td>
         </ng-container>
 
+        <!--  PRECIO ESTILIZADO -->
         <ng-container matColumnDef="precio">
-          <th mat-header-cell *matHeaderCellDef>Precio</th>
+          <th mat-header-cell *matHeaderCellDef>Mi Precio</th>
           <td mat-cell *matCellDef="let o">
-            <span class="precio">Q {{ o.precio | number:'1.2-2' }}</span>
+            <span class="precio-oferta">Q {{ o.precio | number:'1.2-2' }}</span>
+          </td>
+        </ng-container>
+
+        <!--  NUEVA COLUMNA DE SOCIOS (Recuadro Naranja) -->
+        <ng-container matColumnDef="socios">
+          <th mat-header-cell *matHeaderCellDef>Competencia / Socios</th>
+          <td mat-cell *matCellDef="let o">
+
+            <div *ngIf="o.proveedoresRelacionadosQueOfertaron?.length > 0" class="alert-relacionado">
+              <mat-icon class="icon-relacionado">link</mat-icon>
+              <div class="relacionados-lista">
+                <strong>{{ o.proveedoresRelacionadosQueOfertaron.length }} relacionado(s):</strong>
+                <div *ngFor="let pr of o.proveedoresRelacionadosQueOfertaron" class="relacionado-item">
+                  <span class="nombre-rel">{{ pr.nombreProveedor }}</span>
+                  <span class="tipo-rel">{{ pr.tipoRelacion }}</span>
+                  <span class="precio-rel">Q {{ pr.precioOfertado | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <span *ngIf="!o.proveedoresRelacionadosQueOfertaron || o.proveedoresRelacionadosQueOfertaron.length === 0" class="sin-competencia">
+              <mat-icon>remove_circle_outline</mat-icon> Sin socios
+            </span>
+
           </td>
         </ng-container>
 
         <ng-container matColumnDef="fecha">
           <th mat-header-cell *matHeaderCellDef>Fecha</th>
           <td mat-cell *matCellDef="let o">
-            <mat-icon class="icon-mini">event</mat-icon>
-            {{ o.fecha_Oferta | date:'dd/MM/yyyy' }}
+            <div class="fecha-wrapper">
+              <mat-icon class="icon-mini">calendar_today</mat-icon>
+              {{ o.fecha_Oferta | date:'dd/MM/yyyy HH:mm' }}
+            </div>
           </td>
         </ng-container>
 
+        <!--  ACCIONES CON BLOQUEO DE ADJUDICACIÓN -->
         <ng-container matColumnDef="acciones">
-  <th mat-header-cell *matHeaderCellDef>Acciones</th>
-  <td mat-cell *matCellDef="let o">
-    <button mat-icon-button color="accent" (click)="abrirFormulario(o)" matTooltip="Editar">
-      <mat-icon>edit</mat-icon>
-    </button>
-    <button mat-icon-button color="warn" (click)="confirmarEliminar(o)" matTooltip="Eliminar">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </td>
-</ng-container>
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let o">
+
+            <!-- Si NO está adjudicado, mostramos botones -->
+            <ng-container *ngIf="!o.pedidoAdjudicado; else adjudicadoTemplate">
+              <button mat-stroked-button color="primary" class="btn-mejorar" (click)="abrirFormulario(o)">
+                <mat-icon>trending_up</mat-icon>
+                Mejorar Oferta
+              </button>
+              <button mat-icon-button color="warn" (click)="confirmarEliminar(o)" matTooltip="Retirar Oferta">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </ng-container>
+
+            <!-- Si YA está adjudicado, mostramos el chip verde -->
+            <ng-template #adjudicadoTemplate>
+              <mat-chip class="chip-adjudicado" highlighted>
+                <mat-icon>emoji_events</mat-icon>
+                Adjudicado
+              </mat-chip>
+            </ng-template>
+
+          </td>
+        </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
+
     </mat-card-content>
   </mat-card>
 
   <app-oferta-edit-form *ngIf="mostrarFormulario"
-                     [oferta]="ofertaSeleccionada"
-                     (guardado)="onGuardado()"
-                     (cancelado)="cerrarFormulario()">
-</app-oferta-edit-form>
+                        [oferta]="ofertaSeleccionada"
+                        (guardado)="onGuardado()"
+                        (cancelado)="cerrarFormulario()">
+  </app-oferta-edit-form>
 </div>

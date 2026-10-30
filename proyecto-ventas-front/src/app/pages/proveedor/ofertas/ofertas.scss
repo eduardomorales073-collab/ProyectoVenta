@@ -31,32 +31,163 @@
 
 .table-card {
   border-radius: 1rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 
   mat-card-content {
     padding: 1.5rem !important;
   }
 }
 
+table {
+  width: 100%;
+
+  th.mat-header-cell {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  td.mat-cell {
+    padding: 1rem;
+    color: #334155;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  tr.mat-row:hover {
+    background-color: #f8fafc;
+  }
+}
+
 .chip-pedido {
-  background: #dbeafe !important;
-  color: #1e40af !important;
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
-.precio {
-  font-weight: 700;
+.precio-oferta {
+  font-weight: 800;
   color: #10b981;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  background: #ecfdf5;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.5rem;
 }
 
-.icon-mini {
-  font-size: 1rem;
-  width: 1rem;
-  height: 1rem;
-  vertical-align: middle;
-  margin-right: 0.25rem;
+.fecha-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   color: #64748b;
+  font-size: 0.9rem;
+
+  .icon-mini {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.btn-mejorar {
+  border-radius: 2rem;
+  margin-right: 0.5rem;
+  font-weight: 600;
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #eff6ff;
+    transform: translateY(-1px);
+  }
+}
+
+/* ✅ ESTILOS DEL RECUADRO NARANJA */
+.alert-relacionado {
+  display: flex;
+  gap: 0.5rem;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  max-width: 300px;
+
+  .icon-relacionado {
+    color: #f97316;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .relacionados-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+
+    strong {
+      color: #9a3412;
+      font-size: 0.75rem;
+    }
+
+    .relacionado-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+
+      .nombre-rel {
+        font-weight: 600;
+        color: #431407;
+      }
+
+      .tipo-rel {
+        color: #c2410c;
+        font-size: 0.7rem;
+        font-style: italic;
+      }
+
+      .precio-rel {
+        font-weight: 700;
+        color: #ea580c;
+        margin-left: auto;
+      }
+    }
+  }
+}
+
+.sin-competencia {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/*  ESTILO DEL CHIP ADJUDICADO */
+.chip-adjudicado {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+
+  mat-icon {
+    color: #166534;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+  }
 }
 
 .loading {
@@ -80,20 +211,11 @@
     width: 4rem;
     height: 4rem;
     margin-bottom: 1rem;
+    color: #cbd5e1;
   }
 
   h3 {
     margin: 0 0 0.5rem;
-    color: #64748b;
+    color: #475569;
   }
-}
-
-table {
-  width: 100%;
-}
-
-th {
-  background: #f1f5f9;
-  color: #334155;
-  font-weight: 600;
 }

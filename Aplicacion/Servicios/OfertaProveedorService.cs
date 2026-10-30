@@ -15,20 +15,29 @@ namespace Aplicacion.Servicios
     public class OfertaProveedorService : IOfeProveService
     {
         private readonly OferProvRepositorio _ofertaProveedorRepositorio;
+        private readonly DetaAdjRepositorio _detalleAdjRepositorio;
+        private readonly RelacionRepositorio _relacionRepositorio;
+        private readonly ProveedorRepositorio _proveedorRepositorio;
         private readonly IMapper _mapper;
         private readonly IPublishEndpoint _publishEndpoint;
 
         public OfertaProveedorService(
             OferProvRepositorio ofertaProveedorRepository,
+            DetaAdjRepositorio detalleAdjRepositorio,
+            RelacionRepositorio relacionRepositorio,
+            ProveedorRepositorio proveedorRepositorio, 
             IPublishEndpoint publishEndpoint,
             IMapper mapper)
         {
             _mapper = mapper;
             _ofertaProveedorRepositorio = ofertaProveedorRepository;
+            _detalleAdjRepositorio = detalleAdjRepositorio;
+            _relacionRepositorio = relacionRepositorio;
+            _proveedorRepositorio = proveedorRepositorio;
             _publishEndpoint = publishEndpoint;
         }
 
-        // ✅ HELPER: Publicar evento SIN bloquear
+        //  HELPER: Publicar evento SIN bloquear
         private void PublicarEvento<T>(T evento) where T : class
         {
             _ = Task.Run(async () =>
@@ -66,7 +75,7 @@ namespace Aplicacion.Servicios
 
             await _ofertaProveedorRepositorio.AddAsync(nuevaOferta);
 
-            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+            //  PUBLICAR EVENTO SIN BLOQUEAR
             PublicarEvento(new OfertaRegistrada(
                 OfertaId: nuevaOferta.id,
                 IdProveedor: nuevaOferta.id_Proveedor,
@@ -110,7 +119,7 @@ namespace Aplicacion.Servicios
 
             await _ofertaProveedorRepositorio.UpdateAsync(existente);
 
-            // ✅ PUBLICAR EVENTO SIN BLOQUEAR
+            //  PUBLICAR EVENTO SIN BLOQUEAR
             PublicarEvento(new OfertaActualizada(
                 OfertaId: existente.id,
                 IdProveedor: existente.id_Proveedor,
@@ -122,11 +131,57 @@ namespace Aplicacion.Servicios
             ));
         }
 
+        //  MÉTODO MODIFICADO PARA INCLUIR SOCIOS Y ADJUDICACIÓN
         public async Task<List<OfertaProveedorDTO>> GetByProveedorAsync(int idProveedor)
         {
             var todas = await _ofertaProveedorRepositorio.GetAllasync();
-            var filtradas = todas.Where(o => o.id_Proveedor == idProveedor).ToList();
-            return _mapper.Map<List<OfertaProveedorDTO>>(filtradas);
+            var misOfertas = todas.Where(o => o.id_Proveedor == idProveedor).ToList();
+
+            var detallesAdj = await _detalleAdjRepositorio.GetAllasync();
+            var relaciones = await _relacionRepositorio.GetAllasync();
+            var proveedores = await _proveedorRepositorio.GetAllasync();
+
+            var idsRelacionados = relaciones
+                .Where(r => r.Proveedor1 == idProveedor || r.Proveedor2 == idProveedor)
+                .Select(r => r.Proveedor1 == idProveedor ? r.Proveedor2 : r.Proveedor1)
+                .ToHashSet();
+
+            var resultado = new List<OfertaProveedorDTO>();
+
+            foreach (var oferta in misOfertas)
+            {
+                // Mapeo base
+                var dto = _mapper.Map<OfertaProveedorDTO>(oferta);
+
+                // Validar si está adjudicado
+                dto.PedidoAdjudicado = detallesAdj.Any(d => d.id_Pedido == oferta.id_Pedido_Interno);
+
+                // Buscar socios que ofertaron en el mismo pedido
+                var ofertasDelPedido = todas.Where(o => o.id_Pedido_Interno == oferta.id_Pedido_Interno).ToList();
+                var ofertasRelacionados = ofertasDelPedido
+                    .Where(o => idsRelacionados.Contains(o.id_Proveedor))
+                    .ToList();
+
+                dto.ProveedoresRelacionadosQueOfertaron = ofertasRelacionados.Select(o =>
+                {
+                    var prov = proveedores.FirstOrDefault(pr => pr.id == o.id_Proveedor);
+                    var relacion = relaciones.FirstOrDefault(r =>
+                        (r.Proveedor1 == idProveedor && r.Proveedor2 == o.id_Proveedor) ||
+                        (r.Proveedor2 == idProveedor && r.Proveedor1 == o.id_Proveedor)
+                    );
+
+                    return new ProveedorRelacionadoOfertaDTO
+                    {
+                        NombreProveedor = prov?.Nombre ?? $"Proveedor #{o.id_Proveedor}",
+                        TipoRelacion = relacion?.TipoRelacion ?? "Relacionado",
+                        PrecioOfertado = o.Precio
+                    };
+                }).ToList();
+
+                resultado.Add(dto);
+            }
+
+            return resultado.OrderByDescending(o => o.id).ToList();
         }
     }
 }
