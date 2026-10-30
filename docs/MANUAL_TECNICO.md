@@ -1,9 +1,3 @@
-
-## 📄 ARCHIVO 4: `docs/MANUAL_TECNICO.md`
-
-**Crea el archivo `C:\Users\eduar\source\repos\ProyectoVentas\docs\MANUAL_TECNICO.md`:**
-
-```markdown
 # Manual Técnico - SistemaVentas
 
 Documentación técnica para desarrolladores.
@@ -14,7 +8,7 @@ Documentación técnica para desarrolladores.
 2. [Estructura del Proyecto](#estructura-del-proyecto)
 3. [API Endpoints](#api-endpoints)
 4. [Base de Datos](#base-de-datos)
-5. [Reportes (QuestPDF)](#reportes-questpdf)
+5. [Reportes (JasperReports)](#reportes-jasperreports)
 6. [Autenticación JWT](#autenticación-jwt)
 7. [Mensajería (RabbitMQ)](#mensajería-rabbitmq)
 8. [Auditoría (MongoDB)](#auditoría-mongodb)
@@ -24,7 +18,6 @@ Documentación técnica para desarrolladores.
 ## 🏗️ Arquitectura
 
 ### Capas
-
 ┌─────────────────────────────────────────┐
 │ Venta (API) │ ← Controladores
 ├─────────────────────────────────────────┤
@@ -32,26 +25,20 @@ Documentación técnica para desarrolladores.
 │ - Servicios (AuthService, etc.) │
 │ - DTOs │
 │ - Interfaces │
-│ - Reportes (QuestPDF) │
 ├─────────────────────────────────────────┤
 │ Infraestructura (Repositorios) │ ← Acceso a datos
 │ - Repositorios │
 │ - DbContext │
 ├─────────────────────────────────────────┤
-│ Electron (Desktop) │ ← Frontend
-│ - Angular │
-│ - main.js │
-│ - preload.js │
+│ JasperReports Server (Docker) │ ← Motor de Reportes (NUEVO)
 └─────────────────────────────────────────┘
 
 
 ### Flujo de una Petición
 
-[Angular] → [HTTP :5000] → [Venta API] → [Aplicacion] → [Infraestructura] → [SQL Server]
+[Angular] → [HTTP :5000] → [Venta API] → [Aplicacion] → [Infraestructura] → [SQL Server / Azure]
 ↓
-[Header: X-Tipo-BD: azure]
-↓
-[Program.cs: selecciona connection string]
+[HTTP :8080] → [JasperReports Server (Docker)] ← (Para generación de reportes PDF/HTML)
 
 
 ## 📂 Estructura del Proyecto
@@ -67,7 +54,7 @@ ProyectoVentas/
 │ ├── Servicios/ # Lógica de negocio
 │ │ ├── AuthService.cs
 │ │ ├── PedidoInternoService.cs
-│ │ ├── ReportePdfService.cs # ← QuestPDF
+│ │ ├── OfertaProveedorService.cs
 │ │ └── ...
 │ └── Aplicacion.csproj
 │
@@ -81,7 +68,6 @@ ProyectoVentas/
 │ ├── Controllers/ # Endpoints
 │ │ ├── AuthControlador.cs
 │ │ ├── PedidoInternoControlador.cs
-│ │ ├── ReporteControlador.cs # ← Endpoints PDF
 │ │ └── ...
 │ ├── appsettings.json # Configuración
 │ ├── Program.cs # Startup
@@ -91,39 +77,32 @@ ProyectoVentas/
 │ ├── src/
 │ │ ├── app/
 │ │ │ ├── pages/ # Componentes
-│ │ │ ├── services/ # Servicios HTTP
+│ │ │ ├── services/ # Servicios HTTP (incluye jasper.service.ts)
 │ │ │ ├── interceptors/ # Interceptores
-│ │ │ ├── guards/ # Guards de rutas
 │ │ │ └── app.routes.ts
 │ │ └── environments/
 │ ├── package.json
 │ └── angular.json
 │
 ├── electron/ # Electron
-│ ├── main.js # Proceso principal
-│ ├── preload.js # API segura
-│ ├── package.json
-│ ├── browser/ # Angular compilado
-│ ├── temp_asar/ # Contenido del asar
+│ ├── main.js
+│ ├── preload.js
 │ └── dist/ # .exe portable
 │
 └── docs/ # Documentación
 ├── MANUAL_USUARIO.md
 ├── MANUAL_INSTALACION.md
 ├── MANUAL_TECNICO.md
-└── script.sql # Script de migración
-
+└── script.sql
 
 ## 🔌 API Endpoints
 
 ### Auth
-
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | POST | `/api/AuthControlador/login` | Login con JWT |
 
 ### Pedidos Internos
-
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `/api/PedidoInternoControlador` | Listar todos |
@@ -131,210 +110,140 @@ ProyectoVentas/
 | POST | `/api/PedidoInternoControlador` | Crear |
 | PUT | `/api/PedidoInternoControlador` | Actualizar |
 | DELETE | `/api/PedidoInternoControlador/{id}` | Eliminar |
-| GET | `/api/PedidoInternoControlador/disponibles-para-proveedor` | Para proveedores |
+| GET | `/api/PedidoInternoControlador/disponibles-para-proveedor` | Para proveedores (filtra por rubro y ofertas existentes) |
+
+### Ofertas de Proveedores
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/OfertaProveedorControlador/mis-ofertas` | Obtiene las ofertas del proveedor logueado (incluye socios y estado adjudicado) |
+| POST | `/api/OfertaProveedorControlador` | Registrar oferta |
+| PUT | `/api/OfertaProveedorControlador` | Actualizar/Mejorar oferta |
+| DELETE | `/api/OfertaProveedorControlador/{id}` | Eliminar oferta |
 
 ### Órdenes de Compra
-
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `/api/OrdenCompraControlador` | Listar |
-| GET | `/api/OrdenCompraControlador/con-contadores` | Con contadores |
 | POST | `/api/OrdenCompraControlador` | Crear |
-| PUT | `/api/OrdenCompraControlador/{id}/aprobar` | Aprobar |
+| PUT | `/api/OrdenCompraControlador/{id}/aprobar` | Aprobar (pasa a Publicada) |
 
 ### Adjudicaciones
-
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `/api/AdjudicacionControlador` | Listar |
 | POST | `/api/AdjudicacionControlador/adjudicar-pedidos` | Adjudicar |
 
-### Reportes PDF (QuestPDF)
-
+### Relaciones de Proveedores
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/ReporteControlador/pdf/ranking-proveedores` | Ranking |
-| GET | `/api/ReporteControlador/pdf/gasto-departamental` | Gasto |
-| GET | `/api/ReporteControlador/pdf/ordenes-activas` | Órdenes activas |
-| GET | `/api/ReporteControlador/pdf/pedidos-pendientes` | Pedidos pendientes |
-| GET | `/api/ReporteControlador/pdf/historial-articulo` | Historial |
-| GET | `/api/ReporteControlador/pdf/ofertas-orden` | Ofertas |
-| GET | `/api/ReporteControlador/pdf/eficiencia-proceso` | Eficiencia |
-| GET | `/api/ReporteControlador/pdf/variacion-precios` | Variación |
+| GET | `/api/RelacionControlador` | Listar relaciones |
+| POST | `/api/RelacionControlador` | Crear relación (Socio Comercial, Matriz, etc.) |
+| DELETE | `/api/RelacionControlador/{id}` | Eliminar relación |
 
 ## 🗄️ Base de Datos
 
-### Tablas
-
+### Tablas Principales
 | Tabla | Descripción |
 |-------|-------------|
 | `Usuarios` | Usuarios del sistema |
-| `Roles` | Roles disponibles |
-| `Usuarios_Roles` | Relación N:M |
-| `Permisos` | Permisos granulares |
-| `Rol_Permiso` | Relación N:M |
+| `Roles` / `Usuarios_Roles` | Roles y relación N:M |
+| `Permisos` / `Rol_Permiso` | Permisos granulares |
 | `Articulo` | Catálogo de artículos |
 | `Proveedor` | Proveedores |
 | `Provee_Artic` | Qué provee cada proveedor |
-| `Rubro` | Rubros |
-| `Provee_Rubro` | Rubros por proveedor |
-| `Relacion` | Relaciones entre proveedores |
-| `Departamento` | Departamentos |
-| `Sucursal` | Sucursales |
-| `Direccion` | Direcciones |
-| `Telefono` | Teléfonos |
-| `Detalle_Telefono` | N:M Sucursal-Teléfono |
-| `Tipo_Orden` | Tipos de orden |
+| `Rubro` / `Provee_Rubro` | Rubros (Tecnología, Alimentos, etc.) |
+| `Relacion` | Relaciones entre proveedores (Socios, Matriz, etc.) |
+| `Departamento` / `Sucursal` | Ubicaciones |
 | `Orden_Compra` | Órdenes de compra |
 | `Pedido_Interno` | Pedidos internos |
 | `Detalle_Pedido` | Artículos del pedido |
-| `Oferta_Proveedor` | Ofertas |
-| `Adjudicacion` | Adjudicaciones |
-| `Detalle_adjudicacion` | Detalles de adjudicación |
+| `Oferta_Proveedor` | Ofertas de los proveedores |
+| `Adjudicacion` / `Detalle_adjudicacion` | Adjudicaciones (Ganadores) |
 
+## 📄 Reportes (JasperReports)
 
-### Relaciones principales
+### Arquitectura de Reportes
+Hemos migrado de QuestPDF a **JasperReports Server Community Edition**. El servidor corre en un contenedor **Docker** para evitar problemas de licencias y asegurar compatibilidad.
 
-Usuario ──< Pedido_Interno
-Usuario ──< Orden_Compra
-Orden_Compra ──< Pedido_Interno
-Pedido_Interno ──< Detalle_Pedido >── Articulo
-Pedido_Interno ──< Oferta_Proveedor >── Proveedor
-Pedido_Interno ──< Detalle_adjudicacion >── Adjudicacion
+- **URL del Servidor:** `http://localhost:8080`
+- **Credenciales:** `jasperadmin` / `jasperadmin`
+- **Ruta de Reportes:** `http://localhost:8080/rest_v2/reports/datasources/{NombreReporte}.html` (o `.pdf`)
 
+### Lista de Reportes
+1. `RankingProveedores`
+2. `GastoDepartamental`
+3. `OrdenesActivas`
+4. `PedidosPendientes`
+5. `HistorialArticulos`
+6. `OfertasOrden`
+7. `EficienciaProceso`
+8. `VariacionPrecio`
 
-## 📄 Reportes (QuestPDF)
-
-### Ubicación
-
-`Aplicacion/Servicios/ReportePdfService.cs`
-
-### Métodos
-
-```csharp
-public byte[] GenerarRankingProveedores()
-public byte[] GenerarGastoDepartamental()
-public byte[] GenerarOrdenesActivas()
-public byte[] GenerarPedidosPendientes()
-public byte[] GenerarHistorialArticulo()
-public byte[] GenerarOfertasOrden()
-public byte[] GenerarEficienciaProceso()
-public byte[] GenerarVariacionPrecios()
-
-
-Estructura del PDF
-
-Document.Create(container =>
-{
-    container.Page(page =>
-    {
-        page.Size(PageSizes.A4.Landscape());
-        page.Margin(20);
-        page.Header().Element(Encabezado);
-        page.Content().Element(TablaDatos);
-        page.Footer().Element(PiePagina);
-    });
-}).GeneratePdf();
-
+### Integración Frontend (`jasper.service.ts`)
+El frontend genera la URL dinámicamente y la carga en un `<iframe>` o redirige a la descarga del PDF:
+```typescript
+private readonly serverBaseUrl = 'http://localhost:8080';
+getUrlReporte(rutaJasper: string): string {
+  return `${this.serverBaseUrl}/rest_v2/reports/${rutaLimpia}.html`;
+}
 
 🔐 Autenticación JWT
 
 Flujo
-Login → POST /api/AuthControlador/login
+1). Login: POST /api/AuthControlador/login
 
-Backend → Verifica BCrypt + genera JWT
+2). Backend: Verifica BCrypt + genera JWT.
 
-Frontend → Guarda en localStorage
+3). Frontend: Guarda en localStorage.
 
-Interceptor → Añade Authorization: Bearer {token}
+4). Interceptor: Añade Authorization: Bearer {token} en cada petición.
 
 Claims del JWT
-Claim	Descripción
-NameIdentifier	ID del usuario
-Email	Email
-Name	Nombre
-Role	Rol (Administrador, etc.)
-IdRol	ID del rol
-IdProveedor	ID del proveedor (si aplica)
-IdDepartamento	ID del departamento (si aplica)
 
+NameIdentifier: ID del usuario
+
+Role: Rol (Administrador, Proveedor, etc.)
+
+IdProveedor: ID del proveedor (si aplica)
+
+IdDepartamento: ID del departamento (si aplica)
 
 📬 Mensajería (RabbitMQ)
 
 Consumidores
-Consumidor	Evento
-CompraRegistradaConsumer	Compra registrada
-PedidoCreadoConsumer	Pedido creado
-OfertaRegistradaConsumer	Oferta registrada
-OrdenCreadaConsumer	Orden creada
-AdjudicacionCreadaConsumer	Adjudicación creada
-PedidoActualizadoConsumer	Pedido actualizado
+PedidoCreadoConsumer
 
+OfertaRegistradaConsumer
 
-Configuración
+OrdenCreadaConsumer
 
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<PedidoCreadoConsumer>();
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host("localhost", "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
-        cfg.ConfigureEndpoints(context);
-    });
-});
+AdjudicacionCreadaConsumer
 
+PedidoActualizadoConsumer
 
 📝 Auditoría (MongoDB)
 
-Colección	Descripción
-compras_historial	Compras
-pedidos_historial	Pedidos
-ofertas_historial	Ofertas
-ordenes_historial	Órdenes
-cancelaciones_historial	Cancelaciones
-adjudicaciones_historial	Adjudicaciones
-pedidos_actualizaciones_historial	Actualizaciones
-ofertas_actualizaciones_historial	Actualizaciones
+Se utiliza MongoDB para guardar un historial de eventos.
 
-
-📦 Empaquetado (Electron)
-
-Estructura del .exe
-
-SistemaVentas-Portable-1.0.0.exe (~140 MB)
-├── SistemaVentas.exe (Electron)
-└── resources/
-    ├── app.asar (Angular compilado)
-    └── backend/ (Backend .NET autocontenido)
-   
-   
- Proceso
-
-# 1. Compilar Angular
-cd proyecto-ventas-front
-npm run build
-
-# 2. Copiar a electron
-Copy-Item "dist/proyecto-ventas-front/browser" "electron/browser" -Recurse
-
-# 3. Actualizar temp_asar
-Copy-Item "electron/browser" "electron/temp_asar/browser" -Recurse
-
-# 4. Reempaquetar asar
-npx asar pack temp_asar "dist/win-unpacked/resources/app.asar"
-
-# 5. Generar .exe portable
-npx electron-builder --win portable --prepackaged dist/win-unpacked
-
+Colecciones: compras_historial, pedidos_historial, ofertas_historial, adjudicaciones_historial, etc.
 
 🚀 Despliegue
 
-Desarrollo
+1. Levantar JasperReports (Docker)
+Antes de iniciar el sistema, asegúrate de tener Jasper corriendo:
 
+powershell
+# Si el contenedor está detenido, inícialo:
+docker start jasperserver
+docker start jasper-db
+
+# Si es la primera vez, ejecuta:
+docker network create jasper-net
+docker run -d --name jasper-db --network jasper-net -e POSTGRES_DB=jasperserver -e POSTGRES_USER=jasperadmin -e POSTGRES_PASSWORD=jasperadmin postgres:14
+docker run -d --name jasperserver --network jasper-net -p 8080:8080 -e DB_TYPE=postgresql -e DB_HOST=jasper-db -e DB_PORT=5432 -e DB_USER=jasperadmin -e DB_PASSWORD=jasperadmin -e DB_NAME=jasperserver judahpaul/jasperserver
+
+2. Levantar Backend y Frontend (Desarrollo)
+powershell
 # Backend
 cd Venta
 dotnet run
@@ -343,39 +252,11 @@ dotnet run
 cd proyecto-ventas-front
 npm start
 
-# Electron (dev)
-cd electron
-npx electron .
+3. Distribución (Producción)
+1). Compilar el backend: dotnet publish -c Release -r win-x64 --self-contained true
 
+2). Compilar el frontend: npm run build
 
-Producción
+3). Empaquetar con Electron: npx electron-builder --win portable
 
-# 1. Compilar backend
-dotnet publish -c Release -r win-x64 --self-contained true -o bin/Release/net10.0/publish
-
-# 2. Compilar frontend
-npm run build
-
-# 3. Empaquetar
-npx electron-builder --win portable --prepackaged dist/win-unpacked
-
-Distribución
-
-1)Copiar SistemaVentas-Portable-1.0.0.exe a la PC del usuario.
-
-2)Doble clic para ejecutar.
-
-3)No requiere instalación.
-
-
-📊 Métricas
-
-Componente	Métrica
-Backend (.NET 10)	~5 MB
-Frontend (Angular)	~1.5 MB
-Backend autocontenido	~120 MB
-Electron	~100 MB
-Total .exe	~140 MB
-Tiempo de arranque	~3-5 seg
-Tiempo de reporte PDF	~1-2 seg
-📌 Última actualización: 07/10/2026
+4). Copiar el .exe a la PC del usuario (no requiere instalación).
